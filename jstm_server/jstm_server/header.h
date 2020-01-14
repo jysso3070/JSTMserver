@@ -11,6 +11,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <list>
 #include <concurrent_unordered_map.h>
 
 // mssql
@@ -18,6 +19,9 @@
 #include <sqlext.h>  
 
 using namespace std;
+
+// singleTon
+#include "singleTon.h"
 
 // 프로토콜
 #include "protocol.h"

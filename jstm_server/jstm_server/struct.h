@@ -21,6 +21,11 @@ struct PLAYER_INFO {
 	short x, y;
 };
 
+struct GAME_ROOM {
+	int host_id;
+	int guest_id;
+};
+
 struct EVENT
 {
 	int obj_id;

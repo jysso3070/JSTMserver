@@ -127,8 +127,8 @@ void iocp_server::do_worker_thread()
 			over_ex->net_buf[num_byte] = 0;
 			//process_packet(key, over_ex->net_buf);
 
-			int in_packet_size = 0;
-			int saved_packet_size = 0;
+			unsigned int in_packet_size = 0;
+			unsigned int saved_packet_size = 0;
 			DWORD rest_byte = num_byte;
 
 			char * temp = reinterpret_cast<char*>(over_ex->net_buf);
@@ -165,13 +165,13 @@ void iocp_server::do_worker_thread()
 	}
 }
 
-void iocp_server::process_packet(int id, void * buff)
+void iocp_server::process_player_move(int id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
 	short x = m_player_info[id]->x;
 	short y = m_player_info[id]->y;
-	switch (packet[1]){
+	switch (packet[1]) {
 	case CS_UP:
 		y -= 10;
 		break;
@@ -192,6 +192,30 @@ void iocp_server::process_packet(int id, void * buff)
 	m_player_info[id]->y = y;
 
 	send_pos_packet(id);
+}
+
+void iocp_server::process_packet(int id, void * buff)
+{
+	char *packet = reinterpret_cast<char *>(buff);
+
+	short x = m_player_info[id]->x;
+	short y = m_player_info[id]->y;
+	switch (packet[1]){
+	case CS_UP:
+		process_player_move(id, buff);
+		break;
+	case CS_DOWN:
+		process_player_move(id, buff);
+		break;
+	case CS_LEFT:
+		process_player_move(id, buff);
+		break;
+	case CS_RIGHT:
+		process_player_move(id, buff);
+		break;
+	default:
+		break;
+	}
 
 
 }

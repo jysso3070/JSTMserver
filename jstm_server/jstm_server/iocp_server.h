@@ -14,8 +14,11 @@ public:
 	void make_thread();	// 스레드 생성
 
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
-	void do_worker_thread();
+	void do_worker_thread(); // 주 워커 스레드
+
+	void process_player_move(int id, void *buff);
 	void process_packet(int id, void *buff);
+	
 
 	// 패킷 송신
 	void send_id_packet(int id);
@@ -31,7 +34,9 @@ private:
 	int m_new_user_id;
 
 	packet_manager *m_packet_manager = NULL;
+
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
 
+	list<GAME_ROOM> list_game_room;
 };
 
