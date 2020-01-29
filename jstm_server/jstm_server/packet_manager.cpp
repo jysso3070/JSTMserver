@@ -29,6 +29,37 @@ void packet_manager::send_packet(int client_id, SOCKET client_socket, void * buf
 	}
 }
 
+void packet_manager::send_id_packet(int client_id, SOCKET client_socket)
+{
+	sc_packet_send_id packet;
+	packet.id = client_id;
+	packet.size = sizeof(packet);
+	packet.type = SC_SEND_ID;
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y)
+{
+	sc_packet_pos packet;
+	packet.id = client_id;
+	packet.size = sizeof(packet);
+	packet.type = SC_POS;
+	packet.x = p_x;
+	packet.y = p_y;
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_room_list_pakcet(int client_id, SOCKET client_socket, short room_num, int host_id, int guest_id)
+{
+	sc_pakcet_room_list packet;
+	packet.room_num = room_num;
+	packet.host_id = host_id;
+	packet.guest_id = guest_id;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 void packet_manager::error_display(const char * msg, int err_no)
 {
 	WCHAR *lpMsgBuf;

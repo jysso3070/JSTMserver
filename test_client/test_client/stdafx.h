@@ -32,5 +32,6 @@
 #include <vector>
 #include <list>
 #include <chrono>
+#include "network_manager.h"
 
 using namespace std;

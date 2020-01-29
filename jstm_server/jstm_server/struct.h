@@ -22,6 +22,7 @@ struct PLAYER_INFO {
 };
 
 struct GAME_ROOM {
+	int room_number;
 	int host_id;
 	int guest_id;
 };

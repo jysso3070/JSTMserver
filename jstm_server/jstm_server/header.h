@@ -12,6 +12,7 @@
 #include <set>
 #include <map>
 #include <list>
+#include <queue>
 #include <concurrent_unordered_map.h>
 
 // mssql

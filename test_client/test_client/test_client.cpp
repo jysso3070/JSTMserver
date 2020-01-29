@@ -20,8 +20,12 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 WSABUF recv_buf; // WSARecv를 사용하기위해 WSABUF 사용
 char buffer[MAX_BUFFER];
 PLAYER_INFO my_info;
+network_manager net_manager; // 전역클래스
+SOCKET serverSocket;
+HWND hWnd;
 
 void PacketProccess(void * buf);
+void connect_to_server();
 
 void ReadBuffer(SOCKET sock)
 {
@@ -76,6 +80,14 @@ void PacketProccess(void * buf) {
 		break;
 	}
 	}
+}
+
+void connect_to_server() {
+	net_manager.init_socket();
+	
+	serverSocket = net_manager.connect_server();
+
+	WSAAsyncSelect(serverSocket, hWnd, WM_SOCKET, FD_READ || FD_CLOSE);
 }
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
@@ -164,7 +176,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, WINDOW_X, WINDOW_Y, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
@@ -199,35 +211,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static RECT rectView;
 
 	// server client
-	static WSADATA WSAData;
-	static SOCKET serverSocket;
-	static sockaddr_in serverAddr;
+	//static WSADATA WSAData;
+	//static SOCKET serverSocket;
+	//static sockaddr_in serverAddr;
 
     switch (message)
     {
 	case WM_CREATE:
+		{
 		// dubble buffer
 		GetClientRect(hWnd, &rectView);
 
 		// Socket init
-		WSAStartup(MAKEWORD(2, 0), &WSAData);	//  네트워크 기능을 사용하기 위함, 인터넷 표준을 사용하기 위해
-		serverSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, 0);
-		memset(&serverAddr, 0, sizeof(SOCKADDR_IN));
-		serverAddr.sin_family = AF_INET;
-		serverAddr.sin_port = htons(SERVER_PORT);
-		inet_pton(AF_INET, SERVER_IP, &serverAddr.sin_addr);// ipv4에서 ipv6로 변환
-		connect(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
+		//WSAStartup(MAKEWORD(2, 0), &WSAData);	//  네트워크 기능을 사용하기 위함, 인터넷 표준을 사용하기 위해
+		//serverSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, 0);
+		//memset(&serverAddr, 0, sizeof(SOCKADDR_IN));
+		//serverAddr.sin_family = AF_INET;
+		//serverAddr.sin_port = htons(SERVER_PORT);
+		//inet_pton(AF_INET, SERVER_IP, &serverAddr.sin_addr);// ipv4에서 ipv6로 변환
+		//connect(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
+
 
 		// WSAAsyncSelect
-		WSAAsyncSelect(serverSocket, hWnd, WM_SOCKET, FD_READ || FD_CLOSE);
+		//WSAAsyncSelect(serverSocket, hWnd, WM_SOCKET, FD_READ || FD_CLOSE);
 
 		// WSABUF 주소에 데이터받아올 버퍼주소 할당
 		recv_buf.len = MAX_BUFFER;
 		recv_buf.buf = buffer;
 
+
+
+
 		my_info.x = 300;
 		my_info.y = 300;
-
+		}
 		break;
     case WM_COMMAND:
         {
@@ -292,6 +309,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			packet.size = sizeof(packet);
 			packet.type = CS_RIGHT;
 			send(serverSocket, (char*)&packet, sizeof(packet), 0);
+		}
+		if (wParam == VK_RETURN) {
+			connect_to_server();
 		}
 
 		InvalidateRgn(hWnd, NULL, FALSE);

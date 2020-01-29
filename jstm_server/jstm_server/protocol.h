@@ -2,8 +2,9 @@
 
 #define MAX_BUFFER 1024
 
-#define SC_SEND_ID	1
-#define SC_POS		2
+#define SC_SEND_ID			1
+#define SC_POS				2
+#define SC_SEND_ROOM_LIST	3	
 
 
 #define SERVER_PORT	3500
@@ -11,6 +12,7 @@
 #define CS_RIGHT	2
 #define CS_UP		3
 #define CS_DOWN		4
+#define CS_MAKE_ROOM	5
 
 #pragma pack(push ,1)
 
@@ -27,6 +29,15 @@ struct sc_packet_pos {
 	int id;
 	short x, y;
 };
+
+struct sc_pakcet_room_list {
+	char size;
+	char type;
+	short room_num;
+	int host_id;
+	int guest_id;
+};
+
 
 // client to server
 struct cs_packet_left {
@@ -47,6 +58,12 @@ struct cs_packet_up {
 struct cs_packet_down {
 	char size;
 	char type;
+};
+
+struct cs_packet_make_room {
+	char size;
+	char type;
+	int id;
 };
 
 

@@ -21,15 +21,18 @@ void iocp_server::Initialize()
 	m_iocp_Handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 0);
 
 	m_new_user_id = 0;
+	m_new_room_num = 1;
 }
 
 void iocp_server::make_thread()
 {
 	thread accept_thread{ &iocp_server::do_accept_thread, this };
 	thread worker_thread{ &iocp_server::do_worker_thread, this };
+	thread timer_thread{ &iocp_server::do_timer_thread, this };
 
 	accept_thread.join();
 	worker_thread.join();
+	timer_thread.join();
 }
 
 void iocp_server::do_accept_thread()
@@ -85,7 +88,7 @@ void iocp_server::do_accept_thread()
 
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(clientSocket), m_iocp_Handle, user_id, 0);
 
-		send_id_packet(user_id);
+		m_packet_manager->send_id_packet(user_id, clientSocket);
 		m_player_info[user_id]->x = 300;
 		m_player_info[user_id]->y = 300;
 
@@ -165,6 +168,41 @@ void iocp_server::do_worker_thread()
 	}
 }
 
+void iocp_server::do_timer_thread()
+{
+	while (true) {
+		m_timer_lock.lock();
+		while (true == m_timer_queue.empty()) {	// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
+			m_timer_lock.unlock();
+			this_thread::sleep_for(10ms);
+			m_timer_lock.lock();
+		}
+		const EVENT &ev = m_timer_queue.top();
+		if (ev.wakeup_time > chrono::high_resolution_clock::now()) {
+			m_timer_lock.unlock();
+			this_thread::sleep_for(10ms);
+			continue;
+		}
+
+		EVENT p_ev = ev;
+		m_timer_queue.pop();
+		m_timer_lock.unlock();
+
+		if (EV_MOVE == p_ev.event_type) { // 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_MOVE;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
+	}
+}
+
+void iocp_server::add_timer(EVENT & ev)
+{
+	m_timer_lock.lock();
+	m_timer_queue.push(ev);
+	m_timer_lock.unlock();
+}
+
 void iocp_server::process_player_move(int id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
@@ -191,7 +229,24 @@ void iocp_server::process_player_move(int id, void * buff)
 	m_player_info[id]->x = x;
 	m_player_info[id]->y = y;
 
-	send_pos_packet(id);
+	m_packet_manager->send_pos_packet(id, m_player_info[id]->socket, x, y);
+
+}
+
+void iocp_server::process_make_room(int id)
+{
+	int room_num = m_new_room_num++;
+	GAME_ROOM *new_room = new GAME_ROOM;
+	new_room->guest_id = -1;
+	new_room->host_id = id;
+	new_room->room_number = room_num;
+
+	m_list_game_room.emplace_back(new_room);
+
+	for (auto client : m_player_info) {
+		m_packet_manager->send_room_list_pakcet(client.second->id, client.second->socket,
+			new_room->room_number, new_room->host_id, new_room->guest_id);
+	}
 }
 
 void iocp_server::process_packet(int id, void * buff)
@@ -212,6 +267,9 @@ void iocp_server::process_packet(int id, void * buff)
 		break;
 	case CS_RIGHT:
 		process_player_move(id, buff);
+		break;
+	case CS_MAKE_ROOM:
+		process_make_room(id);
 		break;
 	default:
 		break;
