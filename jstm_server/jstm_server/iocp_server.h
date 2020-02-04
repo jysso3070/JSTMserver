@@ -22,6 +22,8 @@ public:
 	void process_player_move(int id, void *buff);
 	void process_make_room(int id);
 
+	void send_all_room_list(int id);
+
 
 	void process_packet(int id, void *buff);
 	

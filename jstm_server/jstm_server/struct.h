@@ -19,6 +19,8 @@ struct PLAYER_INFO {
 	bool is_connect;
 
 	short x, y;
+
+	mutex player_info_lock;
 };
 
 struct GAME_ROOM {

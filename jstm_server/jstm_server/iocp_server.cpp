@@ -89,6 +89,9 @@ void iocp_server::do_accept_thread()
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(clientSocket), m_iocp_Handle, user_id, 0);
 
 		m_packet_manager->send_id_packet(user_id, clientSocket);
+
+		send_all_room_list(user_id);
+
 		m_player_info[user_id]->x = 300;
 		m_player_info[user_id]->y = 300;
 
@@ -241,13 +244,22 @@ void iocp_server::process_make_room(int id)
 	new_room->host_id = id;
 	new_room->room_number = room_num;
 
-	m_list_game_room.emplace_back(new_room);
+	m_list_game_room.emplace_back(*new_room);
 
 	for (auto client : m_player_info) {
 		m_packet_manager->send_room_list_pakcet(client.second->id, client.second->socket,
 			new_room->room_number, new_room->host_id, new_room->guest_id);
 	}
 }
+
+void iocp_server::send_all_room_list(int id)
+{
+	for (auto room_info : m_list_game_room) {
+		m_packet_manager->send_room_list_pakcet(id, m_player_info[id]->socket,
+			room_info.room_number, room_info.host_id, room_info.guest_id);
+	}
+}
+
 
 void iocp_server::process_packet(int id, void * buff)
 {
@@ -270,6 +282,8 @@ void iocp_server::process_packet(int id, void * buff)
 		break;
 	case CS_MAKE_ROOM:
 		process_make_room(id);
+		break;
+	case CS_REQUEST_JOIN_ROOM:
 		break;
 	default:
 		break;

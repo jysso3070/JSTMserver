@@ -13,6 +13,7 @@
 #define CS_UP		3
 #define CS_DOWN		4
 #define CS_MAKE_ROOM	5
+#define CS_REQUEST_JOIN_ROOM	6
 
 #pragma pack(push ,1)
 
@@ -64,6 +65,13 @@ struct cs_packet_make_room {
 	char size;
 	char type;
 	int id;
+};
+
+struct cs_packet_requset_join_room {
+	char size;
+	char type;
+	int id;
+	int room_number;
 };
 
 
