@@ -16,7 +16,7 @@
 #include <concurrent_unordered_map.h>
 
 // mssql
-#define UNICODE
+//#define UNICODE
 #include <sqlext.h>  
 
 using namespace std;

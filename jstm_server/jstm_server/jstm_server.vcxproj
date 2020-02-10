@@ -143,11 +143,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="database_manager.cpp" />
     <ClCompile Include="iocp_server.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="packet_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="database_manager.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="iocp_server.h" />
     <ClInclude Include="packet_manager.h" />

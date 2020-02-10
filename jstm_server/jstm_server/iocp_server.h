@@ -1,8 +1,11 @@
 #pragma once
 #include "header.h"
 #include "packet_manager.h"
+#include "database_manager.h"
 
 class packet_manager;
+class database_manager;
+
 class iocp_server
 {
 public:
@@ -12,6 +15,7 @@ public:
 public:
 	void Initialize();	// 서버 초기화
 	void make_thread();	// 스레드 생성
+	void init_DB();
 
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
 	void do_worker_thread(); // 주 워커 스레드
@@ -43,6 +47,7 @@ private:
 	short m_new_room_num;
 
 	packet_manager *m_packet_manager = NULL;
+	database_manager *m_database_manager = NULL;
 
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
 	priority_queue <EVENT> m_timer_queue; // 우선순위 타이머 큐

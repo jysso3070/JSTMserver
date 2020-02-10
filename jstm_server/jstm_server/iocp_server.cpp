@@ -22,6 +22,8 @@ void iocp_server::Initialize()
 
 	m_new_user_id = 0;
 	m_new_room_num = 1;
+
+	init_DB();
 }
 
 void iocp_server::make_thread()
@@ -33,6 +35,11 @@ void iocp_server::make_thread()
 	accept_thread.join();
 	worker_thread.join();
 	timer_thread.join();
+}
+
+void iocp_server::init_DB()
+{
+	m_database_manager->sql_load_database();
 }
 
 void iocp_server::do_accept_thread()

@@ -23,6 +23,12 @@ struct PLAYER_INFO {
 	mutex player_info_lock;
 };
 
+struct PLAYER_DB {
+	short DB_key_id;
+	char name[11];
+	short level;
+};
+
 struct GAME_ROOM {
 	int room_number;
 	int host_id;
