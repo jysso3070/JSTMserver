@@ -35,6 +35,7 @@ void iocp_server::make_thread()
 	accept_thread.join();
 	worker_thread.join();
 	timer_thread.join();
+
 }
 
 void iocp_server::init_DB()
@@ -102,6 +103,9 @@ void iocp_server::do_accept_thread()
 		m_player_info[user_id]->x = 300;
 		m_player_info[user_id]->y = 300;
 
+		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 5s, EV_TEST, 0 };
+		add_timer(ev);
+
 		memset(&m_player_info[user_id]->recv_over.over, 0, sizeof(m_player_info[user_id]->recv_over.over));
 		flags = 0;
 		int ret = WSARecv(clientSocket, m_player_info[user_id]->recv_over.wsabuf, 1, NULL,
@@ -149,12 +153,10 @@ void iocp_server::do_worker_thread()
 
 			while (rest_byte != 0)
 			{
-				if (in_packet_size == 0)
-				{
+				if (in_packet_size == 0) {
 					in_packet_size = temp[0];
 				}
-				if (rest_byte + saved_packet_size >= in_packet_size)
-				{
+				if (rest_byte + saved_packet_size >= in_packet_size) {
 					memcpy(tempBuf + saved_packet_size, temp, in_packet_size - saved_packet_size);
 					process_packet(key, tempBuf);
 					temp += in_packet_size - saved_packet_size;
@@ -162,8 +164,7 @@ void iocp_server::do_worker_thread()
 					in_packet_size = 0;
 					saved_packet_size = 0;
 				}
-				else
-				{
+				else {
 					memcpy(tempBuf + saved_packet_size, temp, rest_byte);
 					saved_packet_size += rest_byte;
 					rest_byte = 0;
@@ -174,6 +175,9 @@ void iocp_server::do_worker_thread()
 			memset(&over_ex->over, 0x00, sizeof(WSAOVERLAPPED));
 			WSARecv(client_s, over_ex->wsabuf, 1, 0, &flags, &over_ex->over, 0);
 
+		}
+		if (EV_TEST == over_ex->event_type) {
+			cout << "test event ! \n";
 		}
 	}
 }
@@ -198,9 +202,15 @@ void iocp_server::do_timer_thread()
 		m_timer_queue.pop();
 		m_timer_lock.unlock();
 
-		if (EV_MOVE == p_ev.event_type) { // 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
+		// 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
+		if (EV_MOVE == p_ev.event_type) { 
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_MOVE;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
+		if (EV_TEST == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_TEST;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
