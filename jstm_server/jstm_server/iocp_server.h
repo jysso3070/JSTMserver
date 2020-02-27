@@ -14,7 +14,11 @@ public:
 
 public:
 	void Initialize();	// 서버 초기화
+	void get_server_IPaddress();
+	void get_this_cpu_count();
 	void make_thread();	// 스레드 생성
+
+
 	void init_DB();
 
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수

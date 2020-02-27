@@ -23,8 +23,60 @@ void iocp_server::Initialize()
 	m_new_user_id = 0;
 	m_new_room_num = 1;
 
+	get_this_cpu_count();
+	get_server_IPaddress();
 	init_DB();
 }
+
+void iocp_server::get_server_IPaddress()
+{
+	// Winsock Start - winsock.dll 로드
+	WSADATA	WSAData;
+	if (WSAStartup(MAKEWORD(2, 2), &WSAData) != 0) {
+		cout << "Error - Can not load 'winsock.dll file\n'";
+		return;
+	}
+
+	/*int status;
+	struct addrinfo hints;
+	struct addrinfo *servinfo;
+	char				hostname[50];
+	char				ipaddr[50];
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	gethostname(hostname, sizeof(hostname));
+	status = getaddrinfo(hostname, "80", &hints, &servinfo);
+	inet_ntop(servinfo->ai_family,servinfo->ai_addr, ipaddr, sizeof(ipaddr));
+	cout << ipaddr << endl;*/
+
+	/*PHOSTENT	hostinfo;
+	char				hostname[50];
+	char				ipaddr[50];
+	memset(hostname, 0, sizeof(hostname));
+	memset(ipaddr, 0, sizeof(ipaddr));
+
+	int err_no = gethostname(hostname, sizeof(hostname));
+	if (err_no == 0) {
+		hostinfo = gethostbyname(hostname);
+		strcpy(ipaddr, inet_ntoa(*reinterpret_cast<struct in_addr*>(hostinfo->h_addr_list[0])));
+	}
+	WSACleanup();
+	cout << "Server IP Address" << ipaddr << endl;*/
+}
+
+void iocp_server::get_this_cpu_count()
+{
+	// CPU , Thread 개수 확인
+	SYSTEM_INFO	si; // CPU 개수 확인용
+	GetSystemInfo(&si); // 시스템 정보를 받아온다.
+	int CpuCore = static_cast<int>(si.dwNumberOfProcessors);
+	int NumWorkerThread = static_cast<int>(CpuCore * 2 - 2);
+	cout << "CPU Core Count: " << CpuCore << "\tThread: " << NumWorkerThread << endl;
+}
+
 
 void iocp_server::make_thread()
 {
