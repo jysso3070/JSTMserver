@@ -3,6 +3,10 @@
 
 iocp_server::iocp_server()
 {
+	database_manager *db_manager = new database_manager;
+	m_database_manager = db_manager;
+
+
 	Initialize();
 
 	make_thread();
@@ -226,10 +230,13 @@ void iocp_server::do_worker_thread()
 			DWORD flags = 0;
 			memset(&over_ex->over, 0x00, sizeof(WSAOVERLAPPED));
 			WSARecv(client_s, over_ex->wsabuf, 1, 0, &flags, &over_ex->over, 0);
-
 		}
 		if (EV_TEST == over_ex->event_type) {
 			cout << "test event ! \n";
+			/*get_player_db();
+			for (auto d : m_list_player_db) {
+				cout << "name: " << d.name <<"."<< endl;
+			}*/
 		}
 	}
 }
@@ -307,7 +314,7 @@ void iocp_server::process_player_move(int id, void * buff)
 
 void iocp_server::process_make_room(int id)
 {
-	int room_num = m_new_room_num++;
+	short room_num = m_new_room_num++;
 	GAME_ROOM *new_room = new GAME_ROOM;
 	new_room->guest_id = -1;
 	new_room->host_id = id;
@@ -319,6 +326,8 @@ void iocp_server::process_make_room(int id)
 		m_packet_manager->send_room_list_pakcet(client.second->id, client.second->socket,
 			new_room->room_number, new_room->host_id, new_room->guest_id);
 	}
+
+	cout << "make room success \n";
 }
 
 void iocp_server::send_all_room_list(int id)
@@ -326,6 +335,18 @@ void iocp_server::send_all_room_list(int id)
 	for (auto room_info : m_list_game_room) {
 		m_packet_manager->send_room_list_pakcet(id, m_player_info[id]->socket,
 			room_info.room_number, room_info.host_id, room_info.guest_id);
+	}
+}
+
+void iocp_server::get_player_db()
+{
+	for (auto d : m_database_manager->m_list_player_db) {
+		PLAYER_DB db;
+		db.DB_key_id = d.DB_key_id;
+		strcpy_s(db.name, sizeof(d.name), d.name);
+		db.level = d.level;
+
+		m_list_player_db.emplace_back(db);
 	}
 }
 

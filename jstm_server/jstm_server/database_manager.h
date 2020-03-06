@@ -12,7 +12,9 @@ public:
 
 	char* widechar_to_char(SQLWCHAR *str);
 
-private:
+	void show_all_db();
 
+public:
+	list<PLAYER_DB> m_list_player_db;
 };
 

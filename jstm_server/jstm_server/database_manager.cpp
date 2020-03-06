@@ -1,7 +1,6 @@
 #include "database_manager.h"
 
 
-
 database_manager::database_manager()
 {
 }
@@ -36,6 +35,7 @@ void database_manager::sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT
 
 void database_manager::sql_load_database()
 {
+	
 	SQLHENV henv;		// 데이터베이스에 연결할때 사옹하는 핸들
 	SQLHDBC hdbc;
 	SQLHSTMT hstmt = 0; // sql명령어를 전달하는 핸들
@@ -94,14 +94,17 @@ void database_manager::sql_load_database()
 								char *temp;
 								temp = widechar_to_char(szName);
 								cout << "(" << temp << ")\n";
+								
+								PLAYER_DB *temp_player_db = new PLAYER_DB;
 
-								PLAYER_DB data;
+								temp_player_db->DB_key_id = (short)nKey;
+								strcpy_s(temp_player_db->name, sizeof(temp), temp);
+								temp_player_db->level = (short)nLevel;
+								m_list_player_db.push_back(*temp_player_db);
 
-								data.DB_key_id = (short)nKey;
-								memcpy(data.name, temp, 10);
-								data.level = (short)nLevel;
+								delete temp_player_db;
+								temp_player_db = nullptr;
 
-								//vec_database.emplace_back(data);
 							}
 							else
 								break;
@@ -142,4 +145,12 @@ char* database_manager::widechar_to_char(SQLWCHAR *str)
 	}
 	//cout << "(" << temp << ")\n";
 	return temp;
+}
+
+void database_manager::show_all_db()
+{
+	for (auto d : m_list_player_db) {
+		cout << "name: " << d.name << endl;
+		cout << "level: " << d.level << endl;
+	}
 }

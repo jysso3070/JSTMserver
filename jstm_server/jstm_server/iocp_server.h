@@ -31,6 +31,7 @@ public:
 	void process_make_room(int id);
 
 	void send_all_room_list(int id);
+	void get_player_db(); // database_manager에 있는 DBlist 가져오기
 
 
 	void process_packet(int id, void *buff);
@@ -58,5 +59,6 @@ private:
 	mutex m_timer_lock;
 
 	list<GAME_ROOM> m_list_game_room;
+	list<PLAYER_DB> m_list_player_db;
 };
 

@@ -313,6 +313,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_RETURN) {
 			connect_to_server();
 		}
+		if (wParam == VK_SPACE) {
+			cs_packet_make_room packet;
+			packet.id = my_info.id;
+			packet.type = CS_MAKE_ROOM;
+			packet.size = sizeof(packet);
+			send(serverSocket, (char*)&packet, sizeof(packet), 0);
+		}
 
 		InvalidateRgn(hWnd, NULL, FALSE);
 		break;

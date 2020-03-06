@@ -17,5 +17,8 @@ public:
 
 
 	void error_display(const char* msg, int err_no); // 에러 출력 함수
+
+private:
+	
 };
 
