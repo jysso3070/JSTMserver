@@ -90,14 +90,14 @@ void database_manager::sql_load_database()
 							if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
 								wprintf(L"%d: %d %lS %d \n", i + 1, nKey, szName, nLevel);
 
-								// wchar char로 변환
+								// wchar -> char로 변환
 								char *temp;
 								temp = widechar_to_char(szName);
 								cout << "(" << temp << ")\n";
 								
 								PLAYER_DB *temp_player_db = new PLAYER_DB;
 
-								temp_player_db->DB_key_id = (short)nKey;
+								temp_player_db->DB_key_id = (int)nKey;
 								strcpy_s(temp_player_db->name, sizeof(temp), temp);
 								temp_player_db->level = (short)nLevel;
 								m_list_player_db.push_back(*temp_player_db);
@@ -128,9 +128,68 @@ void database_manager::sql_load_database()
 		}
 		SQLFreeHandle(SQL_HANDLE_ENV, henv);
 	}
-	cout << "database access complete. \n";
-	//DBCount = vec_database.size();
-	//cout << DBCount << endl;
+	cout << "DataBase access complete. \n";
+}
+
+void database_manager::sql_update_data(int key_id, short level)
+{
+	SQLHENV henv;		// 데이터베이스에 연결할때 사옹하는 핸들
+	SQLHDBC hdbc;
+	SQLHSTMT hstmt = 0; // sql명령어를 전달하는 핸들
+	SQLRETURN retcode;  // sql명령어를 날릴때 성공유무를 리턴해줌
+	SQLWCHAR query[1024];
+	wsprintf(query, L"UPDATE user_table SET i_level = %d WHERE i_key_id = %d", level, key_id);
+
+
+	setlocale(LC_ALL, "korean"); // 오류코드 한글로 변환
+	//std::wcout.imbue(std::locale("korean"));
+
+	// Allocate environment handle  
+	retcode = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv);
+
+	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+		retcode = SQLSetEnvAttr(henv, SQL_ATTR_ODBC_VERSION, (SQLPOINTER*)SQL_OV_ODBC3, 0); // ODBC로 연결
+
+		// Allocate connection handle  
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+			retcode = SQLAllocHandle(SQL_HANDLE_DBC, henv, &hdbc);
+
+			// Set login timeout to 5 seconds  
+			if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+				SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0); // 5초간 연결 5초넘어가면 타임아웃
+
+				// Connect to data source  
+				retcode = SQLConnect(hdbc, (SQLWCHAR*)L"JSTM_DB", SQL_NTS, (SQLWCHAR*)NULL, 0, NULL, 0);
+				//retcode = SQLConnect(hdbc, (SQLWCHAR*)L"jys_gameserver", SQL_NTS, (SQLWCHAR*)NULL, SQL_NTS, NULL, SQL_NTS);
+
+				// Allocate statement handle  
+				if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+					retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &hstmt); // SQL명령어 전달할 한들
+
+					retcode = SQLExecDirect(hstmt, (SQLWCHAR *)query, SQL_NTS); // 쿼리문
+					//retcode = SQLExecDirect(hstmt, (SQLWCHAR *)L"EXEC select_highlevel 90", SQL_NTS); // 90레벨 이상만 가져오기
+
+					if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+						cout << "DataBase update success. \n";
+					}
+					else {
+						sql_HandleDiagnosticRecord(hstmt, SQL_HANDLE_STMT, retcode);
+					}
+
+					// Process data  
+					if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+						SQLCancel(hstmt); // 핸들캔슬
+						SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
+					}
+
+					SQLDisconnect(hdbc);
+				}
+
+				SQLFreeHandle(SQL_HANDLE_DBC, hdbc);
+			}
+		}
+		SQLFreeHandle(SQL_HANDLE_ENV, henv);
+	}
 }
 
 char* database_manager::widechar_to_char(SQLWCHAR *str)

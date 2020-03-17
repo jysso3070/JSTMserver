@@ -97,6 +97,7 @@ void iocp_server::make_thread()
 void iocp_server::init_DB()
 {
 	m_database_manager->sql_load_database();
+	//m_database_manager->sql_update_data(1, 3);
 }
 
 void iocp_server::do_accept_thread()
@@ -156,11 +157,14 @@ void iocp_server::do_accept_thread()
 
 		send_all_room_list(user_id);
 
+		///////
 		m_player_info[user_id]->x = 300;
 		m_player_info[user_id]->y = 300;
 
 		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 5s, EV_TEST, 0 };
 		add_timer(ev);
+		//////
+
 
 		memset(&m_player_info[user_id]->recv_over.over, 0, sizeof(m_player_info[user_id]->recv_over.over));
 		flags = 0;

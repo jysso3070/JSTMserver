@@ -25,7 +25,7 @@ struct PLAYER_INFO {
 };
 
 struct PLAYER_DB {
-	short DB_key_id;
+	int DB_key_id;
 	char name[11];
 	short level;
 };
