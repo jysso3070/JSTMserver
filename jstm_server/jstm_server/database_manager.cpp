@@ -192,6 +192,73 @@ void database_manager::sql_update_data(int key_id, short level)
 	}
 }
 
+void database_manager::sql_insert_new_data(int key_id, string name)
+{
+	SQLHENV henv;		// 데이터베이스에 연결할때 사옹하는 핸들
+	SQLHDBC hdbc;
+	SQLHSTMT hstmt = 0; // sql명령어를 전달하는 핸들
+	SQLRETURN retcode;  // sql명령어를 날릴때 성공유무를 리턴해줌
+	SQLWCHAR query[1024];
+	SQLWCHAR tempid[10];
+	int new_level = 1;
+
+	//MultiByteToWideChar(CP_ACP, 0, name, strlen(name), tempid, lstrlen(tempid));
+
+	MultiByteToWideChar(CP_ACP, 0, name.c_str(), name.length() + 1, tempid, lstrlen(tempid));
+
+	wsprintf(query, L"INSERT INTO user_table (i_key_id, c_name, i_level) VALUES (%d, '%s', %d)", key_id, tempid, new_level);
+
+
+	setlocale(LC_ALL, "korean"); // 오류코드 한글로 변환
+	//std::wcout.imbue(std::locale("korean"));
+
+	// Allocate environment handle  
+	retcode = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv);
+
+	if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+		retcode = SQLSetEnvAttr(henv, SQL_ATTR_ODBC_VERSION, (SQLPOINTER*)SQL_OV_ODBC3, 0); // ODBC로 연결
+
+		// Allocate connection handle  
+		if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+			retcode = SQLAllocHandle(SQL_HANDLE_DBC, henv, &hdbc);
+
+			// Set login timeout to 5 seconds  
+			if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+				SQLSetConnectAttr(hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0); // 5초간 연결 5초넘어가면 타임아웃
+
+				// Connect to data source  
+				retcode = SQLConnect(hdbc, (SQLWCHAR*)L"JSTM_DB", SQL_NTS, (SQLWCHAR*)NULL, 0, NULL, 0);
+				//retcode = SQLConnect(hdbc, (SQLWCHAR*)L"jys_gameserver", SQL_NTS, (SQLWCHAR*)NULL, SQL_NTS, NULL, SQL_NTS);
+
+				// Allocate statement handle  
+				if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+					retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &hstmt); // SQL명령어 전달할 한들
+
+					retcode = SQLExecDirect(hstmt, (SQLWCHAR *)query, SQL_NTS); // 쿼리문
+
+					if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+						cout << "insert success \n";
+					}
+					else {
+						sql_HandleDiagnosticRecord(hstmt, SQL_HANDLE_STMT, retcode);
+					}
+
+					// Process data  
+					if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+						SQLCancel(hstmt); // 핸들캔슬
+						SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
+					}
+
+					SQLDisconnect(hdbc);
+				}
+
+				SQLFreeHandle(SQL_HANDLE_DBC, hdbc);
+			}
+		}
+		SQLFreeHandle(SQL_HANDLE_ENV, henv);
+	}
+}
+
 char* database_manager::widechar_to_char(SQLWCHAR *str)
 {
 	char *temp;

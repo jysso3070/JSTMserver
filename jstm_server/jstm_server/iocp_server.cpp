@@ -161,7 +161,7 @@ void iocp_server::do_accept_thread()
 		m_player_info[user_id]->x = 300;
 		m_player_info[user_id]->y = 300;
 
-		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 5s, EV_TEST, 0 };
+		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 3s, EV_TEST, 0 };
 		add_timer(ev);
 		//////
 
@@ -237,6 +237,9 @@ void iocp_server::do_worker_thread()
 		}
 		if (EV_TEST == over_ex->event_type) {
 			cout << "test event ! \n";
+
+			std::string new_name = "qqq";
+			m_database_manager->sql_insert_new_data(m_database_manager->m_list_player_db.size(), new_name);
 			/*get_player_db();
 			for (auto d : m_list_player_db) {
 				cout << "name: " << d.name <<"."<< endl;

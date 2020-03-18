@@ -2,6 +2,11 @@
 
 #define MAX_BUFFER 1024
 
+// user_state
+#define STATE_playing_game	0
+#define STATE_in_lobby		1
+#define STATE_in_room		2
+
 #define SC_SEND_ID			1
 #define SC_POS				2
 #define SC_SEND_ROOM_LIST	3	

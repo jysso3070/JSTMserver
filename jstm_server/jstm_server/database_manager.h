@@ -10,6 +10,7 @@ public:
 	void sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT hType, RETCODE RetCode);
 	void sql_load_database();
 	void sql_update_data(int key_id, short level);
+	void sql_insert_new_data(int key_id, string name);
 
 	char* widechar_to_char(SQLWCHAR *str);
 
