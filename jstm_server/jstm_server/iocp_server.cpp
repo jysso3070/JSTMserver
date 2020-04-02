@@ -1,6 +1,5 @@
 #include "iocp_server.h"
 
-
 iocp_server::iocp_server()
 {
 	database_manager *db_manager = new database_manager;
@@ -30,6 +29,8 @@ void iocp_server::Initialize()
 	get_this_cpu_count();
 	get_server_IPaddress();
 	init_DB();
+
+	init_socket();
 }
 
 void iocp_server::get_server_IPaddress()
@@ -41,22 +42,7 @@ void iocp_server::get_server_IPaddress()
 		return;
 	}
 
-	/*int status;
-	struct addrinfo hints;
-	struct addrinfo *servinfo;
-	char				hostname[50];
-	char				ipaddr[50];
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-
-	gethostname(hostname, sizeof(hostname));
-	status = getaddrinfo(hostname, "80", &hints, &servinfo);
-	inet_ntop(servinfo->ai_family,servinfo->ai_addr, ipaddr, sizeof(ipaddr));
-	cout << ipaddr << endl;*/
-
-	/*PHOSTENT	hostinfo;
+	PHOSTENT	hostinfo;
 	char				hostname[50];
 	char				ipaddr[50];
 	memset(hostname, 0, sizeof(hostname));
@@ -65,10 +51,11 @@ void iocp_server::get_server_IPaddress()
 	int err_no = gethostname(hostname, sizeof(hostname));
 	if (err_no == 0) {
 		hostinfo = gethostbyname(hostname);
-		strcpy(ipaddr, inet_ntoa(*reinterpret_cast<struct in_addr*>(hostinfo->h_addr_list[0])));
+		strcpy_s(ipaddr, inet_ntoa(*reinterpret_cast<struct in_addr*>(hostinfo->h_addr_list[0])));
 	}
 	WSACleanup();
-	cout << "Server IP Address" << ipaddr << endl;*/
+	cout << "Server IP Address: \t" << ipaddr << endl;
+
 }
 
 void iocp_server::get_this_cpu_count()
@@ -100,14 +87,11 @@ void iocp_server::init_DB()
 	//m_database_manager->sql_update_data(1, 3);
 }
 
-void iocp_server::do_accept_thread()
+void iocp_server::init_socket()
 {
 	WSADATA WSAData;
 	WSAStartup(MAKEWORD(2, 2), &WSAData);
-
-	// 소켓 생성
 	SOCKET listenSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-	// 서버 정보 생성
 	SOCKADDR_IN serverAddr;
 	memset(&serverAddr, 0, sizeof(SOCKADDR_IN));
 	serverAddr.sin_family = AF_INET;
@@ -122,8 +106,14 @@ void iocp_server::do_accept_thread()
 		return;
 	}
 
+	m_accept_socket = listenSocket;
+}
+
+void iocp_server::do_accept_thread()
+{
+
 	// 수신 대기 설정
-	listen(listenSocket, 5);
+	listen(m_accept_socket, 5);
 	SOCKADDR_IN clientAddr;
 	int addrLen = sizeof(SOCKADDR_IN);
 	memset(&clientAddr, 0, addrLen);
@@ -131,7 +121,7 @@ void iocp_server::do_accept_thread()
 	DWORD flags;
 
 	while (true) {
-		clientSocket = accept(listenSocket, (struct sockaddr *)&clientAddr, &addrLen);
+		clientSocket = accept(m_accept_socket, (struct sockaddr *)&clientAddr, &addrLen);
 		if (clientSocket == INVALID_SOCKET) {	// 소켓연결실패시
 			printf("err - accept fail \n");
 			break;
@@ -238,8 +228,8 @@ void iocp_server::do_worker_thread()
 		if (EV_TEST == over_ex->event_type) {
 			cout << "test event ! \n";
 
-			std::string new_name = "qqq";
-			m_database_manager->sql_insert_new_data(m_database_manager->m_list_player_db.size(), new_name);
+			//std::string new_name = "qqq";
+			//m_database_manager->sql_insert_new_data(m_database_manager->m_list_player_db.size(), new_name);
 			/*get_player_db();
 			for (auto d : m_list_player_db) {
 				cout << "name: " << d.name <<"."<< endl;

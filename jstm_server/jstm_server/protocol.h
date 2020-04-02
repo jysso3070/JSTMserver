@@ -34,6 +34,8 @@ struct sc_packet_pos {
 	char type;
 	int id;
 	short x, y;
+
+	DirectX::XMFLOAT4X4 world_pos;
 };
 
 struct sc_pakcet_room_list {

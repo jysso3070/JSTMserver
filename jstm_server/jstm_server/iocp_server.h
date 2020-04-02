@@ -20,6 +20,7 @@ public:
 
 
 	void init_DB();
+	void init_socket();
 
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
 	void do_worker_thread(); // 주 워커 스레드
@@ -50,6 +51,8 @@ private:
 	HANDLE m_iocp_Handle; // iocp 핸들값
 	int m_new_user_id;
 	short m_new_room_num;
+
+	SOCKET m_accept_socket = NULL;
 
 	packet_manager *m_packet_manager = NULL;
 	database_manager *m_database_manager = NULL;

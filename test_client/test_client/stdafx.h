@@ -20,6 +20,9 @@
 
 // 여기서 프로그램에 필요한 추가 헤더를 참조합니다.
 
+//directX
+#include <DirectXMath.h>
+
 // 소켓 서버
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <stdio.h> 

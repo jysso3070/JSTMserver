@@ -1,5 +1,6 @@
 #pragma once
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib") 
 #include <WS2tcpip.h> 
 
@@ -14,6 +15,9 @@
 #include <list>
 #include <queue>
 #include <concurrent_unordered_map.h>
+
+// 3D Direct
+#include <DirectXMath.h>
 
 // mssql
 //#define UNICODE

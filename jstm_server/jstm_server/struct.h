@@ -20,6 +20,8 @@ struct PLAYER_INFO {
 	bool is_connect;
 
 	short x, y;
+	DirectX::XMFLOAT4X4 player_world_pos;
+
 
 	mutex player_info_lock;
 };
