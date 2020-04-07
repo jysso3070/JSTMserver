@@ -2,9 +2,11 @@
 #include "header.h"
 #include "packet_manager.h"
 #include "database_manager.h"
+#include "server_manager.h"
 
 class packet_manager;
 class database_manager;
+class server_manager;
 
 class iocp_server
 {
@@ -14,8 +16,6 @@ public:
 
 public:
 	void Initialize();	// 서버 초기화
-	void get_server_IPaddress();
-	void get_this_cpu_count();
 	void make_thread();	// 스레드 생성
 
 
@@ -44,18 +44,16 @@ public:
 
 	//void do_recv();
 
-	void error_display(const char* msg, int err_no); // 에러 출력 함수
-	void error_quit(const char * msg, int err_no);
-
 private:
+	packet_manager *m_packet_manager = NULL;
+	database_manager *m_database_manager = NULL;
+	server_manager *m_server_manager = NULL;
+	
 	HANDLE m_iocp_Handle; // iocp 핸들값
 	int m_new_user_id;
 	short m_new_room_num;
 
 	SOCKET m_accept_socket = NULL;
-
-	packet_manager *m_packet_manager = NULL;
-	database_manager *m_database_manager = NULL;
 
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
 	priority_queue <EVENT> m_timer_queue; // 우선순위 타이머 큐

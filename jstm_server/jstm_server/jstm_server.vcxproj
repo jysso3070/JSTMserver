@@ -147,6 +147,7 @@
     <ClCompile Include="iocp_server.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="packet_manager.cpp" />
+    <ClCompile Include="server_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database_manager.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="iocp_server.h" />
     <ClInclude Include="packet_manager.h" />
     <ClInclude Include="protocol.h" />
+    <ClInclude Include="server_manager.h" />
     <ClInclude Include="singleTon.h" />
     <ClInclude Include="struct.h" />
   </ItemGroup>
