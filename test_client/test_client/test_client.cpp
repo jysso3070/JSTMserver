@@ -244,6 +244,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		my_info.x = 300;
 		my_info.y = 300;
+		net_manager.m_my_info.x = 300;
+		net_manager.m_my_info.y = 300;
+
 		}
 		break;
     case WM_COMMAND:
@@ -272,7 +275,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		oldBackBit = (HBITMAP)SelectObject(memdc, BackBit);
 
 
-		Rectangle(memdc, my_info.x-10, my_info.y-10, my_info.x+10, my_info.y+10);
+		Rectangle(memdc, net_manager.m_my_info.x-10, net_manager.m_my_info.y-10, net_manager.m_my_info.x+10, net_manager.m_my_info.y+10);
 
 
 		// 백버퍼 불러오기
@@ -315,7 +318,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		if (wParam == VK_SPACE) {
 			cs_packet_make_room packet;
-			packet.id = my_info.id;
+			packet.id = net_manager.m_my_info.id;
 			packet.type = CS_MAKE_ROOM;
 			packet.size = sizeof(packet);
 			send(serverSocket, (char*)&packet, sizeof(packet), 0);
@@ -331,7 +334,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (WSAGETSELECTEVENT(lParam))
 		{
 		case FD_READ:
-			ReadBuffer((SOCKET)wParam);
+			net_manager.ReadBuffer((SOCKET)wParam);
 
 			break;
 		}

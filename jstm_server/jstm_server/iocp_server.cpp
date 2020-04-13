@@ -271,6 +271,7 @@ void iocp_server::t_process_player_move(int id, void * buff)
 	m_player_info[id]->y = y;
 
 	m_packet_manager->t_send_pos_packet(id, m_player_info[id]->socket, x, y);
+	cout << "x: " << m_player_info[id]->x << ", y: " << m_player_info[id]->y << endl;
 
 }
 
