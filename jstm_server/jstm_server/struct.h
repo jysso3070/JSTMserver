@@ -22,7 +22,6 @@ struct PLAYER_INFO {
 	short x, y;
 	DirectX::XMFLOAT4X4 player_world_pos;
 
-
 	mutex player_info_lock;
 };
 

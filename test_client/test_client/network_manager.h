@@ -8,7 +8,9 @@ public:
 	~network_manager();
 
 	void init_socket();
-	SOCKET connect_server();
+	SOCKET rq_connect_server(const char * server_ip);
+
+
 public:
 	WSADATA m_WSAData;
 	SOCKET m_serverSocket;

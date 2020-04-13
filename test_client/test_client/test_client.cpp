@@ -85,7 +85,7 @@ void PacketProccess(void * buf) {
 void connect_to_server() {
 	net_manager.init_socket();
 	
-	serverSocket = net_manager.connect_server();
+	serverSocket = net_manager.rq_connect_server("127.0.0.1");
 
 	WSAAsyncSelect(serverSocket, hWnd, WM_SOCKET, FD_READ || FD_CLOSE);
 }

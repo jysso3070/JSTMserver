@@ -38,7 +38,7 @@ void packet_manager::send_id_packet(int client_id, SOCKET client_socket)
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y)
+void packet_manager::t_send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y)
 {
 	sc_packet_pos packet;
 	packet.id = client_id;
@@ -46,6 +46,18 @@ void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, short 
 	packet.type = SC_POS;
 	packet.x = p_x;
 	packet.y = p_y;
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, DirectX::XMFLOAT4X4 player_pos)
+{
+	sc_packet_pos packet;
+	packet.id = client_id;
+	packet.size = sizeof(packet);
+	packet.type = SC_POS;
+	packet.world_pos = player_pos;
+	packet.x = 0;
+	packet.y = 0;
 	send_packet(client_id, client_socket, &packet);
 }
 

@@ -11,7 +11,6 @@
 #define SC_POS				2
 #define SC_SEND_ROOM_LIST	3	
 
-
 #define SERVER_PORT	3500
 #define CS_LEFT		1
 #define CS_RIGHT	2
@@ -19,6 +18,7 @@
 #define CS_DOWN		4
 #define CS_MAKE_ROOM	5
 #define CS_REQUEST_JOIN_ROOM	6
+#define CS_POS		7
 
 #pragma pack(push ,1)
 
@@ -79,6 +79,13 @@ struct cs_packet_requset_join_room {
 	char type;
 	int id;
 	int room_number;
+};
+
+struct cs_packet_pos {
+	char size;
+	char type;
+	int id;
+	DirectX::XMFLOAT4X4 player_world_pos;
 };
 
 

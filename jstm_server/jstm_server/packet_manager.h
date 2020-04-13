@@ -12,7 +12,8 @@ public:
 	void send_packet(int client_id, SOCKET client_socket, void* buf);
 
 	void send_id_packet(int client_id, SOCKET client_socket);
-	void send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y);
+	void t_send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y);
+	void send_pos_packet(int client_id, SOCKET client_socket, DirectX::XMFLOAT4X4 player_pos);
 	void send_room_list_pakcet(int client_id, SOCKET client_socket, short room_num, int host_id, int guest_id);
 
 

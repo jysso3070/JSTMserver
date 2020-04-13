@@ -37,12 +37,12 @@ void iocp_server::Initialize()
 void iocp_server::make_thread()
 {
 	thread accept_thread{ &iocp_server::do_accept_thread, this };
-	thread worker_thread{ &iocp_server::do_worker_thread, this };
-	thread timer_thread{ &iocp_server::do_timer_thread, this };
+	thread worker_thread_1{ &iocp_server::do_worker_thread, this };
+	thread eventTimer_thread{ &iocp_server::do_eventTimer_thread, this };
 
 	accept_thread.join();
-	worker_thread.join();
-	timer_thread.join();
+	worker_thread_1.join();
+	eventTimer_thread.join();
 
 }
 
@@ -117,7 +117,7 @@ void iocp_server::do_accept_thread()
 		m_player_info[user_id]->y = 300;
 
 		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 3s, EV_TEST, 0 };
-		add_timer(ev);
+		add_event_to_eventTimer(ev);
 		//////
 
 
@@ -203,25 +203,25 @@ void iocp_server::do_worker_thread()
 	}
 }
 
-void iocp_server::do_timer_thread()
+void iocp_server::do_eventTimer_thread()
 {
 	while (true) {
-		m_timer_lock.lock();
-		while (true == m_timer_queue.empty()) {	// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
-			m_timer_lock.unlock();
+		m_eventTimer_lock.lock();
+		while (true == m_eventTimer_queue.empty()) {	// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
+			m_eventTimer_lock.unlock();
 			this_thread::sleep_for(10ms);
-			m_timer_lock.lock();
+			m_eventTimer_lock.lock();
 		}
-		const EVENT &ev = m_timer_queue.top();
+		const EVENT &ev = m_eventTimer_queue.top();
 		if (ev.wakeup_time > chrono::high_resolution_clock::now()) {
-			m_timer_lock.unlock();
+			m_eventTimer_lock.unlock();
 			this_thread::sleep_for(10ms);
 			continue;
 		}
 
 		EVENT p_ev = ev;
-		m_timer_queue.pop();
-		m_timer_lock.unlock();
+		m_eventTimer_queue.pop();
+		m_eventTimer_lock.unlock();
 
 		// 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
 		if (EV_MOVE == p_ev.event_type) { 
@@ -237,14 +237,14 @@ void iocp_server::do_timer_thread()
 	}
 }
 
-void iocp_server::add_timer(EVENT & ev)
+void iocp_server::add_event_to_eventTimer(EVENT & ev)
 {
-	m_timer_lock.lock();
-	m_timer_queue.push(ev);
-	m_timer_lock.unlock();
+	m_eventTimer_lock.lock();
+	m_eventTimer_queue.push(ev);
+	m_eventTimer_lock.unlock();
 }
 
-void iocp_server::process_player_move(int id, void * buff)
+void iocp_server::t_process_player_move(int id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
@@ -270,8 +270,29 @@ void iocp_server::process_player_move(int id, void * buff)
 	m_player_info[id]->x = x;
 	m_player_info[id]->y = y;
 
-	m_packet_manager->send_pos_packet(id, m_player_info[id]->socket, x, y);
+	m_packet_manager->t_send_pos_packet(id, m_player_info[id]->socket, x, y);
 
+}
+
+void iocp_server::process_player_move(int id, void * buff)
+{
+	char *packet = reinterpret_cast<char *>(buff);
+	cs_packet_pos *pos_packet = reinterpret_cast<cs_packet_pos*>(buff);
+
+	switch (packet[1]) {
+	case CS_UP:
+		break;
+	case CS_DOWN:
+		break;
+	case CS_LEFT:
+		break;
+	case CS_RIGHT:
+		break;
+	default:
+		break;
+	}
+	m_player_info[id]->player_world_pos = pos_packet->player_world_pos;
+	m_packet_manager->send_pos_packet(id, m_player_info[id]->socket, m_player_info[id]->player_world_pos);
 }
 
 void iocp_server::process_make_room(int id)
@@ -321,16 +342,16 @@ void iocp_server::process_packet(int id, void * buff)
 	short y = m_player_info[id]->y;
 	switch (packet[1]){
 	case CS_UP:
-		process_player_move(id, buff);
+		t_process_player_move(id, buff);
 		break;
 	case CS_DOWN:
-		process_player_move(id, buff);
+		t_process_player_move(id, buff);
 		break;
 	case CS_LEFT:
-		process_player_move(id, buff);
+		t_process_player_move(id, buff);
 		break;
 	case CS_RIGHT:
-		process_player_move(id, buff);
+		t_process_player_move(id, buff);
 		break;
 	case CS_MAKE_ROOM:
 		process_make_room(id);

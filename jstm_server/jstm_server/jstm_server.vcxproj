@@ -148,6 +148,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="packet_manager.cpp" />
     <ClCompile Include="server_manager.cpp" />
+    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database_manager.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="server_manager.h" />
     <ClInclude Include="singleTon.h" />
     <ClInclude Include="struct.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

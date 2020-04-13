@@ -24,10 +24,11 @@ public:
 
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
 	void do_worker_thread(); // 주 워커 스레드
-	void do_timer_thread();
+	void do_eventTimer_thread();
 
-	void add_timer(EVENT &ev);
+	void add_event_to_eventTimer(EVENT &ev);
 
+	void t_process_player_move(int id, void *buff);
 	void process_player_move(int id, void *buff);
 	void process_make_room(int id);
 
@@ -56,8 +57,8 @@ private:
 	SOCKET m_accept_socket = NULL;
 
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
-	priority_queue <EVENT> m_timer_queue; // 우선순위 타이머 큐
-	mutex m_timer_lock;
+	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 타이머 큐
+	mutex m_eventTimer_lock;
 
 	list<GAME_ROOM> m_list_game_room;
 	list<PLAYER_DB> m_list_player_db;

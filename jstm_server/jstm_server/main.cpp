@@ -7,3 +7,5 @@ int main() {
 	iocp_server g_iocp_server;
 
 }
+
+// DB핸들에 뮤텍스걸어서 하기?

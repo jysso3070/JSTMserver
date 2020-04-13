@@ -28,6 +28,9 @@
     <Filter Include="소스 파일\main">
       <UniqueIdentifier>{caedd8ef-c0d5-4f14-ac3e-4f722acbcbc1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\timer">
+      <UniqueIdentifier>{7ed9589d-24b1-4c6c-b291-eaf785a33de4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="iocp_server.cpp">
@@ -44,6 +47,9 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일\main</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>소스 파일\timer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="server_manager.h">
       <Filter>소스 파일\server_manager</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>소스 파일\timer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
