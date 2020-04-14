@@ -29,7 +29,7 @@ void iocp_server::Initialize()
 
 	m_server_manager->get_server_ipAddress();
 	m_server_manager->get_cpu_count();
-	init_DB();
+	//init_DB();
 
 	init_socket();
 }
@@ -110,8 +110,18 @@ void iocp_server::do_accept_thread()
 
 		m_packet_manager->send_id_packet(user_id, clientSocket);
 
-		send_all_room_list(user_id);
+		for (auto c : m_player_info) {
+			if (c.second->id == user_id) { 
+			}
+			else {
+				// 새로운 플레이어정보를 기존의 플레이어들에게 전송
+				m_packet_manager->send_put_player(c.second->id, c.second->socket, user_id);
+				//새로운 플레이어에게 기존의 플레이어 정보를 전송
+				m_packet_manager->send_put_player(user_id, clientSocket, c.second->id);
+			}
+		}
 
+		send_all_room_list(user_id);
 		///////
 		m_player_info[user_id]->x = 300;
 		m_player_info[user_id]->y = 300;
@@ -358,6 +368,9 @@ void iocp_server::process_packet(int id, void * buff)
 		process_make_room(id);
 		break;
 	case CS_REQUEST_JOIN_ROOM:
+		break;
+	case CS_TEST:
+		cout << "테스트 패킷 전송 확인 \n";
 		break;
 	default:
 		break;

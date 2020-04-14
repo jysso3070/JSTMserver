@@ -1,4 +1,5 @@
 #pragma once
+#include <DirectXMath.h>
 
 #define MAX_BUFFER 1024
 
@@ -10,6 +11,8 @@
 #define SC_SEND_ID			1
 #define SC_POS				2
 #define SC_SEND_ROOM_LIST	3	
+#define SC_PUT_PLAYER		4
+
 
 #define SERVER_PORT	3500
 #define CS_LEFT		1
@@ -19,6 +22,7 @@
 #define CS_MAKE_ROOM	5
 #define CS_REQUEST_JOIN_ROOM	6
 #define CS_POS		7
+#define CS_TEST		8
 
 #pragma pack(push ,1)
 
@@ -27,6 +31,12 @@ struct sc_packet_send_id {
 	char size;
 	char type;
 	int id;
+};
+
+struct sc_packet_put_player {
+	char size;
+	char type;
+	int new_player_id;
 };
 
 struct sc_packet_pos {
@@ -48,6 +58,13 @@ struct sc_pakcet_room_list {
 
 
 // client to server
+
+struct cs_packet_test {
+	char size;
+	char type;
+	int id;
+};
+
 struct cs_packet_left {
 	char size;
 	char type;
