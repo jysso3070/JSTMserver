@@ -49,7 +49,7 @@ void packet_manager::t_send_pos_packet(int client_id, SOCKET client_socket, shor
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_put_player(int client_id, SOCKET client_socket, int new_player_id)
+void packet_manager::send_put_player_packet(int client_id, SOCKET client_socket, int new_player_id)
 {
 	sc_packet_put_player packet;
 	packet.new_player_id = new_player_id;
@@ -59,15 +59,26 @@ void packet_manager::send_put_player(int client_id, SOCKET client_socket, int ne
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, DirectX::XMFLOAT4X4 player_pos)
+void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, int mover_id, DirectX::XMFLOAT4X4 player_pos)
 {
 	sc_packet_pos packet;
 	packet.id = client_id;
+	packet.mover_id = mover_id;
 	packet.size = sizeof(packet);
 	packet.type = SC_POS;
 	packet.world_pos = player_pos;
 	packet.x = 0;
 	packet.y = 0;
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_remove_player_packet(int client_id, SOCKET client_socket, int leave_player_id)
+{
+	sc_packet_remove_player packet;
+	packet.leave_player_id = leave_player_id;
+	packet.size = sizeof(packet);
+	packet.type = SC_REMOVE_PLAYER;
+	//packet.world_pos = player_pos;
 	send_packet(client_id, client_socket, &packet);
 }
 

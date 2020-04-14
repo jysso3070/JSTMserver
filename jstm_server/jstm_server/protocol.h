@@ -12,6 +12,8 @@
 #define SC_POS				2
 #define SC_SEND_ROOM_LIST	3	
 #define SC_PUT_PLAYER		4
+#define SC_REMOVE_PLAYER	5
+
 
 
 #define SERVER_PORT	3500
@@ -43,9 +45,16 @@ struct sc_packet_pos {
 	char size;
 	char type;
 	int id;
+	int mover_id;
 	short x, y;
 
 	DirectX::XMFLOAT4X4 world_pos;
+};
+
+struct sc_packet_remove_player {
+	char size;
+	char type;
+	int leave_player_id;
 };
 
 struct sc_pakcet_room_list {

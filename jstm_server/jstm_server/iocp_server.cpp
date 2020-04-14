@@ -110,14 +110,20 @@ void iocp_server::do_accept_thread()
 
 		m_packet_manager->send_id_packet(user_id, clientSocket);
 
+		cout << "새로운 플레이어 접속" << endl;
+		//m_packet_manager->send_pos_packet(user_id, clientSocket, )
+
 		for (auto c : m_player_info) {
 			if (c.second->id == user_id) { 
 			}
 			else {
-				// 새로운 플레이어정보를 기존의 플레이어들에게 전송
-				m_packet_manager->send_put_player(c.second->id, c.second->socket, user_id);
-				//새로운 플레이어에게 기존의 플레이어 정보를 전송
-				m_packet_manager->send_put_player(user_id, clientSocket, c.second->id);
+				if (c.second->is_connect == true) { // 접속되어 있는 플레이언지 체크
+					// 새로운 플레이어정보를 기존의 플레이어들에게 전송
+					m_packet_manager->send_put_player_packet(c.second->id, c.second->socket, user_id);
+					//새로운 플레이어에게 기존의 플레이어 정보를 전송
+					m_packet_manager->send_put_player_packet(user_id, clientSocket, c.second->id);
+				}
+				
 			}
 		}
 
@@ -160,6 +166,16 @@ void iocp_server::do_worker_thread()
 			closesocket(client_s);
 			m_player_info[key]->is_connect = false;
 
+			for (auto c : m_player_info) {
+				if (c.second->id == key) {
+
+				}
+				else {
+					if (c.second->is_connect == true) {
+						m_packet_manager->send_remove_player_packet(c.second->id, c.second->socket, key);
+					}
+				}
+			}
 			continue;
 		}
 
@@ -303,7 +319,19 @@ void iocp_server::process_player_move(int id, void * buff)
 		break;
 	}
 	m_player_info[id]->player_world_pos = pos_packet->player_world_pos;
-	m_packet_manager->send_pos_packet(id, m_player_info[id]->socket, m_player_info[id]->player_world_pos);
+
+	for (auto c : m_player_info) {
+		if (c.second->id == id) {
+		}
+		else {
+			if (c.second->is_connect == true) {
+				m_packet_manager->send_pos_packet(c.second->id, c.second->socket, id, m_player_info[id]->player_world_pos);
+				cout << "내위치 다른플레이어에게 보내기" << endl;
+			}
+		}
+	}
+
+	m_packet_manager->send_pos_packet(id, m_player_info[id]->socket, id, m_player_info[id]->player_world_pos);
 }
 
 void iocp_server::process_make_room(int id)
@@ -371,6 +399,10 @@ void iocp_server::process_packet(int id, void * buff)
 		break;
 	case CS_TEST:
 		cout << "테스트 패킷 전송 확인 \n";
+		break;
+	case CS_POS:
+		process_player_move(id, buff);
+		cout << "플레이어 이동 패킷 확인" << endl;
 		break;
 	default:
 		break;
