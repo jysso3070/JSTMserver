@@ -23,6 +23,7 @@ struct PLAYER_INFO {
 	DirectX::XMFLOAT4X4 player_world_pos;
 
 	mutex player_info_lock;
+	mutex roomList_lock;
 };
 
 struct PLAYER_DB {

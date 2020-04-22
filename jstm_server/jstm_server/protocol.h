@@ -44,10 +44,8 @@ struct sc_packet_put_player {
 struct sc_packet_pos {
 	char size;
 	char type;
-	int id;
 	int mover_id;
 	short x, y;
-
 	DirectX::XMFLOAT4X4 world_pos;
 };
 
@@ -103,7 +101,7 @@ struct cs_packet_make_room {
 struct cs_packet_requset_join_room {
 	char size;
 	char type;
-	int id;
+	int joiner_id;
 	int room_number;
 };
 

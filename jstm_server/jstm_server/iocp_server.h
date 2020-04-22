@@ -31,9 +31,11 @@ public:
 	void t_process_player_move(int id, void *buff);
 	void process_player_move(int id, void *buff);
 	void process_make_room(int id);
+	void process_join_room(int id, void *buff);
 
 	void send_all_room_list(int id);
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
+	void process_leave_client(int leaver_id);
 
 
 	void process_packet(int id, void *buff);
@@ -56,11 +58,12 @@ private:
 
 	SOCKET m_accept_socket = NULL;
 
-	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
+	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_map_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
 	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 타이머 큐
 	mutex m_eventTimer_lock;
 
-	list<GAME_ROOM> m_list_game_room;
-	list<PLAYER_DB> m_list_player_db;
+	map<int, GAME_ROOM> m_map_game_room;	// room정보
+
+	list<PLAYER_DB> m_list_player_db;	// DB정보
 };
 
