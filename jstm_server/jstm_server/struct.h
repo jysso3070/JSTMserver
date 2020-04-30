@@ -19,6 +19,7 @@ struct PLAYER_INFO {
 	int id;
 	bool is_connect;
 
+	short room_number;
 	short x, y;
 	DirectX::XMFLOAT4X4 player_world_pos;
 
@@ -33,9 +34,11 @@ struct PLAYER_DB {
 };
 
 struct GAME_ROOM {
-	int room_number;
-	int host_id;
-	int guest_id;
+	short room_number;
+	int player_1_id;
+	int player_2_id;
+	int player_3_id;
+	int player_4_id;
 };
 
 struct EVENT

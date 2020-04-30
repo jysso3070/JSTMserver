@@ -1,11 +1,11 @@
 #pragma once
 #include "header.h"
 
-class server_manager
+class Server_manager
 {
 public:
-	server_manager();
-	~server_manager();
+	Server_manager();
+	~Server_manager();
 
 	void get_server_ipAddress();
 	void get_cpu_count();

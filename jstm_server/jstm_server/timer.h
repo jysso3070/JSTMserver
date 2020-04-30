@@ -3,11 +3,11 @@
 
 const ULONG MAX_SAMPLE_COUNT = 50;
 
-class timer
+class Timer
 {
 public:
-	timer();
-	~timer();
+	Timer();
+	~Timer();
 
 private:
 	double			m_TimeScale;

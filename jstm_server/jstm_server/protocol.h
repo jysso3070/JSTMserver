@@ -55,12 +55,14 @@ struct sc_packet_remove_player {
 	int leave_player_id;
 };
 
-struct sc_pakcet_room_list {
+struct sc_pakcet_room_info {
 	char size;
 	char type;
 	short room_num;
-	int host_id;
-	int guest_id;
+	int player_1_id;
+	int player_2_id;
+	int player_3_id;
+	int player_4_id;
 };
 
 

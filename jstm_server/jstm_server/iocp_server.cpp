@@ -1,9 +1,9 @@
 #include "iocp_server.h"
 
-iocp_server::iocp_server()
+Iocp_server::Iocp_server()
 {
-	database_manager *db_manager = new database_manager;
-	m_database_manager = db_manager;
+	Database_manager *db_manager = new Database_manager;
+	m_Database_manager = db_manager;
 
 
 	Initialize();
@@ -12,12 +12,12 @@ iocp_server::iocp_server()
 }
 
 
-iocp_server::~iocp_server()
+Iocp_server::~Iocp_server()
 {
 	WSACleanup();
 }
 
-void iocp_server::Initialize()
+void Iocp_server::Initialize()
 {
 	//WSADATA WSAData;
 	//WSAStartup(MAKEWORD(2, 2), &WSAData);
@@ -27,20 +27,21 @@ void iocp_server::Initialize()
 	m_new_user_id = 0;
 	m_new_room_num = 1;
 
-	m_server_manager->get_server_ipAddress();
-	m_server_manager->get_cpu_count();
+	m_Server_manager->get_server_ipAddress();
+	m_Server_manager->get_cpu_count();
 	//init_DB();
 
 	init_socket();
 }
 
-void iocp_server::make_thread()
+void Iocp_server::make_thread()
 {
-	thread accept_thread{ &iocp_server::do_accept_thread, this};
-	thread worker_thread_1{ &iocp_server::do_worker_thread, this};
-	thread worker_thread_2{ &iocp_server::do_worker_thread, this};
-	thread worker_thread_3{ &iocp_server::do_worker_thread, this};
-	thread eventTimer_thread{ &iocp_server::do_eventTimer_thread, this};
+	thread accept_thread{ &Iocp_server::do_accept_thread, this};
+	thread worker_thread_1{ &Iocp_server::do_worker_thread, this};
+	thread worker_thread_2{ &Iocp_server::do_worker_thread, this};
+	thread worker_thread_3{ &Iocp_server::do_worker_thread, this};
+	thread eventTimer_thread{ &Iocp_server::do_eventTimer_thread, this};
+	//thread collision_thread{}
 
 	accept_thread.join();
 	worker_thread_1.join();
@@ -50,13 +51,13 @@ void iocp_server::make_thread()
 
 }
 
-void iocp_server::init_DB()
+void Iocp_server::init_DB()
 {
-	m_database_manager->sql_load_database();
+	m_Database_manager->sql_load_database();
 	//m_database_manager->sql_update_data(1, 3);
 }
 
-void iocp_server::init_socket()
+void Iocp_server::init_socket()
 {
 	WSADATA WSAData;
 	WSAStartup(MAKEWORD(2, 2), &WSAData);
@@ -78,7 +79,7 @@ void iocp_server::init_socket()
 	m_accept_socket = listenSocket;
 }
 
-void iocp_server::do_accept_thread()
+void Iocp_server::do_accept_thread()
 {
 
 	// 수신 대기 설정
@@ -103,6 +104,7 @@ void iocp_server::do_accept_thread()
 		PLAYER_INFO *new_player = new PLAYER_INFO;
 		new_player->id = user_id;
 		new_player->socket = clientSocket;
+		new_player->room_number = -1;
 		new_player->is_connect = true;
 		new_player->recv_over.wsabuf[0].len = MAX_BUFFER;
 		new_player->recv_over.wsabuf[0].buf = new_player->recv_over.net_buf;
@@ -112,7 +114,7 @@ void iocp_server::do_accept_thread()
 
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(clientSocket), m_iocp_Handle, user_id, 0); // iocp 등록
 
-		m_packet_manager->send_id_packet(user_id, clientSocket);
+		m_Packet_manager->send_id_packet(user_id, clientSocket);
 
 		cout << "새로운 플레이어 접속" << endl;
 		//m_packet_manager->send_pos_packet(user_id, clientSocket, )
@@ -124,9 +126,9 @@ void iocp_server::do_accept_thread()
 			else {
 				if (c.second->is_connect == true) { // 접속되어 있는 플레이언지 체크
 					// 새로운 플레이어정보를 기존의 플레이어들에게 전송
-					m_packet_manager->send_put_player_packet(c.second->id, c.second->socket, user_id);
+					m_Packet_manager->send_put_player_packet(c.second->id, c.second->socket, user_id);
 					//새로운 플레이어에게 기존의 플레이어 정보를 전송
-					m_packet_manager->send_put_player_packet(user_id, clientSocket, c.second->id);
+					m_Packet_manager->send_put_player_packet(user_id, clientSocket, c.second->id);
 				}
 				
 			}
@@ -150,13 +152,13 @@ void iocp_server::do_accept_thread()
 		if (0 != ret) {
 			int err_no = WSAGetLastError();
 			if (WSA_IO_PENDING != err_no)
-				m_server_manager->socket_error_display("WSARecv Error : ", err_no);
+				m_Server_manager->socket_error_display("WSARecv Error : ", err_no);
 		}
 	}
 
 }
 
-void iocp_server::do_worker_thread()
+void Iocp_server::do_worker_thread()
 {
 	while (true) {
 		DWORD num_byte;
@@ -171,7 +173,7 @@ void iocp_server::do_worker_thread()
 		if (0 == num_byte) { 
 			closesocket(client_s);
 			m_map_player_info[key]->is_connect = false;
-			process_leave_client(key);
+			process_disconnect_client(key);
 			continue;
 		}
 
@@ -225,7 +227,7 @@ void iocp_server::do_worker_thread()
 	}
 }
 
-void iocp_server::do_eventTimer_thread()
+void Iocp_server::do_eventTimer_thread()
 {
 	while (true) {
 		m_eventTimer_lock.lock();
@@ -259,14 +261,14 @@ void iocp_server::do_eventTimer_thread()
 	}
 }
 
-void iocp_server::add_event_to_eventTimer(EVENT & ev)
+void Iocp_server::add_event_to_eventTimer(EVENT & ev)
 {
 	m_eventTimer_lock.lock();
 	m_eventTimer_queue.push(ev);
 	m_eventTimer_lock.unlock();
 }
 
-void iocp_server::t_process_player_move(int id, void * buff)
+void Iocp_server::t_process_player_move(int id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
@@ -292,12 +294,12 @@ void iocp_server::t_process_player_move(int id, void * buff)
 	m_map_player_info[id]->x = x;
 	m_map_player_info[id]->y = y;
 
-	m_packet_manager->t_send_pos_packet(id, m_map_player_info[id]->socket, x, y);
+	m_Packet_manager->t_send_pos_packet(id, m_map_player_info[id]->socket, x, y);
 	cout << "x: " << m_map_player_info[id]->x << ", y: " << m_map_player_info[id]->y << endl;
 
 }
 
-void iocp_server::process_player_move(int id, void * buff)
+void Iocp_server::process_player_move(int id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 	cs_packet_pos *pos_packet = reinterpret_cast<cs_packet_pos*>(buff);
@@ -321,66 +323,92 @@ void iocp_server::process_player_move(int id, void * buff)
 		}
 		else {
 			if (c.second->is_connect == true) {
-				m_packet_manager->send_pos_packet(c.second->id, c.second->socket, id, m_map_player_info[id]->player_world_pos);
+				m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, m_map_player_info[id]->player_world_pos);
 				cout << "내위치 다른플레이어에게 보내기" << endl;
 			}
 		}
 	}
 
-	m_packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, m_map_player_info[id]->player_world_pos);
+	m_Packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, m_map_player_info[id]->player_world_pos);
 }
 
-void iocp_server::process_make_room(int id)
+void Iocp_server::process_make_room(int id)
 {
 	short room_num = m_new_room_num++;
 	GAME_ROOM *new_room = new GAME_ROOM;
 	new_room->room_number = room_num;
-	new_room->guest_id = -1;
-	new_room->host_id = id;
+	new_room->player_1_id = id;
+	new_room->player_2_id = -1;
+	new_room->player_3_id = -1;
+	new_room->player_4_id = -1;
 
 	m_map_game_room.insert(make_pair(room_num, *new_room));
 
 	for (auto client : m_map_player_info) {
 		if (client.second->is_connect == true){
-			m_packet_manager->send_room_list_pakcet(client.second->id, client.second->socket,
-				new_room->room_number, new_room->host_id, new_room->guest_id);
+			m_Packet_manager->send_room_info_pakcet(client.second->id,
+
+ client.second->socket,
+				new_room->room_number, new_room->player_1_id, new_room->player_2_id,
+				new_room->player_3_id, new_room->player_4_id);
 		}
 	}
 
 	cout << "make room success \n";
 }
 
-void iocp_server::process_join_room(int id, void *buff)
+void Iocp_server::process_join_room(int id, void *buff)
 {
 	cs_packet_requset_join_room *join_room_packet = reinterpret_cast<cs_packet_requset_join_room*>(buff);
 
-	// 해당 아이디를 게스트아이디에 넣어주면?
+	// 해당 방번호에 빈자리에 id 넣어주기?
 	int r_number = join_room_packet->room_number;
+
 	m_map_player_info[id]->roomList_lock.lock();
-	m_map_game_room[r_number].guest_id = join_room_packet->joiner_id;
+
+	if (m_map_game_room[r_number].player_2_id == -1) {
+		m_map_game_room[r_number].player_2_id = join_room_packet->joiner_id;
+	}
+	else if (m_map_game_room[r_number].player_3_id == -1) {
+		m_map_game_room[r_number].player_3_id = join_room_packet->joiner_id;
+	}
+	else if (m_map_game_room[r_number].player_4_id == -1) {
+		m_map_game_room[r_number].player_4_id = join_room_packet->joiner_id;
+	}
+	
 	m_map_player_info[id]->roomList_lock.unlock();
+
+	int player_1_id = m_map_game_room[r_number].player_1_id;
+	int player_2_id = m_map_game_room[r_number].player_2_id;
+	int player_3_id = m_map_game_room[r_number].player_3_id;
+	int player_4_id = m_map_game_room[r_number].player_4_id;
 
 	// 바뀐 방정보 모든 클라이언트들에게 전송
 	for (auto client : m_map_player_info) {
 		if (client.second->is_connect == true) {
-			m_packet_manager->send_room_list_pakcet(id, client.second->socket, m_map_game_room[r_number].room_number,
-				m_map_game_room[r_number].host_id, m_map_game_room[r_number].guest_id);
+			m_Packet_manager->send_room_info_pakcet(id, client.second->socket, m_map_game_room[r_number].room_number,
+				player_1_id, player_2_id, player_3_id, player_4_id);
 		}
 	}
 
 }
 
-void iocp_server::send_all_room_list(int id)
+void Iocp_server::send_all_room_list(int id)
 {
 	for (auto room_info : m_map_game_room) {
-		m_packet_manager->send_room_list_pakcet(id, m_map_player_info[id]->socket,
-			room_info.second.room_number, room_info.second.host_id, room_info.second.guest_id);
+		int player_1_id = room_info.second.player_1_id;
+		int player_2_id = room_info.second.player_2_id;
+		int player_3_id = room_info.second.player_3_id;
+		int player_4_id = room_info.second.player_4_id;
+		m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket,
+			room_info.second.room_number, player_1_id, player_2_id,
+			player_3_id, player_4_id);
 	}
 }
 
-void iocp_server::get_player_db()
+void Iocp_server::get_player_db()
 {
-	for (auto d : m_database_manager->m_list_player_db) {
+	for (auto d : m_Database_manager->m_list_player_db) {
 		PLAYER_DB db;
 		db.DB_key_id = d.DB_key_id;
 		strcpy_s(db.name, sizeof(d.name), d.name);
@@ -390,7 +418,7 @@ void iocp_server::get_player_db()
 	}
 }
 
-void iocp_server::process_leave_client(int leaver_id)
+void Iocp_server::process_disconnect_client(int leaver_id)
 {
 	for (auto c : m_map_player_info) {
 		if (c.second->id == leaver_id) {
@@ -398,14 +426,14 @@ void iocp_server::process_leave_client(int leaver_id)
 		else {
 			if (c.second->is_connect == true) {
 				// 모든 플레이어에게 접속종료된 클라이언트의 아이디를 보내준다
-				m_packet_manager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
+				m_Packet_manager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
 			}
 		}
 	}
 }
 
 
-void iocp_server::process_packet(int id, void * buff)
+void Iocp_server::process_packet(int id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
@@ -444,21 +472,21 @@ void iocp_server::process_packet(int id, void * buff)
 
 }
 
-void iocp_server::send_id_packet(int id)
+void Iocp_server::send_id_packet(int id)
 {
 	sc_packet_send_id packet;
 	packet.id = id;
 	packet.size = sizeof(packet);
 	packet.type = SC_SEND_ID;
-	m_packet_manager->send_packet(id, m_map_player_info[id]->socket, &packet);
+	m_Packet_manager->send_packet(id, m_map_player_info[id]->socket, &packet);
 }
 
-void iocp_server::send_pos_packet(int id)
+void Iocp_server::send_pos_packet(int id)
 {
 	sc_packet_pos packet;
 	packet.size = sizeof(packet);
 	packet.type = SC_POS;
 	packet.x = m_map_player_info[id]->x;
 	packet.y = m_map_player_info[id]->y;
-	m_packet_manager->send_packet(id, m_map_player_info[id]->socket, &packet);
+	m_Packet_manager->send_packet(id, m_map_player_info[id]->socket, &packet);
 }

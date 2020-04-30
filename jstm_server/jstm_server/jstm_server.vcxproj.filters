@@ -13,43 +13,49 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="소스 파일\iocp_server">
-      <UniqueIdentifier>{91e0b797-f17d-410f-995a-0355bfcb0b88}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\database_manager">
-      <UniqueIdentifier>{23dc615c-ae03-40e7-abc7-728d7b735f55}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\packet_manager">
-      <UniqueIdentifier>{83842ec1-c88b-4cad-8741-0e678a49a9d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\server_manager">
-      <UniqueIdentifier>{d8c04147-9fa5-4bfa-8ec0-914bfa5f9a18}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\main">
       <UniqueIdentifier>{caedd8ef-c0d5-4f14-ac3e-4f722acbcbc1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\timer">
+    <Filter Include="소스 파일\Database_manager">
+      <UniqueIdentifier>{23dc615c-ae03-40e7-abc7-728d7b735f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Iocp_server">
+      <UniqueIdentifier>{91e0b797-f17d-410f-995a-0355bfcb0b88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Packet_manager">
+      <UniqueIdentifier>{83842ec1-c88b-4cad-8741-0e678a49a9d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Server_manager">
+      <UniqueIdentifier>{d8c04147-9fa5-4bfa-8ec0-914bfa5f9a18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Timer">
       <UniqueIdentifier>{7ed9589d-24b1-4c6c-b291-eaf785a33de4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Collision">
+      <UniqueIdentifier>{c1325b16-b621-468e-b65d-e810eb8764a2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="iocp_server.cpp">
-      <Filter>소스 파일\iocp_server</Filter>
+      <Filter>소스 파일\Iocp_server</Filter>
     </ClCompile>
     <ClCompile Include="database_manager.cpp">
-      <Filter>소스 파일\database_manager</Filter>
+      <Filter>소스 파일\Database_manager</Filter>
     </ClCompile>
     <ClCompile Include="packet_manager.cpp">
-      <Filter>소스 파일\packet_manager</Filter>
+      <Filter>소스 파일\Packet_manager</Filter>
     </ClCompile>
     <ClCompile Include="server_manager.cpp">
-      <Filter>소스 파일\server_manager</Filter>
+      <Filter>소스 파일\Server_manager</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일\main</Filter>
     </ClCompile>
     <ClCompile Include="timer.cpp">
-      <Filter>소스 파일\timer</Filter>
+      <Filter>소스 파일\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision.cpp">
+      <Filter>소스 파일\Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -66,19 +72,22 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="iocp_server.h">
-      <Filter>소스 파일\iocp_server</Filter>
+      <Filter>소스 파일\Iocp_server</Filter>
     </ClInclude>
     <ClInclude Include="database_manager.h">
-      <Filter>소스 파일\database_manager</Filter>
+      <Filter>소스 파일\Database_manager</Filter>
     </ClInclude>
     <ClInclude Include="packet_manager.h">
-      <Filter>소스 파일\packet_manager</Filter>
+      <Filter>소스 파일\Packet_manager</Filter>
     </ClInclude>
     <ClInclude Include="server_manager.h">
-      <Filter>소스 파일\server_manager</Filter>
+      <Filter>소스 파일\Server_manager</Filter>
     </ClInclude>
     <ClInclude Include="timer.h">
-      <Filter>소스 파일\timer</Filter>
+      <Filter>소스 파일\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision.h">
+      <Filter>소스 파일\Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

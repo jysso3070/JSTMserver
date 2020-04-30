@@ -3,16 +3,17 @@
 #include "packet_manager.h"
 #include "database_manager.h"
 #include "server_manager.h"
+#include "Collision.h"
 
 class packet_manager;
-class database_manager;
-class server_manager;
+class Database_manager;
+class Server_manager;
 
-class iocp_server
+class Iocp_server
 {
 public:
-	iocp_server();
-	~iocp_server();
+	Iocp_server();
+	~Iocp_server();
 
 public:
 	void Initialize();	// 서버 초기화
@@ -35,7 +36,7 @@ public:
 
 	void send_all_room_list(int id);
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
-	void process_leave_client(int leaver_id);
+	void process_disconnect_client(int leaver_id);
 
 
 	void process_packet(int id, void *buff);
@@ -48,9 +49,10 @@ public:
 	//void do_recv();
 
 private:
-	packet_manager *m_packet_manager = NULL;
-	database_manager *m_database_manager = NULL;
-	server_manager *m_server_manager = NULL;
+	packet_manager *m_Packet_manager = NULL;
+	Database_manager *m_Database_manager = NULL;
+	Server_manager *m_Server_manager = NULL;
+	Collision *m_Collision = NULL;
 	
 	HANDLE m_iocp_Handle; // iocp 핸들값
 	int m_new_user_id;

@@ -80,12 +80,14 @@ void packet_manager::send_remove_player_packet(int client_id, SOCKET client_sock
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_room_list_pakcet(int client_id, SOCKET client_socket, short room_num, int host_id, int guest_id)
+void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, short room_num, int player_1_id, int player_2_id, int player_3_id, int player_4_id)
 {
-	sc_pakcet_room_list packet;
+	sc_pakcet_room_info packet;
 	packet.room_num = room_num;
-	packet.host_id = host_id;
-	packet.guest_id = guest_id;
+	packet.player_1_id = player_1_id;
+	packet.player_2_id = player_2_id;
+	packet.player_3_id = player_3_id;
+	packet.player_4_id = player_4_id;
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);

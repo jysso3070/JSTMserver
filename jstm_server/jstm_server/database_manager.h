@@ -1,10 +1,10 @@
 #pragma once
 #include "header.h"
-class database_manager
+class Database_manager
 {
 public:
-	database_manager();
-	~database_manager();
+	Database_manager();
+	~Database_manager();
 
 	void show_sql_error();
 	void sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT hType, RETCODE RetCode);

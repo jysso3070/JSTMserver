@@ -2,16 +2,16 @@
 
 
 
-server_manager::server_manager()
+Server_manager::Server_manager()
 {
 }
 
 
-server_manager::~server_manager()
+Server_manager::~Server_manager()
 {
 }
 
-void server_manager::get_server_ipAddress()
+void Server_manager::get_server_ipAddress()
 {
 	// Winsock Start - winsock.dll 로드
 	WSADATA	WSAData;
@@ -35,7 +35,7 @@ void server_manager::get_server_ipAddress()
 	cout << "Server IP Address: \t" << ipaddr << endl;
 }
 
-void server_manager::get_cpu_count()
+void Server_manager::get_cpu_count()
 {
 	// CPU , Thread 개수 확인
 	SYSTEM_INFO	si; // CPU 개수 확인용
@@ -45,7 +45,7 @@ void server_manager::get_cpu_count()
 	cout << "CPU Core Count: " << CpuCore << "\tThread: " << NumWorkerThread << endl;
 }
 
-void server_manager::socket_error_display(const char * msg, int err_no)
+void Server_manager::socket_error_display(const char * msg, int err_no)
 {
 	WCHAR *lpMsgBuf;
 	FormatMessage(
@@ -61,7 +61,7 @@ void server_manager::socket_error_display(const char * msg, int err_no)
 	LocalFree(lpMsgBuf);
 }
 
-void server_manager::socket_error_quit(const char * msg, int err_no)
+void Server_manager::socket_error_quit(const char * msg, int err_no)
 {
 	WCHAR *lpMsgBuf;
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err_no,

@@ -2,7 +2,7 @@
 
 
 
-timer::timer()
+Timer::Timer()
 {
 	::QueryPerformanceFrequency((LARGE_INTEGER*)&m_nPerformanceFrequencyPerSec);
 	::QueryPerformanceCounter((LARGE_INTEGER*)&m_nLastPerformanceCounter);
@@ -20,11 +20,11 @@ timer::timer()
 }
 
 
-timer::~timer()
+Timer::~Timer()
 {
 }
 
-void timer::Tick(float LockFPS)
+void Timer::Tick(float LockFPS)
 {
 	if (m_Stopped) {
 		m_TimeElapsed = 0.f;
@@ -69,7 +69,7 @@ void timer::Tick(float LockFPS)
 		m_TimeElapsed /= m_nSampleCount;
 }
 
-void timer::Reset()
+void Timer::Reset()
 {
 	__int64 nPerformanceCounter;
 	::QueryPerformanceCounter((LARGE_INTEGER*)&nPerformanceCounter);
@@ -80,7 +80,7 @@ void timer::Reset()
 	m_Stopped = false;
 }
 
-unsigned long timer::GetFrameRate(LPTSTR string, int charNum)
+unsigned long Timer::GetFrameRate(LPTSTR string, int charNum)
 {
 	if (string) {
 		_itow_s(m_nCurrentFrameRate, string, charNum, 10);
@@ -90,7 +90,7 @@ unsigned long timer::GetFrameRate(LPTSTR string, int charNum)
 	return m_nCurrentFrameRate;
 }
 
-float timer::GetTimeElapsed()
+float Timer::GetTimeElapsed()
 {
 	return m_TimeElapsed;
 }

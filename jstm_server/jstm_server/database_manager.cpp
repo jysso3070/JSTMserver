@@ -1,21 +1,21 @@
 #include "database_manager.h"
 
 
-database_manager::database_manager()
+Database_manager::Database_manager()
 {
 }
 
 
-database_manager::~database_manager()
+Database_manager::~Database_manager()
 {
 }
 
-void database_manager::show_sql_error()
+void Database_manager::show_sql_error()
 {
 	printf("error\n");
 }
 
-void database_manager::sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT hType, RETCODE RetCode)
+void Database_manager::sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT hType, RETCODE RetCode)
 {
 	SQLSMALLINT iRec = 0;
 	SQLINTEGER  iError;
@@ -33,7 +33,7 @@ void database_manager::sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT
 	}
 }
 
-void database_manager::sql_load_database()
+void Database_manager::sql_load_database()
 {
 	
 	SQLHENV henv;		// 데이터베이스에 연결할때 사옹하는 핸들
@@ -131,7 +131,7 @@ void database_manager::sql_load_database()
 	cout << "DataBase access complete. \n";
 }
 
-void database_manager::sql_update_data(int key_id, short level)
+void Database_manager::sql_update_data(int key_id, short level)
 {
 	SQLHENV henv;		// 데이터베이스에 연결할때 사옹하는 핸들
 	SQLHDBC hdbc;
@@ -192,7 +192,7 @@ void database_manager::sql_update_data(int key_id, short level)
 	}
 }
 
-void database_manager::sql_insert_new_data(int key_id, string name)
+void Database_manager::sql_insert_new_data(int key_id, string name)
 {
 	SQLHENV henv;		// 데이터베이스에 연결할때 사옹하는 핸들
 	SQLHDBC hdbc;
@@ -259,7 +259,7 @@ void database_manager::sql_insert_new_data(int key_id, string name)
 	}
 }
 
-char* database_manager::widechar_to_char(SQLWCHAR *str)
+char* Database_manager::widechar_to_char(SQLWCHAR *str)
 {
 	char *temp;
 	int strSize = WideCharToMultiByte(CP_ACP, 0, str, -1, NULL, 0, NULL, NULL);
@@ -273,7 +273,7 @@ char* database_manager::widechar_to_char(SQLWCHAR *str)
 	return temp;
 }
 
-void database_manager::show_all_db()
+void Database_manager::show_all_db()
 {
 	for (auto d : m_list_player_db) {
 		cout << "name: " << d.name << endl;
