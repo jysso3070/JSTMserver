@@ -1,6 +1,7 @@
 #pragma once
 
 #include "header.h"
+#include "struct.h"
 
 class packet_manager
 {

@@ -29,7 +29,7 @@ void Iocp_server::Initialize()
 
 	m_Server_manager->get_server_ipAddress();
 	m_Server_manager->get_cpu_count();
-	//init_DB();
+	init_DB();
 
 	init_socket();
 }

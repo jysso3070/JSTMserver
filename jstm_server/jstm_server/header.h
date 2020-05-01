@@ -43,13 +43,11 @@
 
 using namespace std;
 
-// singleTon
-#include "singleTon.h"
 
 // 프로토콜
 #include "protocol.h"
 
 // 구조체
-#include "struct.h"
+//#include "struct.h"
 
-#include "iocp_server.h"
+//#include "iocp_server.h"

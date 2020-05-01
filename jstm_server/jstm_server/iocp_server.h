@@ -4,10 +4,11 @@
 #include "database_manager.h"
 #include "server_manager.h"
 #include "Collision.h"
+#include "struct.h"
 
-class packet_manager;
-class Database_manager;
-class Server_manager;
+//class packet_manager;
+//class Database_manager;
+//class Server_manager;
 
 class Iocp_server
 {

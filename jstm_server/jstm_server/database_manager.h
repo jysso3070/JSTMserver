@@ -1,5 +1,7 @@
 #pragma once
 #include "header.h"
+#include "struct.h"
+
 class Database_manager
 {
 public:
