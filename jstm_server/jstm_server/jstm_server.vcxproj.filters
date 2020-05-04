@@ -34,6 +34,15 @@
     <Filter Include="소스 파일\Collision">
       <UniqueIdentifier>{c1325b16-b621-468e-b65d-e810eb8764a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object">
+      <UniqueIdentifier>{696846d1-dcf0-496e-95f6-025577d8c1ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Object\Monster">
+      <UniqueIdentifier>{35600f22-4cb0-409a-acd5-624b2daac1f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Object\Trap">
+      <UniqueIdentifier>{cdfa013e-f5c9-4c7d-9672-993bbe7add18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="iocp_server.cpp">
@@ -56,6 +65,12 @@
     </ClCompile>
     <ClCompile Include="Collision.cpp">
       <Filter>소스 파일\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>소스 파일\Object\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Trap.cpp">
+      <Filter>소스 파일\Object\Trap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +103,12 @@
     </ClInclude>
     <ClInclude Include="Collision.h">
       <Filter>소스 파일\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>소스 파일\Object\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Trap.h">
+      <Filter>소스 파일\Object\Trap</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

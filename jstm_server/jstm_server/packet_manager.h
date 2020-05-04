@@ -18,6 +18,7 @@ public:
 	void send_pos_packet(int client_id, SOCKET client_socket, int mover_id, DirectX::XMFLOAT4X4 player_pos);
 	void send_remove_player_packet(int client_id, SOCKET client_socket, int leave_player_id);
 	void send_room_info_pakcet(int client_id, SOCKET client_socket, short room_num, int player_1_id, int player_2_id, int player_3_id, int player_4_id);
+	void send_trap_info_packet(int client_id, SOCKET client_socket, DirectX::XMFLOAT4X4 trap_pos, char trap_type);
 
 
 	void error_display(const char* msg, int err_no); // 에러 출력 함수

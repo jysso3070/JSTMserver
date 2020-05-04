@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -147,21 +147,25 @@
     <ClCompile Include="database_manager.cpp" />
     <ClCompile Include="iocp_server.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Monster.cpp" />
     <ClCompile Include="packet_manager.cpp" />
     <ClCompile Include="server_manager.cpp" />
     <ClCompile Include="timer.cpp" />
+    <ClCompile Include="Trap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Collision.h" />
     <ClInclude Include="database_manager.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="iocp_server.h" />
+    <ClInclude Include="Monster.h" />
     <ClInclude Include="packet_manager.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="server_manager.h" />
     <ClInclude Include="singleTon.h" />
     <ClInclude Include="struct.h" />
     <ClInclude Include="timer.h" />
+    <ClInclude Include="Trap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

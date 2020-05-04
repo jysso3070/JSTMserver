@@ -89,6 +89,18 @@ void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, 
 	packet.player_3_id = player_3_id;
 	packet.player_4_id = player_4_id;
 	packet.size = sizeof(packet);
+	packet.type = SC_SEND_ROOM_LIST;
+
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, DirectX::XMFLOAT4X4 trap_pos, char trap_type)
+{
+	sc_packet_trap_info packet;
+	packet.type = SC_TRAP_INFO;
+	packet.trap_type = trap_type;
+	packet.trap_world_pos = trap_pos;
+	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);
 }

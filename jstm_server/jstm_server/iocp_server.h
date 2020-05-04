@@ -3,6 +3,8 @@
 #include "packet_manager.h"
 #include "database_manager.h"
 #include "server_manager.h"
+#include "Trap.h"
+#include "Monster.h"
 #include "Collision.h"
 #include "struct.h"
 
@@ -34,6 +36,7 @@ public:
 	void process_player_move(int id, void *buff);
 	void process_make_room(int id);
 	void process_join_room(int id, void *buff);
+	void process_install_trap(int id, void *buff);
 
 	void send_all_room_list(int id);
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
@@ -50,22 +53,26 @@ public:
 	//void do_recv();
 
 private:
+	// class
 	packet_manager *m_Packet_manager = NULL;
 	Database_manager *m_Database_manager = NULL;
 	Server_manager *m_Server_manager = NULL;
 	Collision *m_Collision = NULL;
 	
+	// iocp id
 	HANDLE m_iocp_Handle; // iocp 핸들값
 	int m_new_user_id;
 	short m_new_room_num;
 
 	SOCKET m_accept_socket = NULL;
 
+	// STL container
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_map_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
 	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 타이머 큐
 	mutex m_eventTimer_lock;
 
-	map<int, GAME_ROOM> m_map_game_room;	// room정보
+	map<short, GAME_ROOM> m_map_game_room;	// room정보
+	map<short, vector<Trap>> m_map_trap;
 
 	list<PLAYER_DB> m_list_player_db;	// DB정보
 };

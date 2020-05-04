@@ -13,7 +13,7 @@
 #define SC_SEND_ROOM_LIST	3	
 #define SC_PUT_PLAYER		4
 #define SC_REMOVE_PLAYER	5
-
+#define SC_TRAP_INFO		6
 
 
 #define SERVER_PORT	3500
@@ -25,6 +25,7 @@
 #define CS_REQUEST_JOIN_ROOM	6
 #define CS_POS		7
 #define CS_TEST		8
+#define CS_INSTALL_TRAP	9
 
 #pragma pack(push ,1)
 
@@ -63,6 +64,14 @@ struct sc_pakcet_room_info {
 	int player_2_id;
 	int player_3_id;
 	int player_4_id;
+};
+
+struct sc_packet_trap_info {
+	char size;
+	char type;
+	int id;
+	char trap_type;
+	DirectX::XMFLOAT4X4 trap_world_pos;
 };
 
 
@@ -104,7 +113,7 @@ struct cs_packet_requset_join_room {
 	char size;
 	char type;
 	int joiner_id;
-	int room_number;
+	short room_number;
 };
 
 struct cs_packet_pos {
@@ -112,6 +121,14 @@ struct cs_packet_pos {
 	char type;
 	int id;
 	DirectX::XMFLOAT4X4 player_world_pos;
+};
+
+struct cs_packet_install_trap {
+	char size;
+	char type;
+	int id;
+	char trap_type;
+	DirectX::XMFLOAT4X4 trap_world_pos;
 };
 
 

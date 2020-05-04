@@ -346,9 +346,7 @@ void Iocp_server::process_make_room(int id)
 
 	for (auto client : m_map_player_info) {
 		if (client.second->is_connect == true){
-			m_Packet_manager->send_room_info_pakcet(client.second->id,
-
- client.second->socket,
+			m_Packet_manager->send_room_info_pakcet(client.second->id, client.second->socket,
 				new_room->room_number, new_room->player_1_id, new_room->player_2_id,
 				new_room->player_3_id, new_room->player_4_id);
 		}
@@ -362,7 +360,7 @@ void Iocp_server::process_join_room(int id, void *buff)
 	cs_packet_requset_join_room *join_room_packet = reinterpret_cast<cs_packet_requset_join_room*>(buff);
 
 	// 해당 방번호에 빈자리에 id 넣어주기?
-	int r_number = join_room_packet->room_number;
+	short r_number = join_room_packet->room_number;
 
 	m_map_player_info[id]->roomList_lock.lock();
 
@@ -391,6 +389,27 @@ void Iocp_server::process_join_room(int id, void *buff)
 		}
 	}
 
+}
+
+void Iocp_server::process_install_trap(int id, void * buff)
+{
+	cs_packet_install_trap *packet = reinterpret_cast<cs_packet_install_trap*>(buff);
+
+	Trap *t = new Trap;
+	t->set_trap_pos(packet->trap_world_pos);
+	t->set_trap_type(packet->trap_type);
+
+	// 플레이어의 방번호를 가지고 함정정보 insert
+	m_map_player_info[id]->roomList_lock.lock();
+	m_map_trap[1].emplace_back(*t);
+	m_map_player_info[id]->roomList_lock.unlock();
+
+	// 설치한 트랩 정보 전송
+	for (auto c : m_map_player_info) {
+		if (c.second->is_connect == true) {
+			m_Packet_manager->send_trap_info_packet(c.second->id, c.second->socket, t->get_pos(), t->get_type() );
+		}
+	}
 }
 
 void Iocp_server::send_all_room_list(int id)
@@ -457,6 +476,8 @@ void Iocp_server::process_packet(int id, void * buff)
 		break;
 	case CS_REQUEST_JOIN_ROOM:
 		process_join_room(id, buff);
+		break;
+	case CS_INSTALL_TRAP:
 		break;
 	case CS_TEST:
 		cout << "테스트 패킷 전송 확인 \n";
