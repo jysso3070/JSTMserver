@@ -8,7 +8,7 @@ public:
 	Database_manager();
 	~Database_manager();
 
-	void show_sql_error();
+	void show_sql_error(const char * err_info);
 	void sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT hType, RETCODE RetCode);
 	void sql_load_database();
 	void sql_update_data(int key_id, short level);

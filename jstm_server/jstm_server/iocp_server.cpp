@@ -75,7 +75,6 @@ void Iocp_server::init_socket()
 		WSACleanup();
 		return;
 	}
-
 	m_accept_socket = listenSocket;
 }
 
@@ -105,10 +104,10 @@ void Iocp_server::do_accept_thread()
 		new_player->id = user_id;
 		new_player->socket = clientSocket;
 		new_player->room_number = -1;
-		new_player->is_connect = true;
 		new_player->recv_over.wsabuf[0].len = MAX_BUFFER;
 		new_player->recv_over.wsabuf[0].buf = new_player->recv_over.net_buf;
 		new_player->recv_over.event_type = EV_RECV;
+		new_player->is_connect = true;
 
 		m_map_player_info.insert(make_pair(user_id, new_player)); // 플레이어 map에 인서트
 

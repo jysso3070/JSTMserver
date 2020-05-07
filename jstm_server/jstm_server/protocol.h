@@ -2,6 +2,7 @@
 #include <DirectXMath.h>
 
 #define MAX_BUFFER 1024
+#define SERVER_PORT	3500
 
 // user_state
 #define STATE_playing_game	0
@@ -16,7 +17,7 @@
 #define SC_TRAP_INFO		6
 
 
-#define SERVER_PORT	3500
+
 #define CS_LEFT		1
 #define CS_RIGHT	2
 #define CS_UP		3

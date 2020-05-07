@@ -10,9 +10,9 @@ Database_manager::~Database_manager()
 {
 }
 
-void Database_manager::show_sql_error()
+void Database_manager::show_sql_error(const char * err_info)
 {
-	printf("error\n");
+	std::cout << err_info << "\n";
 }
 
 void Database_manager::sql_HandleDiagnosticRecord(SQLHANDLE hHandle, SQLSMALLINT hType, RETCODE RetCode)
@@ -67,6 +67,9 @@ void Database_manager::sql_load_database()
 				// Connect to data source  
 				retcode = SQLConnect(hdbc, (SQLWCHAR*)L"JSTM_DB", SQL_NTS, (SQLWCHAR*)NULL, 0, NULL, 0);
 				//retcode = SQLConnect(hdbc, (SQLWCHAR*)L"jys_gameserver", SQL_NTS, (SQLWCHAR*)NULL, SQL_NTS, NULL, SQL_NTS);
+				if (retcode == SQL_ERROR) {
+					show_sql_error("ODBC access fail");
+				}
 
 				// Allocate statement handle  
 				if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
@@ -86,7 +89,7 @@ void Database_manager::sql_load_database()
 						for (int i = 0; ; i++) {
 							retcode = SQLFetch(hstmt);  // hstmt 에서 데이터를 꺼내오는거
 							if (retcode == SQL_ERROR)
-								show_sql_error();
+								show_sql_error("행 데이터 로드 실패");
 							if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
 								wprintf(L"%d: %d %lS %d \n", i + 1, nKey, szName, nLevel);
 
@@ -118,6 +121,7 @@ void Database_manager::sql_load_database()
 					if (retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
 						SQLCancel(hstmt); // 핸들캔슬
 						SQLFreeHandle(SQL_HANDLE_STMT, hstmt);
+						cout << "DataBase access complete. \n";
 					}
 
 					SQLDisconnect(hdbc);
@@ -128,7 +132,6 @@ void Database_manager::sql_load_database()
 		}
 		SQLFreeHandle(SQL_HANDLE_ENV, henv);
 	}
-	cout << "DataBase access complete. \n";
 }
 
 void Database_manager::sql_update_data(int key_id, short level)
