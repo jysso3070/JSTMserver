@@ -3,6 +3,7 @@
 
 #define MAX_BUFFER 1024
 #define SERVER_PORT	3500
+#define MONSTER_ID_START	100
 
 // user_state
 #define STATE_playing_game	0
@@ -48,6 +49,7 @@ struct sc_packet_pos {
 	char type;
 	int mover_id;
 	short x, y;
+	short animation_state;
 	DirectX::XMFLOAT4X4 world_pos;
 };
 
@@ -121,6 +123,7 @@ struct cs_packet_pos {
 	char size;
 	char type;
 	int id;
+	short animation_state;
 	DirectX::XMFLOAT4X4 player_world_pos;
 };
 

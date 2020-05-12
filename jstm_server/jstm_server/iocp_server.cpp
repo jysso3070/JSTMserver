@@ -5,6 +5,8 @@ Iocp_server::Iocp_server()
 	Database_manager *db_manager = new Database_manager;
 	m_Database_manager = db_manager;
 
+	m_Timer = new Timer;
+	m_Timer->Reset();
 
 	Initialize();
 
@@ -14,6 +16,9 @@ Iocp_server::Iocp_server()
 
 Iocp_server::~Iocp_server()
 {
+	delete m_Timer;
+	m_Timer = nullptr;
+
 	WSACleanup();
 }
 
@@ -40,14 +45,22 @@ void Iocp_server::make_thread()
 	thread worker_thread_1{ &Iocp_server::do_worker_thread, this};
 	thread worker_thread_2{ &Iocp_server::do_worker_thread, this};
 	thread worker_thread_3{ &Iocp_server::do_worker_thread, this};
+	thread worker_thread_4{ &Iocp_server::do_worker_thread, this };
+	thread worker_thread_5{ &Iocp_server::do_worker_thread, this };
 	thread eventTimer_thread{ &Iocp_server::do_eventTimer_thread, this};
+
+	thread tempthread{ &Iocp_server::doTempThread, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
 	worker_thread_1.join();
 	worker_thread_2.join();
 	worker_thread_3.join();
+	worker_thread_4.join();
+	worker_thread_5.join();
 	eventTimer_thread.join();
+
+	tempthread.join();
 
 }
 
@@ -260,6 +273,19 @@ void Iocp_server::do_eventTimer_thread()
 	}
 }
 
+void Iocp_server::doTempThread()
+{
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	while (true) {
+		std::chrono::duration<float> sec = std::chrono::system_clock::now() - start;
+		if (sec.count() > 1) {
+			cout << "1초간 이동패킷수신횟수" << pakcetCount << endl;
+			start = std::chrono::system_clock::now();
+			pakcetCount = 0;
+		}
+	}
+}
+
 void Iocp_server::add_event_to_eventTimer(EVENT & ev)
 {
 	m_eventTimer_lock.lock();
@@ -315,20 +341,28 @@ void Iocp_server::process_player_move(int id, void * buff)
 	default:
 		break;
 	}
+
+	if (id == 0) {
+		++pakcetCount;
+	}
+
 	m_map_player_info[id]->player_world_pos = pos_packet->player_world_pos;
+	m_map_player_info[id]->animation_state = pos_packet->animation_state;
 
 	for (auto c : m_map_player_info) {
 		if (c.second->id == id) {
 		}
 		else {
 			if (c.second->is_connect == true) {
-				m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, m_map_player_info[id]->player_world_pos);
-				cout << "내위치 다른플레이어에게 보내기" << endl;
+				m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, 
+					m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
+				//cout << "내위치 다른플레이어에게 보내기" << endl;
 			}
 		}
 	}
 
-	m_Packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, m_map_player_info[id]->player_world_pos);
+	m_Packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, 
+		m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
 }
 
 void Iocp_server::process_make_room(int id)
@@ -483,7 +517,7 @@ void Iocp_server::process_packet(int id, void * buff)
 		break;
 	case CS_POS:
 		process_player_move(id, buff);
-		cout << "플레이어 이동 패킷 확인" << endl;
+		//cout << "플레이어 이동 패킷 확인" << endl;
 		break;
 	default:
 		break;

@@ -6,6 +6,7 @@
 #include "Trap.h"
 #include "Monster.h"
 #include "Collision.h"
+#include "timer.h"
 #include "struct.h"
 
 //class packet_manager;
@@ -29,6 +30,7 @@ public:
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
 	void do_worker_thread(); // 주 워커 스레드
 	void do_eventTimer_thread();
+	void doTempThread();
 
 	void add_event_to_eventTimer(EVENT &ev);
 
@@ -58,6 +60,7 @@ private:
 	Database_manager *m_Database_manager = NULL;
 	Server_manager *m_Server_manager = NULL;
 	Collision *m_Collision = NULL;
+	Timer *m_Timer = NULL;
 	
 	// iocp id
 	HANDLE m_iocp_Handle; // iocp 핸들값
@@ -75,5 +78,8 @@ private:
 	map<short, vector<Trap>> m_map_trap;
 
 	list<PLAYER_DB> m_list_player_db;	// DB정보
+
+
+	short pakcetCount = 0;
 };
 

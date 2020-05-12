@@ -58,13 +58,14 @@ void packet_manager::send_put_player_packet(int client_id, SOCKET client_socket,
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, int mover_id, DirectX::XMFLOAT4X4 player_pos)
+void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, int mover_id, DirectX::XMFLOAT4X4 player_pos, short animation_state)
 {
 	sc_packet_pos packet;
 	packet.mover_id = mover_id;
 	packet.size = sizeof(packet);
 	packet.type = SC_POS;
 	packet.world_pos = player_pos;
+	packet.animation_state = animation_state;
 	packet.x = 0;
 	packet.y = 0;
 	send_packet(client_id, client_socket, &packet);
