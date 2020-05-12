@@ -121,6 +121,7 @@ void Iocp_server::do_accept_thread()
 		new_player->recv_over.wsabuf[0].buf = new_player->recv_over.net_buf;
 		new_player->recv_over.event_type = EV_RECV;
 		new_player->is_connect = true;
+		new_player->player_state = STATE_default;
 
 		m_map_player_info.insert(make_pair(user_id, new_player)); // 플레이어 map에 인서트
 
@@ -348,12 +349,13 @@ void Iocp_server::process_player_move(int id, void * buff)
 
 	m_map_player_info[id]->player_world_pos = pos_packet->player_world_pos;
 	m_map_player_info[id]->animation_state = pos_packet->animation_state;
+	m_map_player_info[id]->player_state = STATE_playing_game;
 
 	for (auto c : m_map_player_info) {
 		if (c.second->id == id) {
 		}
 		else {
-			if (c.second->is_connect == true) {
+			if (c.second->is_connect == true && c.second->player_state == STATE_playing_game) {
 				m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, 
 					m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
 				//cout << "내위치 다른플레이어에게 보내기" << endl;
@@ -361,8 +363,8 @@ void Iocp_server::process_player_move(int id, void * buff)
 		}
 	}
 
-	m_Packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, 
-		m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
+	//m_Packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, 
+		//m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
 }
 
 void Iocp_server::process_make_room(int id)

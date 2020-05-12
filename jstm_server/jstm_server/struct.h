@@ -18,6 +18,7 @@ struct PLAYER_INFO {
 	SOCKET socket;
 	int id;
 	bool is_connect;
+	char player_state;
 	short animation_state;
 
 	short room_number;

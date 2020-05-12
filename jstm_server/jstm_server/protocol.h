@@ -6,9 +6,10 @@
 #define MONSTER_ID_START	100
 
 // user_state
-#define STATE_playing_game	0
-#define STATE_in_lobby		1
-#define STATE_in_room		2
+#define STATE_default		0
+#define STATE_playing_game	1
+#define STATE_in_lobby		2
+#define STATE_in_room		3
 
 #define SC_SEND_ID			1
 #define SC_POS				2
