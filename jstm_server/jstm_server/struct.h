@@ -35,14 +35,6 @@ struct PLAYER_DB {
 	short level;
 };
 
-struct GAME_ROOM {
-	short room_number;
-	int player_1_id;
-	int player_2_id;
-	int player_3_id;
-	int player_4_id;
-};
-
 struct EVENT
 {
 	int obj_id;

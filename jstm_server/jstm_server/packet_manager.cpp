@@ -81,16 +81,23 @@ void packet_manager::send_remove_player_packet(int client_id, SOCKET client_sock
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, short room_num, int player_1_id, int player_2_id, int player_3_id, int player_4_id)
+void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, GAME_ROOM game_room)
 {
 	sc_pakcet_room_info packet;
-	packet.room_num = room_num;
-	packet.player_1_id = player_1_id;
-	packet.player_2_id = player_2_id;
-	packet.player_3_id = player_3_id;
-	packet.player_4_id = player_4_id;
-	packet.size = sizeof(packet);
 	packet.type = SC_SEND_ROOM_LIST;
+	packet.game_room = game_room;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, short room_number)
+{
+	sc_packet_join_room_ok packet;
+	packet.type = SC_JOIN_ROOM_OK;
+	packet.id = client_id;
+	packet.room_number = room_number;
+	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);
 }

@@ -1,15 +1,21 @@
 #pragma once
 #include <DirectXMath.h>
 
+struct GAME_ROOM {
+	short room_number;
+	int players_id[4];
+};
+
+
 #define MAX_BUFFER 1024
 #define SERVER_PORT	3500
 #define MONSTER_ID_START	100
 
 // user_state
-#define STATE_default		0
-#define STATE_playing_game	1
-#define STATE_in_lobby		2
-#define STATE_in_room		3
+#define PLAYER_STATE_default		0
+#define PLAYER_STATE_playing_game	1
+#define PLAYER_STATE_in_lobby		2
+#define PLAYER_STATE_in_room		3
 
 #define SC_SEND_ID			1
 #define SC_POS				2
@@ -17,6 +23,7 @@
 #define SC_PUT_PLAYER		4
 #define SC_REMOVE_PLAYER	5
 #define SC_TRAP_INFO		6
+#define SC_JOIN_ROOM_OK		7
 
 
 
@@ -28,7 +35,8 @@
 #define CS_REQUEST_JOIN_ROOM	6
 #define CS_POS		7
 #define CS_TEST		8
-#define CS_INSTALL_TRAP	9
+#define CS_INSTALL_TRAP		9
+#define CS_CLIENT_STATE_CHANGE	10
 
 #pragma pack(push ,1)
 
@@ -63,11 +71,7 @@ struct sc_packet_remove_player {
 struct sc_pakcet_room_info {
 	char size;
 	char type;
-	short room_num;
-	int player_1_id;
-	int player_2_id;
-	int player_3_id;
-	int player_4_id;
+	GAME_ROOM game_room;
 };
 
 struct sc_packet_trap_info {
@@ -76,6 +80,13 @@ struct sc_packet_trap_info {
 	int id;
 	char trap_type;
 	DirectX::XMFLOAT4X4 trap_world_pos;
+};
+
+struct sc_packet_join_room_ok {
+	char size;
+	char type;
+	int id;
+	short room_number;
 };
 
 
@@ -113,7 +124,7 @@ struct cs_packet_make_room {
 	int id;
 };
 
-struct cs_packet_requset_join_room {
+struct cs_packet_request_join_room {
 	char size;
 	char type;
 	int joiner_id;
@@ -134,6 +145,13 @@ struct cs_packet_install_trap {
 	int id;
 	char trap_type;
 	DirectX::XMFLOAT4X4 trap_world_pos;
+};
+
+struct cs_packet_client_state_change {
+	char size;
+	char type;
+	int id;
+	char change_state;
 };
 
 

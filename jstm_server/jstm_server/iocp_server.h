@@ -38,6 +38,7 @@ public:
 	void process_player_move(int id, void *buff);
 	void process_make_room(int id);
 	void process_join_room(int id, void *buff);
+	void process_client_state_change(int id, void *buff);
 	void process_install_trap(int id, void *buff);
 
 	void send_all_room_list(int id);
