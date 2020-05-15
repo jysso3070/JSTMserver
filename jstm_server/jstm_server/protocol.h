@@ -68,7 +68,7 @@ struct sc_packet_remove_player {
 	int leave_player_id;
 };
 
-struct sc_pakcet_room_info {
+struct sc_packet_room_info {
 	char size;
 	char type;
 	GAME_ROOM game_room;

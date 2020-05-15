@@ -30,6 +30,7 @@ public:
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
 	void do_worker_thread(); // 주 워커 스레드
 	void do_eventTimer_thread();
+	void do_monster_thread();
 	void doTempThread();
 
 	void add_event_to_eventTimer(EVENT &ev);
@@ -75,11 +76,12 @@ private:
 	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 타이머 큐
 	mutex m_eventTimer_lock;
 
-	map<short, GAME_ROOM> m_map_game_room;	// room정보
+	map<short, GAME_ROOM*> m_map_game_room;	// room정보
 	map<short, vector<Trap>> m_map_trap;
 
 	list<PLAYER_DB> m_list_player_db;	// DB정보
 
+	volatile bool m_monsterThread_run = false;
 
 	short pakcetCount = 0;
 };

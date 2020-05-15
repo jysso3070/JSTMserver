@@ -34,7 +34,7 @@ void Iocp_server::Initialize()
 
 	m_Server_manager->get_server_ipAddress();
 	m_Server_manager->get_cpu_count();
-	init_DB();
+	//init_DB();
 
 	init_socket();
 }
@@ -274,6 +274,13 @@ void Iocp_server::do_eventTimer_thread()
 	}
 }
 
+void Iocp_server::do_monster_thread()
+{
+	while (m_monsterThread_run) {
+
+	}
+}
+
 void Iocp_server::doTempThread()
 {
 	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
@@ -378,7 +385,7 @@ void Iocp_server::process_make_room(int id)
 	new_room->players_id[3] = -1;
 
 	m_map_player_info[id]->roomList_lock.lock();
-	m_map_game_room.insert(make_pair(room_num, *new_room)); // gameroom map에 삽입
+	m_map_game_room.insert(make_pair(room_num, new_room)); // gameroom map에 삽입
 	m_map_player_info[id]->roomList_lock.unlock();
 
 	m_map_player_info[id]->room_number = room_num;
@@ -395,9 +402,9 @@ void Iocp_server::process_make_room(int id)
 	cout << "make room success \n";
 	for (auto room : m_map_game_room) {
 		cout << "room info \n";
-		cout << "room number: " << room.second.room_number << "\n";
+		cout << "room number: " << room.second->room_number << "\n";
 		for (int i = 0; i < 4; ++i) {
-			cout << "player " << i + 1 << " id: " << room.second.players_id[i]<<"\n";
+			cout << "player " << i + 1 << " id: " << room.second->players_id[i]<<"\n";
 		}
 	}
 }
@@ -412,8 +419,8 @@ void Iocp_server::process_join_room(int id, void *buff)
 	m_map_player_info[id]->roomList_lock.lock();
 
 	for (int i = 0; i < 4; ++i) {
-		if (m_map_game_room[r_number].players_id[i] == -1) {
-			m_map_game_room[r_number].players_id[i] = id;
+		if (m_map_game_room[r_number]->players_id[i] == -1) {
+			m_map_game_room[r_number]->players_id[i] = id;
 			break;
 		}
 	}
@@ -423,16 +430,16 @@ void Iocp_server::process_join_room(int id, void *buff)
 	// 바뀐 방정보 모든 클라이언트들에게 전송
 	for (auto client : m_map_player_info) {
 		if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
-			m_Packet_manager->send_room_info_pakcet(id, client.second->socket, m_map_game_room[r_number]);
+			m_Packet_manager->send_room_info_pakcet(id, client.second->socket, *m_map_game_room[r_number]);
 		}
 	}
 
 	cout << "make room success \n";
 	for (auto room : m_map_game_room) {
 		cout << "room info \n";
-		cout << "room number: " << room.second.room_number << "\n";
+		cout << "room number: " << room.second->room_number << "\n";
 		for (int i = 0; i < 4; ++i) {
-			cout << "player " << i + 1 << " id: " << room.second.players_id[i] << "\n";
+			cout << "player " << i + 1 << " id: " << room.second->players_id[i] << "\n";
 		}
 	}
 
@@ -469,7 +476,7 @@ void Iocp_server::send_all_room_list(int id)
 {
 	for (auto room_info : m_map_game_room) {
 		m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket,
-			room_info.second);
+			*room_info.second);
 	}
 }
 
@@ -490,8 +497,8 @@ void Iocp_server::process_disconnect_client(int leaver_id)
 	m_map_player_info[leaver_id]->roomList_lock.lock();
 	if (m_map_player_info[leaver_id]->room_number != -1) { // 플레이어가 방에 접속해 있을 때
 		for (int i = 0; i < 4; ++i) {
-			if (m_map_game_room[m_map_player_info[leaver_id]->room_number].players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
-				m_map_game_room[m_map_player_info[leaver_id]->room_number].players_id[i] = -1;
+			if (m_map_game_room[m_map_player_info[leaver_id]->room_number]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
+				m_map_game_room[m_map_player_info[leaver_id]->room_number]->players_id[i] = -1;
 				break;
 			}
 			

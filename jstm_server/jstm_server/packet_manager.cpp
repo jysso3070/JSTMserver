@@ -83,7 +83,7 @@ void packet_manager::send_remove_player_packet(int client_id, SOCKET client_sock
 
 void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, GAME_ROOM game_room)
 {
-	sc_pakcet_room_info packet;
+	sc_packet_room_info packet;
 	packet.type = SC_SEND_ROOM_LIST;
 	packet.game_room = game_room;
 	packet.size = sizeof(packet);
