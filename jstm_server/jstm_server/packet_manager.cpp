@@ -91,6 +91,17 @@ void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, 
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_make_room_ok(int client_id, SOCKET client_socket, short room_number)
+{
+	sc_packet_make_room_ok packet;
+	packet.type = SC_MAKE_ROOM_OK;
+	packet.id = client_id;
+	packet.room_number = room_number;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, short room_number)
 {
 	sc_packet_join_room_ok packet;

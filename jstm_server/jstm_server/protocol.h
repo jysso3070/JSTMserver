@@ -24,6 +24,7 @@ struct GAME_ROOM {
 #define SC_REMOVE_PLAYER	5
 #define SC_TRAP_INFO		6
 #define SC_JOIN_ROOM_OK		7
+#define SC_MAKE_ROOM_OK		8
 
 
 
@@ -83,6 +84,13 @@ struct sc_packet_trap_info {
 };
 
 struct sc_packet_join_room_ok {
+	char size;
+	char type;
+	int id;
+	short room_number;
+};
+
+struct sc_packet_make_room_ok {
 	char size;
 	char type;
 	int id;

@@ -391,6 +391,7 @@ void Iocp_server::process_make_room(int id)
 	m_map_player_info[id]->room_number = room_num;
 	m_map_player_info[id]->player_state = PLAYER_STATE_in_room;
 
+	m_Packet_manager->send_make_room_ok(id, m_map_player_info[id]->socket, room_num);
 
 	for (auto client : m_map_player_info) {
 		if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby){
