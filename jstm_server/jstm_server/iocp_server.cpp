@@ -132,20 +132,20 @@ void Iocp_server::do_accept_thread()
 		cout << "새로운 플레이어 접속" << endl;
 		//m_packet_manager->send_pos_packet(user_id, clientSocket, )
 
-		for (auto c : m_map_player_info) {
-			if (c.second->id == user_id) { 
-				// 자기 자신도 풋 플레이어?
-			}
-			else {
-				if (c.second->is_connect == true) { // 접속되어 있는 플레이언지 체크
-					// 새로운 플레이어정보를 기존의 플레이어들에게 전송
-					m_Packet_manager->send_put_player_packet(c.second->id, c.second->socket, user_id);
-					//새로운 플레이어에게 기존의 플레이어 정보를 전송
-					m_Packet_manager->send_put_player_packet(user_id, clientSocket, c.second->id);
-				}
-				
-			}
-		}
+		//for (auto c : m_map_player_info) {
+		//	if (c.second->id == user_id) { 
+		//		// 자기 자신도 풋 플레이어?
+		//	}
+		//	else {
+		//		if (c.second->is_connect == true) { // 접속되어 있는 플레이언지 체크
+		//			// 새로운 플레이어정보를 기존의 플레이어들에게 전송
+		//			m_Packet_manager->send_put_player_packet(c.second->id, c.second->socket, user_id);
+		//			//새로운 플레이어에게 기존의 플레이어 정보를 전송
+		//			m_Packet_manager->send_put_player_packet(user_id, clientSocket, c.second->id);
+		//		}
+		//		
+		//	}
+		//}
 
 		//send_all_room_list(user_id); // 모든 방 정보 전송
 
@@ -358,20 +358,39 @@ void Iocp_server::process_player_move(int id, void * buff)
 	m_map_player_info[id]->animation_state = pos_packet->animation_state;
 	//m_map_player_info[id]->player_state = PLAYER_STATE_playing_game;
 
-	for (auto c : m_map_player_info) {
-		if (c.second->id == id) {
-		}
-		else {
-			if (c.second->is_connect == true && c.second->player_state == PLAYER_STATE_playing_game) {
-				m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, 
-					m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
-				//cout << "내위치 다른플레이어에게 보내기" << endl;
-			}
+	//for (auto c : m_map_player_info) {
+	//	if (c.second->id == id) {
+	//	}
+	//	else {
+	//		if (c.second->is_connect == true && c.second->player_state == PLAYER_STATE_playing_game) {
+	//			m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, 
+	//				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
+	//			//cout << "내위치 다른플레이어에게 보내기" << endl;
+	//		}
+	//	}
+	//}
+	if (m_map_game_room[m_map_player_info[id]->room_number]->players_id == NULL) {
+		return;
+	}
+
+	for (int other_id : m_map_game_room[m_map_player_info[id]->room_number]->players_id) {
+		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true && 
+			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
+			//m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id);
+			m_Packet_manager->send_pos_packet(other_id, m_map_player_info[other_id]->socket, id,
+				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
 		}
 	}
 
-	//m_Packet_manager->send_pos_packet(id, m_map_player_info[id]->socket, id, 
-		//m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
+	/*for (int i = 0; i < 4; ++i) {
+		int other_id = m_map_game_room[m_map_player_info[id]->room_number]->players_id[i];
+		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
+			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
+			m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id);
+			m_Packet_manager->send_pos_packet(other_id, m_map_player_info[other_id]->socket, id,
+				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
+		}
+	}*/
 }
 
 void Iocp_server::process_make_room(int id)
@@ -428,6 +447,8 @@ void Iocp_server::process_join_room(int id, void *buff)
 	
 	m_map_player_info[id]->roomList_lock.unlock();
 
+	m_map_player_info[id]->room_number = r_number;
+
 	// 바뀐 방정보 모든 클라이언트들에게 전송
 	for (auto client : m_map_player_info) {
 		if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
@@ -450,6 +471,16 @@ void Iocp_server::process_client_state_change(int id, void * buff)
 {
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
 	m_map_player_info[id]->player_state = packet->change_state;
+	if (packet->change_state == PLAYER_STATE_playing_game) {
+		for (int i = 0; i < 4; ++i) {
+			int other_id = m_map_game_room[m_map_player_info[id]->room_number]->players_id[i];
+			if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
+				m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
+				m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id);
+				m_Packet_manager->send_put_player_packet(id, m_map_player_info[id]->socket, other_id);
+			}
+		}
+	}
 }
 
 void Iocp_server::process_install_trap(int id, void * buff)
