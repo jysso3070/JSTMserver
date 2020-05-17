@@ -12,7 +12,7 @@ packet_manager::~packet_manager()
 
 void packet_manager::send_packet(int client_id, SOCKET client_socket, void * buf)
 {
-	char* packet = reinterpret_cast<char*>(buf);
+	unsigned short* packet = reinterpret_cast<unsigned short*>(buf);
 	int packet_size = packet[0];
 	OVER_EX *send_over = new OVER_EX;
 	memset(send_over, 0x00, sizeof(OVER_EX));

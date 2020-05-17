@@ -46,10 +46,11 @@ void Iocp_server::make_thread()
 	thread worker_thread_2{ &Iocp_server::do_worker_thread, this};
 	thread worker_thread_3{ &Iocp_server::do_worker_thread, this};
 	thread worker_thread_4{ &Iocp_server::do_worker_thread, this };
-	thread worker_thread_5{ &Iocp_server::do_worker_thread, this };
 	thread eventTimer_thread{ &Iocp_server::do_eventTimer_thread, this};
 
-	thread tempthread{ &Iocp_server::doTempThread, this };
+	thread monster_thread{ &Iocp_server::do_monster_thread, this };
+
+	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
@@ -57,10 +58,11 @@ void Iocp_server::make_thread()
 	worker_thread_2.join();
 	worker_thread_3.join();
 	worker_thread_4.join();
-	worker_thread_5.join();
 	eventTimer_thread.join();
 
-	tempthread.join();
+	monster_thread.join();
+
+	packet_count_thread.join();
 
 }
 
@@ -155,6 +157,10 @@ void Iocp_server::do_accept_thread()
 
 		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 3s, EV_TEST, 0 };
 		add_event_to_eventTimer(ev);
+
+		EVENT tev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
+		add_event_to_eventTimer(tev);
+
 		//////
 
 
@@ -271,17 +277,28 @@ void Iocp_server::do_eventTimer_thread()
 			over_ex->event_type = EV_TEST;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
+		if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
+			m_monsterThread_run = true;
+		}
 	}
 }
 
 void Iocp_server::do_monster_thread()
 {
-	while (m_monsterThread_run) {
-
+	int cnt = 0;
+	while (true) {
+		if (m_monsterThread_run == false) {
+			continue;
+		}
+		cout << "thread run: " << cnt << endl;
+		EVENT ev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
+		add_event_to_eventTimer(ev);
+		++cnt;
+		m_monsterThread_run = false;
 	}
 }
 
-void Iocp_server::doTempThread()
+void Iocp_server::do_packet_count()
 {
 	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
 	while (true) {

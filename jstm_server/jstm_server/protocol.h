@@ -43,19 +43,19 @@ struct GAME_ROOM {
 
 // server to client
 struct sc_packet_send_id {
-	char size;
+	unsigned short size;
 	char type;
 	int id;
 };
 
 struct sc_packet_put_player {
-	char size;
+	unsigned short size;
 	char type;
 	int new_player_id;
 };
 
 struct sc_packet_pos {
-	char size;
+	unsigned short size;
 	char type;
 	int mover_id;
 	short x, y;
@@ -64,19 +64,19 @@ struct sc_packet_pos {
 };
 
 struct sc_packet_remove_player {
-	char size;
+	unsigned short size;
 	char type;
 	int leave_player_id;
 };
 
 struct sc_packet_room_info {
-	char size;
+	unsigned short size;
 	char type;
 	GAME_ROOM game_room;
 };
 
 struct sc_packet_trap_info {
-	char size;
+	unsigned short size;
 	char type;
 	int id;
 	char trap_type;
@@ -84,14 +84,14 @@ struct sc_packet_trap_info {
 };
 
 struct sc_packet_join_room_ok {
-	char size;
+	unsigned short size;
 	char type;
 	int id;
 	short room_number;
 };
 
 struct sc_packet_make_room_ok {
-	char size;
+	unsigned short size;
 	char type;
 	int id;
 	short room_number;
