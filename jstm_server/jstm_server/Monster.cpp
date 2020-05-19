@@ -16,7 +16,7 @@ void Monster::set_id(int id)
 	m_id = id;
 }
 
-void Monster::set_pos(DirectX::XMFLOAT4X4 pos)
+void Monster::set_position(DirectX::XMFLOAT4X4 pos)
 {
 	m_world_pos = pos;
 }
@@ -44,4 +44,9 @@ DirectX::XMFLOAT4X4 Monster::get_pos()
 char Monster::get_monster_type()
 {
 	return m_monster_type;
+}
+
+void Monster::move_forward(float distance)
+{
+	m_world_pos._41 += distance;
 }

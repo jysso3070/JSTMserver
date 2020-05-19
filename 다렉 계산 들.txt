@@ -1,0 +1,35 @@
+
+움직일때
+void GameObject::MoveForward(float Distance)
+{
+	XMFLOAT3 Position = GetPosition();
+	XMFLOAT3 Look = GetLook();
+	Position = Vector3::Add(Position, Look, Distance);
+	GameObject::SetPostion(Position);
+
+	m_TransformPos._42 = -50.f;
+}
+
+
+플레이어 바라보게
+
+void Monster::SetDirection(XMFLOAT3 Position)
+{
+	// 플레이어를 바라보도록 설정
+	Position.y = -50.f;
+
+	XMFLOAT3 Look = Vector3::Subtract(GetPosition(), Position);
+	Look = Vector3::Normalize(Look);
+	m_TransformPos._31 = -Look.x;
+	m_TransformPos._32 = -Look.y;
+	m_TransformPos._33 = -Look.z;
+
+	m_TransformPos._21 = 0.f;
+	m_TransformPos._22 = 1.f;
+	m_TransformPos._23 = 0.f;
+
+	XMFLOAT3 Right = Vector3::CrossProduct(GetUp(), Look, true);
+	m_TransformPos._11 = -Right.x;
+	m_TransformPos._12 = -Right.y;
+	m_TransformPos._13 = -Right.z;
+}

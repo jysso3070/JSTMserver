@@ -3,7 +3,16 @@
 
 struct GAME_ROOM {
 	short room_number;
+	char room_state;
+	short wave_count;
 	int players_id[4];
+};
+
+struct MONSTER {
+	short id;
+	char type;
+	short animation_state;
+	DirectX::XMFLOAT4X4 world_pos;
 };
 
 
@@ -16,6 +25,18 @@ struct GAME_ROOM {
 #define PLAYER_STATE_playing_game	1
 #define PLAYER_STATE_in_lobby		2
 #define PLAYER_STATE_in_room		3
+
+// room state
+#define R_STATE_in_room				0
+#define R_STATE_wait_first_wave		1
+#define R_STATE_wave_start			2
+#define R_STATE_wave_end			3
+
+// monster_type
+#define M_TYPE_NORMAL	1
+#define M_TYPE_MAGIC	2
+#define M_TYPE_AXE		3
+#define M_TYPE_RIDER	4
 
 #define SC_SEND_ID			1
 #define SC_POS				2
@@ -160,6 +181,7 @@ struct cs_packet_client_state_change {
 	char type;
 	int id;
 	char change_state;
+	short stage_number;
 };
 
 

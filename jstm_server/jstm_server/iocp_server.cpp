@@ -290,7 +290,16 @@ void Iocp_server::do_monster_thread()
 		if (m_monsterThread_run == false) {
 			continue;
 		}
-		cout << "thread run: " << cnt << endl;
+		cout << "thread run start " << endl;
+		for (auto mon_pool : m_map_monsterPool) {
+			for (int i = 0; i < 1; ++i) {
+				mon_pool.second[i].move_forward(1.f);
+				DirectX::XMFLOAT4X4 tpos = mon_pool.second[i].get_pos();
+				cout << "x: " << tpos._41 << ", z: " << tpos._43 << endl;
+			}
+		}
+
+		cout << "thread run end: " << cnt << endl;
 		EVENT ev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(ev);
 		++cnt;
@@ -415,6 +424,8 @@ void Iocp_server::process_make_room(int id)
 	short room_num = m_new_room_num++;
 	GAME_ROOM *new_room = new GAME_ROOM;
 	new_room->room_number = room_num;
+	new_room->room_state = R_STATE_in_room;
+	new_room->wave_count = 0;
 	new_room->players_id[0] = id;
 	new_room->players_id[1] = -1;
 	new_room->players_id[2] = -1;
@@ -454,14 +465,12 @@ void Iocp_server::process_join_room(int id, void *buff)
 	short r_number = join_room_packet->room_number;
 
 	m_map_player_info[id]->roomList_lock.lock();
-
 	for (int i = 0; i < 4; ++i) {
 		if (m_map_game_room[r_number]->players_id[i] == -1) {
 			m_map_game_room[r_number]->players_id[i] = id;
 			break;
 		}
 	}
-	
 	m_map_player_info[id]->roomList_lock.unlock();
 
 	m_map_player_info[id]->room_number = r_number;
@@ -474,7 +483,8 @@ void Iocp_server::process_join_room(int id, void *buff)
 	}
 
 	cout << "make room success \n";
-	for (auto room : m_map_game_room) {
+	auto copyRoom = m_map_game_room;
+	for (auto room : copyRoom) {
 		cout << "room info \n";
 		cout << "room number: " << room.second->room_number << "\n";
 		for (int i = 0; i < 4; ++i) {
@@ -488,8 +498,15 @@ void Iocp_server::process_client_state_change(int id, void * buff)
 {
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
 	m_map_player_info[id]->player_state = packet->change_state;
-	if (packet->change_state == PLAYER_STATE_playing_game) {
-		for (int i = 0; i < 4; ++i) {
+	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
+		if (m_map_game_room[m_map_player_info[id]->room_number]->room_state == R_STATE_in_room) {
+			m_map_player_info[id]->roomList_lock.lock();
+			m_map_game_room[m_map_player_info[id]->room_number]->room_state = R_STATE_wait_first_wave;
+			m_map_player_info[id]->roomList_lock.unlock();
+			process_game_start(m_map_player_info[id]->room_number, 1);
+		}
+
+		for (int i = 0; i < 4; ++i) {	// 같은 방의 클라이언트에게 put player 상호 전송
 			int other_id = m_map_game_room[m_map_player_info[id]->room_number]->players_id[i];
 			if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
 				m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
@@ -521,9 +538,56 @@ void Iocp_server::process_install_trap(int id, void * buff)
 	}
 }
 
+void Iocp_server::process_game_start(short room_number, short stage_number)
+{
+	Monster *monsterArr = new Monster[100];
+	for (int i = 0; i < 100; ++i) {
+		monsterArr[i].set_id(i);
+		monsterArr[i].set_monster_isLive(false);
+		monsterArr[i].set_monster_type(M_TYPE_NORMAL);
+		DirectX::XMFLOAT4X4 w_pos;
+		w_pos._41 = -200.f;
+		w_pos._42 = -50.f;
+		w_pos._43 = 150.f;
+		monsterArr[i].set_position(w_pos);
+	}
+	m_map_monsterPool.insert(make_pair(room_number, monsterArr));
+
+	for (auto m : m_map_monsterPool) {
+		cout << "----------room number: " << m.first << endl;
+		for (int i = 0; i < 100; ++i) {
+			cout << "monster id: " << m.second[i].get_monster_id() << endl;
+		}
+	}
+	gen_monster(room_number, 1, 1);
+	
+}
+
+void Iocp_server::gen_monster(short room_number, short wave_number, short stage_number)
+{
+	if (m_map_monsterPool.find(room_number) == m_map_monsterPool.end()) {
+		cout << "room does not exist" << endl;
+		return;
+	}
+	switch (wave_number)
+	{
+	case 1:
+		for (int i = 0; i < 1; ++i) {
+			m_map_monsterPool[room_number][i].set_monster_isLive(true);
+			// 위치 정보도 지정해줘야할듯
+		}
+		break;
+	default:
+		break;
+	}
+
+	cout << "gen complete" << endl;;
+}
+
 void Iocp_server::send_all_room_list(int id)
 {
-	for (auto room_info : m_map_game_room) {
+	auto copyRoom = m_map_game_room;
+	for (auto room_info : copyRoom) {
 		m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket,
 			*room_info.second);
 	}

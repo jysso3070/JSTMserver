@@ -110,5 +110,8 @@
     <ClInclude Include="Trap.h">
       <Filter>소스 파일\Object\Trap</Filter>
     </ClInclude>
+    <ClInclude Include="direct_vector.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

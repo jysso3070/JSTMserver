@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="Collision.h" />
     <ClInclude Include="database_manager.h" />
+    <ClInclude Include="direct_vector.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="iocp_server.h" />
     <ClInclude Include="Monster.h" />
