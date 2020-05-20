@@ -294,7 +294,7 @@ void Iocp_server::do_monster_thread()
 		for (auto mon_pool : m_map_monsterPool) {
 			for (int i = 0; i < 1; ++i) {
 				mon_pool.second[i].move_forward(1.f);
-				DirectX::XMFLOAT4X4 tpos = mon_pool.second[i].get_pos();
+				DirectX::XMFLOAT4X4 tpos = mon_pool.second[i].get_4x4position();
 				cout << "x: " << tpos._41 << ", z: " << tpos._43 << endl;
 			}
 		}
@@ -549,7 +549,7 @@ void Iocp_server::process_game_start(short room_number, short stage_number)
 		w_pos._41 = -200.f;
 		w_pos._42 = -50.f;
 		w_pos._43 = 150.f;
-		monsterArr[i].set_position(w_pos);
+		monsterArr[i].set_4x4position(w_pos);
 	}
 	m_map_monsterPool.insert(make_pair(room_number, monsterArr));
 
