@@ -10,14 +10,17 @@ class Monster
 public:
 	Monster();
 	~Monster();
+	void init();
 	
 	void set_id(int id);
 	void set_4x4position(XMFLOAT4X4 pos);
+	void set_look(XMFLOAT3 look);
 	void set_monster_type(char monster_type);
 	void set_monster_isLive(bool flag);
 
 	int get_monster_id();
 	char get_monster_type();
+	bool get_isLive();
 	XMFLOAT4X4 get_4x4position();
 	XMFLOAT3 get_right() { return XMFLOAT3(m_4x4position._11, m_4x4position._12, m_4x4position._13); }
 	XMFLOAT3 get_up() { return XMFLOAT3(m_4x4position._21, m_4x4position._22, m_4x4position._23); }

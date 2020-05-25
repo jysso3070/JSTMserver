@@ -82,13 +82,13 @@ private:
 	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 타이머 큐
 	mutex m_eventTimer_lock;
 
-	map<short, GAME_ROOM*> m_map_game_room;	// room정보
-	map<short, vector<Trap>> m_map_trap;
+	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> m_map_game_room;	// room정보
 	Concurrency::concurrent_unordered_map<short, Monster*> m_map_monsterPool;
+	map<short, vector<Trap>> m_map_trap;
 
 	list<PLAYER_DB> m_list_player_db;	// DB정보
 
-	volatile bool m_monsterThread_run = false;
+	volatile bool m_monsterThread_run = true;
 
 	short pakcetCount = 0;
 };

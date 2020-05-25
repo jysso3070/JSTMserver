@@ -158,8 +158,8 @@ void Iocp_server::do_accept_thread()
 		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 3s, EV_TEST, 0 };
 		add_event_to_eventTimer(ev);
 
-		EVENT tev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
-		add_event_to_eventTimer(tev);
+		/*EVENT tev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
+		add_event_to_eventTimer(tev);*/
 
 		//////
 
@@ -291,15 +291,41 @@ void Iocp_server::do_monster_thread()
 			continue;
 		}
 		cout << "thread run start " << endl;
+		cout << "room cnt: " << m_map_monsterPool.size() << endl;
+		//clock_t start1, end1, start2, end2;
+		//start1 = clock();
+		auto start = chrono::high_resolution_clock::now();
 		for (auto mon_pool : m_map_monsterPool) {
-			for (int i = 0; i < 1; ++i) {
+			struct MONSTER packet_mon[100];
+			for (int i = 0; i < 100; ++i) {
+				packet_mon[i].id = i;
+				packet_mon[i].isLive = false;
+				if (mon_pool.second[i].get_isLive() == false) {
+					continue;
+				}
 				mon_pool.second[i].move_forward(1.f);
+				//cout << "x: " << tpos._41 << ", z: " << tpos._43 << endl;
+				// 패킷에 들어갈 몬스터배열 값 지정
 				DirectX::XMFLOAT4X4 tpos = mon_pool.second[i].get_4x4position();
-				cout << "x: " << tpos._41 << ", z: " << tpos._43 << endl;
+				packet_mon[i].isLive = mon_pool.second[i].get_isLive();
+				packet_mon[i].state = -1;
+				packet_mon[i].animation_state = 1;
+				packet_mon[i].type = mon_pool.second[i].get_monster_type();
+				packet_mon[i].world_pos = mon_pool.second[i].get_4x4position();
+			}
+
+			for (int i = 0; i < 4; ++i) {
+				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
+				if (player_id != -1) {
+					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, packet_mon);
+				}
 			}
 		}
-
+		//end1 = clock();
+		auto end = chrono::high_resolution_clock::now();
+		
 		cout << "thread run end: " << cnt << endl;
+		cout << "time: " << (end - start).count() << "ns" << endl;
 		EVENT ev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(ev);
 		++cnt;
@@ -572,7 +598,8 @@ void Iocp_server::gen_monster(short room_number, short wave_number, short stage_
 	switch (wave_number)
 	{
 	case 1:
-		for (int i = 0; i < 1; ++i) {
+		for (int i = 0; i < 100; ++i) {
+			m_map_game_room[room_number]->wave_count = 1;
 			m_map_monsterPool[room_number][i].set_monster_isLive(true);
 			// 위치 정보도 지정해줘야할듯
 		}
@@ -608,7 +635,9 @@ void Iocp_server::get_player_db()
 void Iocp_server::process_disconnect_client(int leaver_id)
 {
 	m_map_player_info[leaver_id]->roomList_lock.lock();
+	short check_roomNum = -1; 
 	if (m_map_player_info[leaver_id]->room_number != -1) { // 플레이어가 방에 접속해 있을 때
+		check_roomNum = m_map_player_info[leaver_id]->room_number;
 		for (int i = 0; i < 4; ++i) {
 			if (m_map_game_room[m_map_player_info[leaver_id]->room_number]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
 				m_map_game_room[m_map_player_info[leaver_id]->room_number]->players_id[i] = -1;
@@ -627,6 +656,16 @@ void Iocp_server::process_disconnect_client(int leaver_id)
 			if (c.second->is_connect == true) {
 				// 모든 플레이어에게 접속종료된 클라이언트의 아이디를 보내준다
 				m_Packet_manager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
+			}
+		}
+	}
+	if (check_roomNum != -1) { // 방이 비었는지 검사
+		int copy_players[4];
+		memcpy_s(copy_players, sizeof(copy_players), m_map_game_room[check_roomNum]->players_id, sizeof(m_map_game_room[check_roomNum]->players_id));
+		if (copy_players[0] == -1 && copy_players[1] == -1 && copy_players[2] == -1 && copy_players[3] == -1) {
+			for (int i = 0; i < 100; ++i) {
+				// 방에 플레이어가 없으면 몬스터 다 false로
+				m_map_monsterPool[check_roomNum][i].set_monster_isLive(false);
 			}
 		}
 	}

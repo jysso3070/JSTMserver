@@ -13,7 +13,8 @@ packet_manager::~packet_manager()
 void packet_manager::send_packet(int client_id, SOCKET client_socket, void * buf)
 {
 	unsigned short* packet = reinterpret_cast<unsigned short*>(buf);
-	int packet_size = packet[0];
+	unsigned short packet_size = packet[0];
+	cout << packet_size << endl;
 	OVER_EX *send_over = new OVER_EX;
 	memset(send_over, 0x00, sizeof(OVER_EX));
 	send_over->event_type = EV_SEND;
@@ -122,6 +123,17 @@ void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, 
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONSTER mon_arr[])
+{
+	sc_packet_monster_pos packet;
+	packet.type = SC_MONSTER_POS;
+	memcpy_s(packet.monsterArr, sizeof(packet.monsterArr), mon_arr, sizeof(packet.monsterArr));
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+	//packet.monsterArr = mon_arr;
 }
 
 void packet_manager::error_display(const char * msg, int err_no)

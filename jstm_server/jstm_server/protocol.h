@@ -10,13 +10,15 @@ struct GAME_ROOM {
 
 struct MONSTER {
 	short id;
+	bool isLive;
 	char type;
 	short animation_state;
+	short state;
 	DirectX::XMFLOAT4X4 world_pos;
 };
 
 
-#define MAX_BUFFER 1024
+#define MAX_BUFFER 8192
 #define SERVER_PORT	3500
 #define MONSTER_ID_START	100
 
@@ -46,6 +48,7 @@ struct MONSTER {
 #define SC_TRAP_INFO		6
 #define SC_JOIN_ROOM_OK		7
 #define SC_MAKE_ROOM_OK		8
+#define SC_MONSTER_POS		9
 
 
 
@@ -116,6 +119,12 @@ struct sc_packet_make_room_ok {
 	char type;
 	int id;
 	short room_number;
+};
+
+struct sc_packet_monster_pos {
+	unsigned short size;
+	char type;
+	MONSTER monsterArr[100];
 };
 
 
