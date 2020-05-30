@@ -37,23 +37,24 @@ public:
 
 	void add_event_to_eventTimer(EVENT &ev);
 
-	void t_process_player_move(int id, void *buff);	// 테스트용
-	void process_player_move(int id, void *buff);	// 플레이어 움직임
-	void process_make_room(int id);					// 플레이어 방 생성
-	void process_join_room(int id, void *buff);		// 플레이어 방 입장
-	void process_client_state_change(int id, void *buff);	// 플레이어 상태 변경
-	void process_install_trap(int id, void *buff);	// 함정설치
+	void t_process_player_move(const int& id, void *buff);	// 테스트용
+	void process_player_move(const int& id, void *buff);	// 플레이어 움직임
+	void process_make_room(const int& id);					// 플레이어 방 생성
+	void process_join_room(const int& id, void *buff);		// 플레이어 방 입장
+	void process_client_state_change(const int& id, void *buff);	// 플레이어 상태 변경
+	void process_install_trap(const int& id, void *buff);	// 함정설치
 
-	void process_game_start(short room_number, short stage_number);
+	void process_game_start(const short& room_number, const short& stage_number);
 
-	void gen_monster(short room_number, short wave_number, short stage_number); // 몬스터 리젠
+	void gen_monster(const short& room_number, const short& wave_number, const short& stage_number); // 몬스터 리젠
+	void check_wave_end(const short& room_number);
 
-	void send_all_room_list(int id);		// 모든 방정보 전송
+	void send_all_room_list(const int& id);		// 모든 방정보 전송
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
-	void process_disconnect_client(int leaver_id);
+	void process_disconnect_client(const int& leaver_id);
 
 
-	void process_packet(int id, void *buff);
+	void process_packet(const int& id, void *buff);
 	
 
 	// 패킷 송신

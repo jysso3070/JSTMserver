@@ -5,6 +5,7 @@ struct GAME_ROOM {
 	short room_number;
 	char room_state;
 	short wave_count;
+	short stage_number;
 	int players_id[4];
 };
 
@@ -18,9 +19,10 @@ struct MONSTER {
 };
 
 
-#define MAX_BUFFER 8192
+#define MAX_BUFFER 16384
 #define SERVER_PORT	3500
 #define MONSTER_ID_START	100
+#define MAX_MONSTER		100
 
 // user_state
 #define PLAYER_STATE_default		0
@@ -40,6 +42,7 @@ struct MONSTER {
 #define M_TYPE_AXE		3
 #define M_TYPE_RIDER	4
 
+
 #define SC_SEND_ID			1
 #define SC_POS				2
 #define SC_SEND_ROOM_LIST	3	
@@ -49,7 +52,6 @@ struct MONSTER {
 #define SC_JOIN_ROOM_OK		7
 #define SC_MAKE_ROOM_OK		8
 #define SC_MONSTER_POS		9
-
 
 
 #define CS_LEFT		1

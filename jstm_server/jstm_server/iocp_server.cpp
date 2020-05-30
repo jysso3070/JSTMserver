@@ -280,6 +280,9 @@ void Iocp_server::do_eventTimer_thread()
 		if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
 			m_monsterThread_run = true;
 		}
+		if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
+			gen_monster(p_ev.obj_id, 1, 1);
+		}
 	}
 }
 
@@ -292,41 +295,73 @@ void Iocp_server::do_monster_thread()
 		}
 		cout << "thread run start " << endl;
 		cout << "room cnt: " << m_map_monsterPool.size() << endl;
-		//clock_t start1, end1, start2, end2;
-		//start1 = clock();
 		auto start = chrono::high_resolution_clock::now();
 		for (auto mon_pool : m_map_monsterPool) {
-			struct MONSTER packet_mon[100];
-			for (int i = 0; i < 100; ++i) {
+			struct MONSTER packet_mon[MAX_MONSTER];
+			for (int i = 0; i < MAX_MONSTER; ++i) {
 				packet_mon[i].id = i;
 				packet_mon[i].isLive = false;
 				if (mon_pool.second[i].get_isLive() == false) {
 					continue;
 				}
-				mon_pool.second[i].move_forward(1.f);
+				for (int player_index = 0; player_index < 4; ++player_index) {
+					int player_id = m_map_game_room[mon_pool.first]->players_id[player_index];
+					if (player_id == -1) {	// 접속되지 않는 플레이어 예외처리
+						continue;
+					}
+					if (m_map_player_info[player_id]->player_state != PLAYER_STATE_playing_game) {
+						continue;
+					}
+					//cout << "playerid: " << player_id << endl;
+					float dis_to_player = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool.second[i].get_position());
+					
+					if (dis_to_player <= 200.f && dis_to_player >= 70.f) { // 어그로 범위 내
+						//cout << "playerid: " << player_id << endl;
+						//cout <<"monster "<< i << "agrro on " << player_id << endl;
+						mon_pool.second[i].set_target_id(player_id);
+						mon_pool.second[i].set_aggro_direction(m_map_player_info[player_id]->get_pos());
+						mon_pool.second[i].move_forward(5.f);
+						mon_pool.second[i].set_animation_state(2);
+						break;
+					}
+					else if (dis_to_player < 70.f) { // 공격 범위 내
+						//cout << "monster " << i << "attack on " << player_id << endl;
+						mon_pool.second[i].set_target_id(player_id);
+						mon_pool.second[i].set_aggro_direction(m_map_player_info[player_id]->get_pos());
+						mon_pool.second[i].set_animation_state(3);
+						break;
+					}
+					if (dis_to_player > 200.f) { // 일반
+						//cout << "default" << endl;
+						mon_pool.second[i].set_aggro_direction(m_map_player_info[player_id]->get_pos());
+						mon_pool.second[i].set_animation_state(2);
+					}
+					
+				}
+				
+				//mon_pool.second[i].set_aggro_direction(m_map_player_info[0]->get_pos());
+				//mon_pool.second[i].move_forward(5.f);
 				//cout << "x: " << tpos._41 << ", z: " << tpos._43 << endl;
 				// 패킷에 들어갈 몬스터배열 값 지정
-				DirectX::XMFLOAT4X4 tpos = mon_pool.second[i].get_4x4position();
 				packet_mon[i].isLive = mon_pool.second[i].get_isLive();
 				packet_mon[i].state = -1;
-				packet_mon[i].animation_state = 1;
+				packet_mon[i].animation_state = mon_pool.second[i].get_animation_state();
 				packet_mon[i].type = mon_pool.second[i].get_monster_type();
 				packet_mon[i].world_pos = mon_pool.second[i].get_4x4position();
 			}
-
 			for (int i = 0; i < 4; ++i) {
 				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
-				if (player_id != -1) {
+				if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
 					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, packet_mon);
 				}
 			}
 		}
-		//end1 = clock();
 		auto end = chrono::high_resolution_clock::now();
 		
 		cout << "thread run end: " << cnt << endl;
 		cout << "time: " << (end - start).count() << "ns" << endl;
-		EVENT ev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
+		
+		EVENT ev{ -10, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(ev);
 		++cnt;
 		m_monsterThread_run = false;
@@ -353,7 +388,7 @@ void Iocp_server::add_event_to_eventTimer(EVENT & ev)
 	m_eventTimer_lock.unlock();
 }
 
-void Iocp_server::t_process_player_move(int id, void * buff)
+void Iocp_server::t_process_player_move(const int& id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
@@ -384,7 +419,7 @@ void Iocp_server::t_process_player_move(int id, void * buff)
 
 }
 
-void Iocp_server::process_player_move(int id, void * buff)
+void Iocp_server::process_player_move(const int& id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 	cs_packet_pos *pos_packet = reinterpret_cast<cs_packet_pos*>(buff);
@@ -445,13 +480,14 @@ void Iocp_server::process_player_move(int id, void * buff)
 	}*/
 }
 
-void Iocp_server::process_make_room(int id)
+void Iocp_server::process_make_room(const int& id)
 {
 	short room_num = m_new_room_num++;
 	GAME_ROOM *new_room = new GAME_ROOM;
 	new_room->room_number = room_num;
 	new_room->room_state = R_STATE_in_room;
 	new_room->wave_count = 0;
+	new_room->stage_number = 1;
 	new_room->players_id[0] = id;
 	new_room->players_id[1] = -1;
 	new_room->players_id[2] = -1;
@@ -483,7 +519,7 @@ void Iocp_server::process_make_room(int id)
 	}
 }
 
-void Iocp_server::process_join_room(int id, void *buff)
+void Iocp_server::process_join_room(const int& id, void *buff)
 {
 	cs_packet_request_join_room *join_room_packet = reinterpret_cast<cs_packet_request_join_room*>(buff);
 
@@ -520,7 +556,7 @@ void Iocp_server::process_join_room(int id, void *buff)
 
 }
 
-void Iocp_server::process_client_state_change(int id, void * buff)
+void Iocp_server::process_client_state_change(const int& id, void * buff)
 {
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
 	m_map_player_info[id]->player_state = packet->change_state;
@@ -543,7 +579,7 @@ void Iocp_server::process_client_state_change(int id, void * buff)
 	}
 }
 
-void Iocp_server::process_install_trap(int id, void * buff)
+void Iocp_server::process_install_trap(const int& id, void * buff)
 {
 	cs_packet_install_trap *packet = reinterpret_cast<cs_packet_install_trap*>(buff);
 
@@ -564,10 +600,10 @@ void Iocp_server::process_install_trap(int id, void * buff)
 	}
 }
 
-void Iocp_server::process_game_start(short room_number, short stage_number)
+void Iocp_server::process_game_start(const short& room_number, const short& stage_number)
 {
-	Monster *monsterArr = new Monster[100];
-	for (int i = 0; i < 100; ++i) {
+	Monster *monsterArr = new Monster[MAX_MONSTER];
+	for (int i = 0; i < MAX_MONSTER; ++i) {
 		monsterArr[i].set_id(i);
 		monsterArr[i].set_monster_isLive(false);
 		monsterArr[i].set_monster_type(M_TYPE_NORMAL);
@@ -581,27 +617,34 @@ void Iocp_server::process_game_start(short room_number, short stage_number)
 
 	for (auto m : m_map_monsterPool) {
 		cout << "----------room number: " << m.first << endl;
-		for (int i = 0; i < 100; ++i) {
+		for (int i = 0; i < MAX_MONSTER; ++i) {
 			cout << "monster id: " << m.second[i].get_monster_id() << endl;
 		}
 	}
-	gen_monster(room_number, 1, 1);
+	//
+	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_GEN_1stWAVE_MONSTER, 0 };
+	add_event_to_eventTimer(g_ev);
 	
 }
 
-void Iocp_server::gen_monster(short room_number, short wave_number, short stage_number)
+void Iocp_server::gen_monster(const short& room_number, const short& wave_number, const short& stage_number)
 {
 	if (m_map_monsterPool.find(room_number) == m_map_monsterPool.end()) {
 		cout << "room does not exist" << endl;
 		return;
 	}
-	switch (wave_number)
+	short wave = 0;
+	if (m_map_game_room[room_number]->wave_count == 0) {
+		m_map_game_room[room_number]->wave_count =  wave + 1;
+	}
+	wave = m_map_game_room[room_number]->wave_count;
+	switch (wave)
 	{
 	case 1:
 		for (int i = 0; i < 100; ++i) {
 			m_map_game_room[room_number]->wave_count = 1;
 			m_map_monsterPool[room_number][i].set_monster_isLive(true);
-			// 위치 정보도 지정해줘야할듯
+			// pos, look 정보도 지정해줘야할듯
 		}
 		break;
 	default:
@@ -611,7 +654,26 @@ void Iocp_server::gen_monster(short room_number, short wave_number, short stage_
 	cout << "gen complete" << endl;;
 }
 
-void Iocp_server::send_all_room_list(int id)
+void Iocp_server::check_wave_end(const short& room_number)
+{
+	bool end_flag = false;
+	for (int i = 0; i < MAX_MONSTER; ++i) {
+		if (m_map_monsterPool[room_number][i].get_isLive() == true) {
+			break;
+		}
+		end_flag = true;
+	}
+
+	if (end_flag == true) { // wave가 종료되면
+		// 웨이브 카운트 올리고
+		// 다음 웨이브 몬스터 젠 시키기
+	}
+	else if (end_flag == false) { // 종료안됨
+		// 10초후에 다시 체크하는 이벤트 생성
+	}
+}
+
+void Iocp_server::send_all_room_list(const int& id)
 {
 	auto copyRoom = m_map_game_room;
 	for (auto room_info : copyRoom) {
@@ -632,7 +694,7 @@ void Iocp_server::get_player_db()
 	}
 }
 
-void Iocp_server::process_disconnect_client(int leaver_id)
+void Iocp_server::process_disconnect_client(const int& leaver_id)
 {
 	m_map_player_info[leaver_id]->roomList_lock.lock();
 	short check_roomNum = -1; 
@@ -672,7 +734,7 @@ void Iocp_server::process_disconnect_client(int leaver_id)
 }
 
 
-void Iocp_server::process_packet(int id, void * buff)
+void Iocp_server::process_packet(const int& id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 

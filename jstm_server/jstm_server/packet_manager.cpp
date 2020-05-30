@@ -14,7 +14,6 @@ void packet_manager::send_packet(int client_id, SOCKET client_socket, void * buf
 {
 	unsigned short* packet = reinterpret_cast<unsigned short*>(buf);
 	unsigned short packet_size = packet[0];
-	cout << packet_size << endl;
 	OVER_EX *send_over = new OVER_EX;
 	memset(send_over, 0x00, sizeof(OVER_EX));
 	send_over->event_type = EV_SEND;

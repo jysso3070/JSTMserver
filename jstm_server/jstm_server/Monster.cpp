@@ -24,26 +24,48 @@ void Monster::set_id(int id)
 	m_id = id;
 }
 
-void Monster::set_4x4position(DirectX::XMFLOAT4X4 pos)
+void Monster::set_4x4position(const XMFLOAT4X4& pos)
 {
 	m_4x4position = pos;
 }
 
-void Monster::set_look(XMFLOAT3 look)
+void Monster::set_look(const XMFLOAT3& look)
 {
 	m_4x4position._31 = look.x;
 	m_4x4position._32 = look.y;
 	m_4x4position._33 = look.z;
 }
 
-void Monster::set_monster_type(char monster_type)
+void Monster::set_monster_type(const char& monster_type)
 {
 	m_monster_type = monster_type;
 }
 
-void Monster::set_monster_isLive(bool flag)
+void Monster::set_monster_isLive(const bool& flag)
 {
 	m_isLive = flag;
+}
+
+void Monster::set_spawn_point(const short& point)
+{
+	m_spawn_point = point;
+}
+
+void Monster::set_position(const XMFLOAT3& position)
+{
+	m_4x4position._41 = position.x;
+	m_4x4position._42 = position.y;
+	m_4x4position._43 = position.z;
+}
+
+void Monster::set_target_id(const int & target_id)
+{
+	m_target_id = target_id;
+}
+
+void Monster::set_animation_state(const short & ani_state)
+{
+	m_animation_state = ani_state;
 }
 
 int Monster::get_monster_id()
@@ -67,16 +89,23 @@ DirectX::XMFLOAT4X4 Monster::get_4x4position()
 }
 
 
-void Monster::move_forward(float distance)
+void Monster::move_forward(const float& distance)
 {
-	m_4x4position._41 += distance;
+	//m_4x4position._41 += distance;
+
+	XMFLOAT3 position = get_position();
+	XMFLOAT3 look = get_look();
+	position = Vector3::Add(position, look, distance);
+	set_position(position);
+
+	m_4x4position._42 = -50.f;
 }
 
 void Monster::set_aggro_direction(DirectX::XMFLOAT3 target_postion)
 {
 	target_postion.y = -50.f;
 
-	XMFLOAT3 look = Vector3::Subtract(get_3x3position(), target_postion);
+	XMFLOAT3 look = Vector3::Subtract(get_position(), target_postion);
 	look = Vector3::Normalize(look);
 	m_4x4position._31 = -look.x;
 	m_4x4position._32 = -look.y;

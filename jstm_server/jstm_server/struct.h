@@ -2,8 +2,7 @@
 
 enum EVENT_TYPE {
 	EV_RECV, EV_SEND, EV_MOVE, EV_PLAYER_MOVE_NOTIFY, EV_MOVE_TARGET,
-	EV_ATTACK, EV_HEAL, EV_PLAYER_RESPAWN, EV_NPC_RESPAWN, EV_MOVE_COOLTIME,
-	EV_TEST, EV_MONSTER_THREAD_RUN
+	EV_TEST, EV_MONSTER_THREAD_RUN, EV_GEN_1stWAVE_MONSTER
 };
 
 struct OVER_EX {		
@@ -27,6 +26,10 @@ struct PLAYER_INFO {
 
 	mutex player_info_lock;
 	mutex roomList_lock;
+
+	DirectX::XMFLOAT3 get_pos() {
+		return DirectX::XMFLOAT3(player_world_pos._41, player_world_pos._42, player_world_pos._43);
+	}
 };
 
 struct PLAYER_DB {
