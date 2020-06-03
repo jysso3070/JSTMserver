@@ -46,9 +46,14 @@ void Monster::set_monster_isLive(const bool& flag)
 	m_isLive = flag;
 }
 
-void Monster::set_spawn_point(const short& point)
+void Monster::set_pathLine(const short& line)
 {
-	m_spawn_point = point;
+	m_pathLine = line;
+}
+
+void Monster::set_stage_number(const short & stageNum)
+{
+	m_stage_number = stageNum;
 }
 
 void Monster::set_position(const XMFLOAT3& position)
