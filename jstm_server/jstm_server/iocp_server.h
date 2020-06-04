@@ -46,7 +46,7 @@ public:
 
 	void process_game_start(const short& room_number, const short& stage_number);
 
-	void gen_monster(const short& room_number, const short& wave_number, const short& stage_number); // 몬스터 리젠
+	void gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // 몬스터 리젠
 	void check_wave_end(const short& room_number);
 
 	void send_all_room_list(const int& id);		// 모든 방정보 전송
@@ -62,6 +62,9 @@ public:
 	void send_pos_packet(int id);
 
 	//void do_recv();
+
+	void init_monster_path();
+
 
 private:
 	// class
@@ -92,5 +95,9 @@ private:
 	volatile bool m_monsterThread_run = true;
 
 	short pakcetCount = 0;
+
+
+	// monster path
+	Concurrency::concurrent_unordered_map<short, DirectX::XMFLOAT3*> m_stage1_path1;
 };
 

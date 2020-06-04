@@ -18,6 +18,7 @@ public:
 	void set_monster_type(const char& monster_type);
 	void set_monster_isLive(const bool& flag);
 	void set_pathLine(const short& line);
+	void set_checkPoint(const short& checkNum);
 	void set_stage_number(const short& stageNum);
 	void set_position(const XMFLOAT3& position);
 	void set_target_id(const int& target_id);
@@ -35,6 +36,7 @@ public:
 	short get_animation_state() { return m_animation_state; };
 	short get_pathLine() { return m_pathLine; }
 	short get_stageNum() { return m_stage_number; }
+	short get_checkPoint() { return m_path_checkPoint; }
 
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion); // 어그로 대상으로 방향벡터 설정
@@ -48,6 +50,7 @@ private:
 	short m_pathLine;
 	short m_stage_number;
 	int m_target_id = -1;
+	short m_path_checkPoint = 0;
 
 	XMFLOAT4X4 m_4x4position;
 };

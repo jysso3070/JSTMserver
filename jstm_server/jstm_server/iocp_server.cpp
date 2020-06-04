@@ -37,6 +37,8 @@ void Iocp_server::Initialize()
 	//init_DB();
 
 	init_socket();
+
+	init_monster_path();
 }
 
 void Iocp_server::make_thread()
@@ -187,11 +189,12 @@ void Iocp_server::do_worker_thread()
 
 		GetQueuedCompletionStatus(m_iocp_Handle, &num_byte, (PULONG_PTR)p_key, &p_over, INFINITE);
 
-		SOCKET client_s = m_map_player_info[key]->socket;
 		// 클라이언트가 종료했을 경우
-		if (0 == num_byte) { 
+		if (0 == num_byte) {
+			SOCKET client_s = m_map_player_info[key]->socket;
 			closesocket(client_s);
 			m_map_player_info[key]->is_connect = false;
+			m_map_player_info[key]->player_state = PLAYER_STATE_default;
 			process_disconnect_client(key);
 			continue;
 		}
@@ -199,6 +202,7 @@ void Iocp_server::do_worker_thread()
 		OVER_EX *over_ex = reinterpret_cast<OVER_EX *> (p_over);
 
 		if (EV_RECV == over_ex->event_type) {
+			SOCKET client_s = m_map_player_info[key]->socket;
 			over_ex->net_buf[num_byte] = 0;
 			//process_packet(key, over_ex->net_buf);
 
@@ -242,7 +246,12 @@ void Iocp_server::do_worker_thread()
 			for (auto d : m_list_player_db) {
 				cout << "name: " << d.name <<"."<< endl;
 			}*/
+			delete over_ex;
 		}
+		else if (EV_GEN_1stWAVE_MONSTER == over_ex->event_type) {
+			gen_monster(key, 1, 1, 1);
+		}
+
 	}
 }
 
@@ -281,7 +290,10 @@ void Iocp_server::do_eventTimer_thread()
 			m_monsterThread_run = true;
 		}
 		if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
-			gen_monster(p_ev.obj_id, 1, 1);
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_GEN_1stWAVE_MONSTER;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			//gen_monster(p_ev.obj_id, 1, 1, 1);
 		}
 	}
 }
@@ -293,55 +305,77 @@ void Iocp_server::do_monster_thread()
 		if (m_monsterThread_run == false) {
 			continue;
 		}
-		cout << "thread run start " << endl;
-		cout << "room cnt: " << m_map_monsterPool.size() << endl;
+		//cout << "thread run start " << endl;
+		//cout << "room cnt: " << m_map_monsterPool.size() << endl;
 		auto start = chrono::high_resolution_clock::now();
 		for (auto mon_pool : m_map_monsterPool) {
 			struct MONSTER packet_mon[MAX_MONSTER];
 			for (int i = 0; i < MAX_MONSTER; ++i) {
 				packet_mon[i].id = i;
 				packet_mon[i].isLive = false;
-				if (mon_pool.second[i].get_isLive() == false) {
-					continue;
+				if (mon_pool.second[i].get_isLive() == false) { // 연산할필요없는 것 제외
+					continue; }
+				// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
+				if (mon_pool.second[i].get_target_id() == -1) {
+					int near_id = -1;
+					float near_dis = 300.f;
+					for (int player_index = 0; player_index < 4; ++player_index) {
+						int player_id = m_map_game_room[mon_pool.first]->players_id[player_index];
+						if (player_id == -1) { continue; }
+						if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+							float dis = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool.second[i].get_position());
+							if (dis <= 200.f) { // 어그로 범위 내
+								if (near_dis > dis) {
+									near_id = player_id;
+									near_dis = dis;
+								}
+							}
+						}
+					}
+					mon_pool.second[i].set_target_id(near_id);
 				}
-				for (int player_index = 0; player_index < 4; ++player_index) {
-					int player_id = m_map_game_room[mon_pool.first]->players_id[player_index];
-					if (player_id == -1) {	// 접속되지 않는 플레이어 예외처리
+				// 타겟이 있을때 몬스터 행동
+				if (mon_pool.second[i].get_target_id() != -1) {
+					int target_id = mon_pool.second[i].get_target_id();
+					if(m_map_player_info[target_id]->player_state != PLAYER_STATE_playing_game){
+						mon_pool.second[i].set_target_id(-1);
 						continue;
 					}
-					if (m_map_player_info[player_id]->player_state != PLAYER_STATE_playing_game) {
-						continue;
-					}
-					//cout << "playerid: " << player_id << endl;
-					float dis_to_player = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool.second[i].get_position());
-					
-					if (dis_to_player <= 200.f && dis_to_player >= 70.f) { // 어그로 범위 내
-						//cout << "playerid: " << player_id << endl;
-						//cout <<"monster "<< i << "agrro on " << player_id << endl;
-						mon_pool.second[i].set_target_id(player_id);
-						mon_pool.second[i].set_aggro_direction(m_map_player_info[player_id]->get_pos());
+					float dis = Vector3::Distance(m_map_player_info[target_id]->get_pos(), mon_pool.second[i].get_position());
+					if (dis <= 200.f && dis >= 70.f) { //어그로 범위
+						mon_pool.second[i].set_target_id(target_id);
+						mon_pool.second[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
 						mon_pool.second[i].move_forward(5.f);
 						mon_pool.second[i].set_animation_state(2);
-						break;
 					}
-					else if (dis_to_player < 70.f) { // 공격 범위 내
-						//cout << "monster " << i << "attack on " << player_id << endl;
-						mon_pool.second[i].set_target_id(player_id);
-						mon_pool.second[i].set_aggro_direction(m_map_player_info[player_id]->get_pos());
+					else if (dis < 70.f) { // 공격범위
+						mon_pool.second[i].set_target_id(target_id);
+						mon_pool.second[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
 						mon_pool.second[i].set_animation_state(3);
-						break;
 					}
-					if (dis_to_player > 200.f) { // 일반
-						//cout << "default" << endl;
-						mon_pool.second[i].set_aggro_direction(m_map_player_info[player_id]->get_pos());
-						mon_pool.second[i].set_animation_state(2);
+					else {
+						mon_pool.second[i].set_target_id(-1);
 					}
-					
 				}
-				
-				//mon_pool.second[i].set_aggro_direction(m_map_player_info[0]->get_pos());
-				//mon_pool.second[i].move_forward(5.f);
-				//cout << "x: " << tpos._41 << ", z: " << tpos._43 << endl;
+				// 타겟이 없을때 행동
+				else {
+					if (mon_pool.second[i].get_stageNum() == 1) { //스테이지1
+						if (mon_pool.second[i].get_pathLine() == 1) { // 경로1
+							if (mon_pool.second[i].get_checkPoint() == 0) {
+								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[1]);
+								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[1]) <= 50.f) {
+									mon_pool.second[i].set_checkPoint(1);
+								}
+							}
+							else if (mon_pool.second[i].get_checkPoint() == 1) {
+								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[2]);
+							}
+							mon_pool.second[i].move_forward(5.f);
+							mon_pool.second[i].set_animation_state(2);
+						}
+					}
+				}
+
 				// 패킷에 들어갈 몬스터배열 값 지정
 				packet_mon[i].isLive = mon_pool.second[i].get_isLive();
 				packet_mon[i].state = -1;
@@ -358,10 +392,10 @@ void Iocp_server::do_monster_thread()
 		}
 		auto end = chrono::high_resolution_clock::now();
 		
-		cout << "thread run end: " << cnt << endl;
+		//cout << "thread run end: " << cnt << endl;
 		cout << "time: " << (end - start).count() << "ns" << endl;
 		
-		EVENT ev{ -10, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
+		EVENT ev{ -10, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(ev);
 		++cnt;
 		m_monsterThread_run = false;
@@ -627,7 +661,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	
 }
 
-void Iocp_server::gen_monster(const short& room_number, const short& wave_number, const short& stage_number)
+void Iocp_server::gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num)
 {
 	if (m_map_monsterPool.find(room_number) == m_map_monsterPool.end()) {
 		cout << "room does not exist" << endl;
@@ -643,6 +677,10 @@ void Iocp_server::gen_monster(const short& room_number, const short& wave_number
 	case 1:
 		for (int i = 0; i < 100; ++i) {
 			m_map_game_room[room_number]->wave_count = 1;
+			m_map_monsterPool[room_number][i].set_stage_number(1);
+			m_map_monsterPool[room_number][i].set_pathLine(1);
+			m_map_monsterPool[room_number][i].set_checkPoint(0);
+			m_map_monsterPool[room_number][i].set_position(XMFLOAT3(2200.f, -50.f, -400.f));
 			m_map_monsterPool[room_number][i].set_monster_isLive(true);
 			// pos, look 정보도 지정해줘야할듯
 		}
@@ -795,4 +833,12 @@ void Iocp_server::send_pos_packet(int id)
 	packet.x = m_map_player_info[id]->x;
 	packet.y = m_map_player_info[id]->y;
 	m_Packet_manager->send_packet(id, m_map_player_info[id]->socket, &packet);
+}
+
+void Iocp_server::init_monster_path()
+{
+	DirectX::XMFLOAT3 *stage1_line1_checkPoint1 = new DirectX::XMFLOAT3(600.f, -50.f, -80.f);
+	DirectX::XMFLOAT3 *stage1_line1_checkPoint2 = new DirectX::XMFLOAT3(-2400.f, -50.f, 290.f);
+	m_stage1_path1.insert(make_pair(1, stage1_line1_checkPoint1));
+	m_stage1_path1.insert(make_pair(2, stage1_line1_checkPoint2));
 }

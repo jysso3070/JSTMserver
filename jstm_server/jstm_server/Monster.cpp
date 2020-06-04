@@ -51,6 +51,11 @@ void Monster::set_pathLine(const short& line)
 	m_pathLine = line;
 }
 
+void Monster::set_checkPoint(const short & checkNum)
+{
+	m_path_checkPoint = checkNum;
+}
+
 void Monster::set_stage_number(const short & stageNum)
 {
 	m_stage_number = stageNum;
