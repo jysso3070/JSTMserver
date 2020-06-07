@@ -34,7 +34,7 @@ void Iocp_server::Initialize()
 
 	m_Server_manager->get_server_ipAddress();
 	m_Server_manager->get_cpu_count();
-	//init_DB();
+	init_DB();
 
 	init_socket();
 
@@ -52,7 +52,7 @@ void Iocp_server::make_thread()
 
 	thread monster_thread{ &Iocp_server::do_monster_thread, this };
 
-	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
+	//thread packet_count_thread{ &Iocp_server::do_packet_count, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
@@ -64,7 +64,7 @@ void Iocp_server::make_thread()
 
 	monster_thread.join();
 
-	packet_count_thread.join();
+	//packet_count_thread.join();
 
 }
 
@@ -364,6 +364,7 @@ void Iocp_server::do_monster_thread()
 							if (mon_pool.second[i].get_checkPoint() == 0) {
 								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[1]);
 								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[1]) <= 50.f) {
+									cout << "체크포인트 ++" << endl;
 									mon_pool.second[i].set_checkPoint(1);
 								}
 							}
@@ -393,9 +394,9 @@ void Iocp_server::do_monster_thread()
 		auto end = chrono::high_resolution_clock::now();
 		
 		//cout << "thread run end: " << cnt << endl;
-		cout << "time: " << (end - start).count() << "ns" << endl;
+		//cout << "time: " << (end - start).count() << "ns" << endl;
 		
-		EVENT ev{ -10, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
+		EVENT ev{ -10, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(ev);
 		++cnt;
 		m_monsterThread_run = false;
@@ -408,7 +409,7 @@ void Iocp_server::do_packet_count()
 	while (true) {
 		std::chrono::duration<float> sec = std::chrono::system_clock::now() - start;
 		if (sec.count() > 1) {
-			//cout << "1초간 이동패킷수신횟수" << pakcetCount << endl;
+			cout << "1초간 이동패킷수신횟수" << pakcetCount << endl;
 			start = std::chrono::system_clock::now();
 			pakcetCount = 0;
 		}
