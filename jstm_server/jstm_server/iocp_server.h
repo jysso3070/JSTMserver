@@ -99,5 +99,6 @@ private:
 
 	// monster path
 	Concurrency::concurrent_unordered_map<short, DirectX::XMFLOAT3*> m_stage1_path1;
+	Concurrency::concurrent_unordered_map<short, DirectX::XMFLOAT3*> m_stage1_path2;
 };
 

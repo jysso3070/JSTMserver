@@ -364,12 +364,22 @@ void Iocp_server::do_monster_thread()
 							if (mon_pool.second[i].get_checkPoint() == 0) {
 								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[1]);
 								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[1]) <= 50.f) {
-									cout << "체크포인트 ++" << endl;
+									//cout << "체크포인트 ++" << endl;
 									mon_pool.second[i].set_checkPoint(1);
 								}
 							}
 							else if (mon_pool.second[i].get_checkPoint() == 1) {
 								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[2]);
+								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[2]) <= 50.f) {
+									//cout << "체크포인트 ++" << endl;
+									mon_pool.second[i].set_checkPoint(2);
+								}
+							}
+							else if (mon_pool.second[i].get_checkPoint() == 2) {
+								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[3]);
+								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[3]) <= 50.f) {
+									cout << "포탈도착" << endl;
+								}
 							}
 							mon_pool.second[i].move_forward(5.f);
 							mon_pool.second[i].set_animation_state(2);
@@ -681,7 +691,7 @@ void Iocp_server::gen_monster(const short& room_number, const short& wave_number
 			m_map_monsterPool[room_number][i].set_stage_number(1);
 			m_map_monsterPool[room_number][i].set_pathLine(1);
 			m_map_monsterPool[room_number][i].set_checkPoint(0);
-			m_map_monsterPool[room_number][i].set_position(XMFLOAT3(2200.f, -50.f, -400.f));
+			m_map_monsterPool[room_number][i].set_position(XMFLOAT3(2000.f, -50.f, 1000.f));
 			m_map_monsterPool[room_number][i].set_monster_isLive(true);
 			// pos, look 정보도 지정해줘야할듯
 		}
@@ -838,8 +848,20 @@ void Iocp_server::send_pos_packet(int id)
 
 void Iocp_server::init_monster_path()
 {
-	DirectX::XMFLOAT3 *stage1_line1_checkPoint1 = new DirectX::XMFLOAT3(600.f, -50.f, -80.f);
-	DirectX::XMFLOAT3 *stage1_line1_checkPoint2 = new DirectX::XMFLOAT3(-2400.f, -50.f, 290.f);
+	DirectX::XMFLOAT3 *stage1_line1_start = new DirectX::XMFLOAT3(2000.f, -50.f, 1000.f);
+	DirectX::XMFLOAT3 *stage1_line1_checkPoint1 = new DirectX::XMFLOAT3(700.f, -50.f, 900.f);
+	DirectX::XMFLOAT3 *stage1_line1_checkPoint2 = new DirectX::XMFLOAT3(430.f, -50.f, 430.f);
+	DirectX::XMFLOAT3 *stage1_line1_checkPoint3 = new DirectX::XMFLOAT3(-2400.f, -50.f, 500.f);
 	m_stage1_path1.insert(make_pair(1, stage1_line1_checkPoint1));
 	m_stage1_path1.insert(make_pair(2, stage1_line1_checkPoint2));
+	m_stage1_path1.insert(make_pair(3, stage1_line1_checkPoint3));
+
+	DirectX::XMFLOAT3 *stage1_line2_start = new DirectX::XMFLOAT3(2000.f, -50.f, -300.f);
+	DirectX::XMFLOAT3 *stage1_line2_checkPoint1 = new DirectX::XMFLOAT3(700.f, -50.f, -350.f);
+	DirectX::XMFLOAT3 *stage1_line2_checkPoint2 = new DirectX::XMFLOAT3(430.f, -50.f, 110.f);
+	DirectX::XMFLOAT3 *stage1_line2_checkPoint3 = new DirectX::XMFLOAT3(-2400.f, -50.f, 100.f);
+	m_stage1_path2.insert(make_pair(1, stage1_line2_checkPoint1));
+	m_stage1_path2.insert(make_pair(1, stage1_line2_checkPoint2));
+	m_stage1_path2.insert(make_pair(1, stage1_line2_checkPoint3));
+
 }
