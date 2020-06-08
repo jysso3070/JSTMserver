@@ -64,6 +64,7 @@ struct MONSTER {
 #define CS_TEST		8
 #define CS_INSTALL_TRAP		9
 #define CS_CLIENT_STATE_CHANGE	10
+#define CS_GAME_START		11
 
 #pragma pack(push ,1)
 
@@ -192,6 +193,12 @@ struct cs_packet_client_state_change {
 	char type;
 	int id;
 	char change_state;
+};
+
+struct cs_packet_game_start {
+	char size;
+	char type;
+	int id;
 	short stage_number;
 };
 
