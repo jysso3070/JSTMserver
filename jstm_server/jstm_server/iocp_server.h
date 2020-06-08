@@ -63,8 +63,6 @@ public:
 
 	//void do_recv();
 
-	void init_monster_path();
-
 
 private:
 	// class
@@ -96,9 +94,5 @@ private:
 
 	short pakcetCount = 0;
 
-
-	// monster path
-	Concurrency::concurrent_unordered_map<short, DirectX::XMFLOAT3*> m_stage1_path1;
-	Concurrency::concurrent_unordered_map<short, DirectX::XMFLOAT3*> m_stage1_path2;
 };
 

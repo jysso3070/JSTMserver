@@ -160,6 +160,7 @@
     <ClInclude Include="header.h" />
     <ClInclude Include="iocp_server.h" />
     <ClInclude Include="Monster.h" />
+    <ClInclude Include="monster_path.h" />
     <ClInclude Include="packet_manager.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="server_manager.h" />

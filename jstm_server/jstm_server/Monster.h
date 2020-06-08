@@ -1,6 +1,8 @@
 #pragma once
 #include "header.h"
 #include "direct_vector.h"
+#include "monster_path.h"
+#define PATH_CHECKPOINT_RANGE	50.f
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -39,7 +41,9 @@ public:
 	short get_checkPoint() { return m_path_checkPoint; }
 
 	void move_forward(const float& distance);
-	void set_aggro_direction( XMFLOAT3 target_postion); // 어그로 대상으로 방향벡터 설정
+	void set_aggro_direction( XMFLOAT3 target_postion); // 어그로 대상으로 look 방향벡터 설정
+
+	void process_move_path();
 
 
 private:
@@ -53,5 +57,15 @@ private:
 	short m_path_checkPoint = 0;
 
 	XMFLOAT4X4 m_4x4position;
+
+	DirectX::XMFLOAT3 stage1_line1_start = DirectX::XMFLOAT3(2000.f, -50.f, 1000.f);
+	DirectX::XMFLOAT3 stage1_line1_checkPoint1 = DirectX::XMFLOAT3(700.f, -50.f, 900.f);
+	DirectX::XMFLOAT3 stage1_line1_checkPoint2 = DirectX::XMFLOAT3(430.f, -50.f, 430.f);
+	DirectX::XMFLOAT3 stage1_line1_checkPoint3 = DirectX::XMFLOAT3(-2400.f, -50.f, 500.f);
+	
+	DirectX::XMFLOAT3 stage1_line2_start = DirectX::XMFLOAT3(2000.f, -50.f, -300.f);
+	DirectX::XMFLOAT3 stage1_line2_checkPoint1 = DirectX::XMFLOAT3(700.f, -50.f, -350.f);
+	DirectX::XMFLOAT3 stage1_line2_checkPoint2 = DirectX::XMFLOAT3(430.f, -50.f, 110.f);
+	DirectX::XMFLOAT3 stage1_line2_checkPoint3 = DirectX::XMFLOAT3(-2400.f, -50.f, 100.f);
 };
 

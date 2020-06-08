@@ -113,5 +113,8 @@
     <ClInclude Include="direct_vector.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="monster_path.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

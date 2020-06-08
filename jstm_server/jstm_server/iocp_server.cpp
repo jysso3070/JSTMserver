@@ -8,9 +8,11 @@ Iocp_server::Iocp_server()
 	m_Timer = new Timer;
 	m_Timer->Reset();
 
+	cout << "monstersize: " << sizeof(Monster) << endl;
 	Initialize();
 
 	make_thread();
+
 }
 
 
@@ -38,7 +40,6 @@ void Iocp_server::Initialize()
 
 	init_socket();
 
-	init_monster_path();
 }
 
 void Iocp_server::make_thread()
@@ -52,7 +53,7 @@ void Iocp_server::make_thread()
 
 	thread monster_thread{ &Iocp_server::do_monster_thread, this };
 
-	//thread packet_count_thread{ &Iocp_server::do_packet_count, this };
+	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
@@ -64,7 +65,7 @@ void Iocp_server::make_thread()
 
 	monster_thread.join();
 
-	//packet_count_thread.join();
+	packet_count_thread.join();
 
 }
 
@@ -359,32 +360,33 @@ void Iocp_server::do_monster_thread()
 				}
 				// 타겟이 없을때 행동
 				else {
-					if (mon_pool.second[i].get_stageNum() == 1) { //스테이지1
-						if (mon_pool.second[i].get_pathLine() == 1) { // 경로1
-							if (mon_pool.second[i].get_checkPoint() == 0) {
-								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[1]);
-								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[1]) <= 50.f) {
-									//cout << "체크포인트 ++" << endl;
-									mon_pool.second[i].set_checkPoint(1);
-								}
-							}
-							else if (mon_pool.second[i].get_checkPoint() == 1) {
-								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[2]);
-								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[2]) <= 50.f) {
-									//cout << "체크포인트 ++" << endl;
-									mon_pool.second[i].set_checkPoint(2);
-								}
-							}
-							else if (mon_pool.second[i].get_checkPoint() == 2) {
-								mon_pool.second[i].set_aggro_direction(*m_stage1_path1[3]);
-								if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[3]) <= 50.f) {
-									cout << "포탈도착" << endl;
-								}
-							}
-							mon_pool.second[i].move_forward(5.f);
-							mon_pool.second[i].set_animation_state(2);
-						}
-					}
+					mon_pool.second[i].process_move_path();
+					//if (mon_pool.second[i].get_stageNum() == 1) { //스테이지1
+					//	if (mon_pool.second[i].get_pathLine() == 1) { // 경로1
+					//		if (mon_pool.second[i].get_checkPoint() == 0) {
+					//			mon_pool.second[i].set_aggro_direction(*m_stage1_path1[1]);
+					//			if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[1]) <= 50.f) {
+					//				//cout << "체크포인트 ++" << endl;
+					//				mon_pool.second[i].set_checkPoint(1);
+					//			}
+					//		}
+					//		else if (mon_pool.second[i].get_checkPoint() == 1) {
+					//			mon_pool.second[i].set_aggro_direction(*m_stage1_path1[2]);
+					//			if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[2]) <= 50.f) {
+					//				//cout << "체크포인트 ++" << endl;
+					//				mon_pool.second[i].set_checkPoint(2);
+					//			}
+					//		}
+					//		else if (mon_pool.second[i].get_checkPoint() == 2) {
+					//			mon_pool.second[i].set_aggro_direction(*m_stage1_path1[3]);
+					//			if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[3]) <= 50.f) {
+					//				cout << "포탈도착" << endl;
+					//			}
+					//		}
+					//		mon_pool.second[i].move_forward(5.f);
+					//		mon_pool.second[i].set_animation_state(2);
+					//	}
+					//}
 				}
 
 				// 패킷에 들어갈 몬스터배열 값 지정
@@ -844,24 +846,4 @@ void Iocp_server::send_pos_packet(int id)
 	packet.x = m_map_player_info[id]->x;
 	packet.y = m_map_player_info[id]->y;
 	m_Packet_manager->send_packet(id, m_map_player_info[id]->socket, &packet);
-}
-
-void Iocp_server::init_monster_path()
-{
-	DirectX::XMFLOAT3 *stage1_line1_start = new DirectX::XMFLOAT3(2000.f, -50.f, 1000.f);
-	DirectX::XMFLOAT3 *stage1_line1_checkPoint1 = new DirectX::XMFLOAT3(700.f, -50.f, 900.f);
-	DirectX::XMFLOAT3 *stage1_line1_checkPoint2 = new DirectX::XMFLOAT3(430.f, -50.f, 430.f);
-	DirectX::XMFLOAT3 *stage1_line1_checkPoint3 = new DirectX::XMFLOAT3(-2400.f, -50.f, 500.f);
-	m_stage1_path1.insert(make_pair(1, stage1_line1_checkPoint1));
-	m_stage1_path1.insert(make_pair(2, stage1_line1_checkPoint2));
-	m_stage1_path1.insert(make_pair(3, stage1_line1_checkPoint3));
-
-	DirectX::XMFLOAT3 *stage1_line2_start = new DirectX::XMFLOAT3(2000.f, -50.f, -300.f);
-	DirectX::XMFLOAT3 *stage1_line2_checkPoint1 = new DirectX::XMFLOAT3(700.f, -50.f, -350.f);
-	DirectX::XMFLOAT3 *stage1_line2_checkPoint2 = new DirectX::XMFLOAT3(430.f, -50.f, 110.f);
-	DirectX::XMFLOAT3 *stage1_line2_checkPoint3 = new DirectX::XMFLOAT3(-2400.f, -50.f, 100.f);
-	m_stage1_path2.insert(make_pair(1, stage1_line2_checkPoint1));
-	m_stage1_path2.insert(make_pair(1, stage1_line2_checkPoint2));
-	m_stage1_path2.insert(make_pair(1, stage1_line2_checkPoint3));
-
 }
