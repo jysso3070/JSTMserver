@@ -19,7 +19,7 @@ void Monster::init()
 	m_4x4position._44 = 1.f;
 }
 
-void Monster::set_id(int id)
+void Monster::set_id(short id)
 {
 	m_id = id;
 }
@@ -78,7 +78,7 @@ void Monster::set_animation_state(const short & ani_state)
 	m_animation_state = ani_state;
 }
 
-int Monster::get_monster_id()
+short Monster::get_monster_id()
 {
 	return m_id;
 }

@@ -14,7 +14,7 @@ public:
 	~Monster();
 	void init();
 	
-	void set_id(int id);
+	void set_id(short id);
 	void set_4x4position(const XMFLOAT4X4& pos);
 	void set_look(const XMFLOAT3& look);
 	void set_monster_type(const char& monster_type);
@@ -26,7 +26,7 @@ public:
 	void set_target_id(const int& target_id);
 	void set_animation_state(const short& ani_state);
 
-	int get_monster_id();
+	short get_monster_id();
 	char get_monster_type();
 	bool get_isLive();
 	XMFLOAT4X4 get_4x4position();
@@ -47,7 +47,7 @@ public:
 
 
 private:
-	int m_id;
+	short m_id;
 	char m_monster_type;
 	bool m_isLive = false;
 	short m_animation_state = 1;

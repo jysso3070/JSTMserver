@@ -46,8 +46,9 @@ public:
 
 	void process_game_start(const short& room_number, const short& stage_number);
 
-	void gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // 몬스터 리젠
+	void process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // 몬스터 리젠
 	void check_wave_end(const short& room_number);
+	void add_monster_dead_event(const short& room_number, const short& monster_id);
 
 	void send_all_room_list(const int& id);		// 모든 방정보 전송
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기

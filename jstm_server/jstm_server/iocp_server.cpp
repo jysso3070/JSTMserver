@@ -53,7 +53,7 @@ void Iocp_server::make_thread()
 
 	thread monster_thread{ &Iocp_server::do_monster_thread, this };
 
-	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
+	//thread packet_count_thread{ &Iocp_server::do_packet_count, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
@@ -65,7 +65,7 @@ void Iocp_server::make_thread()
 
 	monster_thread.join();
 
-	packet_count_thread.join();
+	//packet_count_thread.join();
 
 }
 
@@ -240,7 +240,6 @@ void Iocp_server::do_worker_thread()
 		}
 		if (EV_TEST == over_ex->event_type) {
 			cout << "test event ! \n";
-
 			//std::string new_name = "qqq";
 			//m_database_manager->sql_insert_new_data(m_database_manager->m_list_player_db.size(), new_name);
 			/*get_player_db();
@@ -250,7 +249,12 @@ void Iocp_server::do_worker_thread()
 			delete over_ex;
 		}
 		else if (EV_GEN_1stWAVE_MONSTER == over_ex->event_type) {
-			gen_monster(key, 1, 1, 1);
+			process_gen_monster(key, 1, 1, 1);
+		}
+		else if (EV_MONSTER_DEAD == over_ex->event_type) {
+			short monster_id = *(short *)(over_ex->net_buf);
+			short room_number = (short)key;
+			m_map_monsterPool[room_number][monster_id].set_monster_isLive(false);
 		}
 
 	}
@@ -282,19 +286,25 @@ void Iocp_server::do_eventTimer_thread()
 			over_ex->event_type = EV_MOVE;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
-		if (EV_TEST == p_ev.event_type) {
+		else if (EV_TEST == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_TEST;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
-		if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
+		else if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
 			m_monsterThread_run = true;
 		}
-		if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
+		else if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_GEN_1stWAVE_MONSTER;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 			//gen_monster(p_ev.obj_id, 1, 1, 1);
+		}
+		else if (EV_MONSTER_DEAD == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_MONSTER_DEAD;
+			*(short *)(over_ex->net_buf) = p_ev.target_obj;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
 }
@@ -674,7 +684,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	
 }
 
-void Iocp_server::gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num)
+void Iocp_server::process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num)
 {
 	if (m_map_monsterPool.find(room_number) == m_map_monsterPool.end()) {
 		cout << "room does not exist" << endl;
@@ -722,6 +732,14 @@ void Iocp_server::check_wave_end(const short& room_number)
 	else if (end_flag == false) { // 종료안됨
 		// 10초후에 다시 체크하는 이벤트 생성
 	}
+}
+
+void Iocp_server::add_monster_dead_event(const short & room_number, const short & monster_id)
+{
+	int room_num = room_number;
+	int mon_id = monster_id;
+	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_DEAD, mon_id };
+	add_event_to_eventTimer(ev);
 }
 
 void Iocp_server::send_all_room_list(const int& id)
