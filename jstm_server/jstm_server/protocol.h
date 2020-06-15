@@ -23,6 +23,7 @@ struct MONSTER {
 #define SERVER_PORT	3500
 #define MONSTER_ID_START	100
 #define MAX_MONSTER		100
+#define MAX_TRAP		50
 
 // user_state
 #define PLAYER_STATE_default		0

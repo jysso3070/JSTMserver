@@ -9,7 +9,7 @@ Iocp_server::Iocp_server()
 	m_Timer->Reset();
 
 	cout << "monstersize: " << sizeof(Monster) << endl;
-	Initialize();
+	serverInitialize();
 
 	make_thread();
 
@@ -24,7 +24,7 @@ Iocp_server::~Iocp_server()
 	WSACleanup();
 }
 
-void Iocp_server::Initialize()
+void Iocp_server::serverInitialize()
 {
 	//WSADATA WSAData;
 	//WSAStartup(MAKEWORD(2, 2), &WSAData);
@@ -158,7 +158,7 @@ void Iocp_server::do_accept_thread()
 		m_map_player_info[user_id]->x = 300;
 		m_map_player_info[user_id]->y = 300;
 
-		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 3s, EV_TEST, 0 };
+		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 10s, EV_TEST, 0 };
 		add_event_to_eventTimer(ev);
 
 		/*EVENT tev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
@@ -250,11 +250,13 @@ void Iocp_server::do_worker_thread()
 		}
 		else if (EV_GEN_1stWAVE_MONSTER == over_ex->event_type) {
 			process_gen_monster(key, 1, 1, 1);
+			delete over_ex;
 		}
 		else if (EV_MONSTER_DEAD == over_ex->event_type) {
 			short monster_id = *(short *)(over_ex->net_buf);
 			short room_number = (short)key;
 			m_map_monsterPool[room_number][monster_id].set_monster_isLive(false);
+			delete over_ex;
 		}
 
 	}
@@ -319,11 +321,11 @@ void Iocp_server::do_monster_thread()
 		//cout << "thread run start " << endl;
 		//cout << "room cnt: " << m_map_monsterPool.size() << endl;
 		auto start = chrono::high_resolution_clock::now();
-		for (auto mon_pool : m_map_monsterPool) {
-			struct MONSTER packet_mon[MAX_MONSTER];
+		for (auto &mon_pool : m_map_monsterPool) {
+			struct MONSTER monsterPacketArr[MAX_MONSTER];
 			for (int i = 0; i < MAX_MONSTER; ++i) {
-				packet_mon[i].id = i;
-				packet_mon[i].isLive = false;
+				monsterPacketArr[i].id = i;
+				monsterPacketArr[i].isLive = false;
 				if (mon_pool.second[i].get_isLive() == false) { // 연산할필요없는 것 제외
 					continue; }
 				// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
@@ -371,45 +373,19 @@ void Iocp_server::do_monster_thread()
 				// 타겟이 없을때 행동
 				else {
 					mon_pool.second[i].process_move_path();
-					//if (mon_pool.second[i].get_stageNum() == 1) { //스테이지1
-					//	if (mon_pool.second[i].get_pathLine() == 1) { // 경로1
-					//		if (mon_pool.second[i].get_checkPoint() == 0) {
-					//			mon_pool.second[i].set_aggro_direction(*m_stage1_path1[1]);
-					//			if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[1]) <= 50.f) {
-					//				//cout << "체크포인트 ++" << endl;
-					//				mon_pool.second[i].set_checkPoint(1);
-					//			}
-					//		}
-					//		else if (mon_pool.second[i].get_checkPoint() == 1) {
-					//			mon_pool.second[i].set_aggro_direction(*m_stage1_path1[2]);
-					//			if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[2]) <= 50.f) {
-					//				//cout << "체크포인트 ++" << endl;
-					//				mon_pool.second[i].set_checkPoint(2);
-					//			}
-					//		}
-					//		else if (mon_pool.second[i].get_checkPoint() == 2) {
-					//			mon_pool.second[i].set_aggro_direction(*m_stage1_path1[3]);
-					//			if (Vector3::Distance(mon_pool.second[i].get_position(), *m_stage1_path1[3]) <= 50.f) {
-					//				cout << "포탈도착" << endl;
-					//			}
-					//		}
-					//		mon_pool.second[i].move_forward(5.f);
-					//		mon_pool.second[i].set_animation_state(2);
-					//	}
-					//}
 				}
 
 				// 패킷에 들어갈 몬스터배열 값 지정
-				packet_mon[i].isLive = mon_pool.second[i].get_isLive();
-				packet_mon[i].state = -1;
-				packet_mon[i].animation_state = mon_pool.second[i].get_animation_state();
-				packet_mon[i].type = mon_pool.second[i].get_monster_type();
-				packet_mon[i].world_pos = mon_pool.second[i].get_4x4position();
+				monsterPacketArr[i].isLive = mon_pool.second[i].get_isLive();
+				monsterPacketArr[i].state = -1;
+				monsterPacketArr[i].animation_state = mon_pool.second[i].get_animation_state();
+				monsterPacketArr[i].type = mon_pool.second[i].get_monster_type();
+				monsterPacketArr[i].world_pos = mon_pool.second[i].get_4x4position();
 			}
 			for (int i = 0; i < 4; ++i) {
 				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
 				if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, packet_mon);
+					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
 				}
 			}
 		}
@@ -640,19 +616,25 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 {
 	cs_packet_install_trap *packet = reinterpret_cast<cs_packet_install_trap*>(buff);
 
-	Trap *t = new Trap;
-	t->set_trap_pos(packet->trap_world_pos);
-	t->set_trap_type(packet->trap_type);
 
-	// 플레이어의 방번호를 가지고 함정정보 insert
+	// 플레이어의 방번호를 가지고 함정정보
+	short room_num = m_map_player_info[id]->room_number;
+
 	m_map_player_info[id]->roomList_lock.lock();
-	m_map_trap[1].emplace_back(*t);
+	short new_trapId = m_map_trapIdPool[room_num];
+	auto &trapPool = m_map_trap[room_num];
+	trapPool[new_trapId].set_4x4position(packet->trap_world_pos);
+	trapPool[new_trapId].set_enable(true);
+	trapPool[new_trapId].set_trap_type(packet->trap_type);
+	m_map_trapIdPool[room_num] += 1;
 	m_map_player_info[id]->roomList_lock.unlock();
 
 	// 설치한 트랩 정보 전송
-	for (auto c : m_map_player_info) {
-		if (c.second->is_connect == true) {
-			m_Packet_manager->send_trap_info_packet(c.second->id, c.second->socket, t->get_pos(), t->get_type() );
+	for (int other_id : m_map_game_room[room_num]->players_id) {
+		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
+			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
+			m_Packet_manager->send_trap_info_packet(other_id, m_map_player_info[other_id]->socket, new_trapId, packet->trap_world_pos,
+				packet->trap_type);
 		}
 	}
 }
@@ -671,6 +653,13 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 		monsterArr[i].set_4x4position(w_pos);
 	}
 	m_map_monsterPool.insert(make_pair(room_number, monsterArr));
+
+	Trap *trapArr = new Trap[MAX_TRAP];
+	for (int i = 0; i < MAX_TRAP; ++i) {
+		trapArr[i].set_enable(false);
+	}
+	m_map_trap.insert(make_pair(room_number, trapArr));
+	m_map_trapIdPool.insert(make_pair(room_number, 0));
 
 	for (auto m : m_map_monsterPool) {
 		cout << "----------room number: " << m.first << endl;

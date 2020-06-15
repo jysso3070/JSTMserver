@@ -22,7 +22,7 @@ public:
 	~Iocp_server();
 
 public:
-	void Initialize();	// 서버 초기화
+	void serverInitialize();	// 서버 초기화
 	void make_thread();	// 스레드 생성
 
 
@@ -74,9 +74,10 @@ private:
 	Timer *m_Timer = NULL;
 	
 	// iocp id
-	HANDLE m_iocp_Handle; // iocp 핸들값
+	HANDLE m_iocp_Handle; // iocp 핸들
 	int m_new_user_id;
 	short m_new_room_num;
+	Concurrency::concurrent_unordered_map<short, short> m_map_trapIdPool;
 
 	SOCKET m_accept_socket = NULL;
 
@@ -87,7 +88,7 @@ private:
 
 	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> m_map_game_room;	// room정보
 	Concurrency::concurrent_unordered_map<short, Monster*> m_map_monsterPool;
-	map<short, vector<Trap>> m_map_trap;
+	Concurrency::concurrent_unordered_map<short, Trap*> m_map_trap;
 
 	list<PLAYER_DB> m_list_player_db;	// DB정보
 

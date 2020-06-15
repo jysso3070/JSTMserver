@@ -35,13 +35,13 @@ public:
 	XMFLOAT3 get_look() { return XMFLOAT3(m_4x4position._31, m_4x4position._32, m_4x4position._33); }
 	XMFLOAT3 get_position() { return XMFLOAT3(m_4x4position._41, m_4x4position._42, m_4x4position._43); }
 	int get_target_id() { return m_target_id; }
-	short get_animation_state() { return m_animation_state; };
+	short get_animation_state() { return m_animation_state; }
 	short get_pathLine() { return m_pathLine; }
 	short get_stageNum() { return m_stage_number; }
 	short get_checkPoint() { return m_path_checkPoint; }
 
 	void move_forward(const float& distance);
-	void set_aggro_direction( XMFLOAT3 target_postion); // 어그로 대상으로 look 방향벡터 설정
+	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
 
 	void process_move_path();
 
