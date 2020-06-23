@@ -24,6 +24,7 @@ struct MONSTER {
 #define MONSTER_ID_START	100
 #define MAX_MONSTER		100
 #define MAX_TRAP		50
+#define TRAP_COLLISION_RANGE	50.f
 
 // user_state
 #define PLAYER_STATE_default		0

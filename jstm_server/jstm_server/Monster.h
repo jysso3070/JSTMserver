@@ -25,6 +25,8 @@ public:
 	void set_position(const XMFLOAT3& position);
 	void set_target_id(const int& target_id);
 	void set_animation_state(const short& ani_state);
+	void set_trap_cooltime(const bool& flag);
+	void set_collisionTime(const clock_t& time);
 
 	short get_monster_id();
 	char get_monster_type();
@@ -39,6 +41,7 @@ public:
 	short get_pathLine() { return m_pathLine; }
 	short get_stageNum() { return m_stage_number; }
 	short get_checkPoint() { return m_path_checkPoint; }
+	bool get_isTrapCooltime() { return m_trap_cooltime; }
 
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
@@ -55,6 +58,8 @@ private:
 	short m_stage_number;
 	int m_target_id = -1;
 	short m_path_checkPoint = 0;
+	bool m_trap_cooltime = false;
+	clock_t m_trap_formerCollisionTime;
 
 	XMFLOAT4X4 m_4x4position;
 };

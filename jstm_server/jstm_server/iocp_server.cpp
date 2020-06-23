@@ -375,6 +375,18 @@ void Iocp_server::do_monster_thread()
 					mon_pool.second[i].process_move_path();
 				}
 
+				for (int trap_idx = 0; i < MAX_TRAP; ++i) {
+					if (m_map_trap[mon_pool.first][trap_idx].get_enable() == false) {
+						continue;
+					}
+					float trap_dis = Vector3::Distance(m_map_trap[mon_pool.first][trap_idx].get_position(), mon_pool.second[i].get_position());
+					if (trap_dis < TRAP_COLLISION_RANGE) {
+						cout << "함정 피격" << endl;
+						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+					}
+				}
+
+
 				// 패킷에 들어갈 몬스터배열 값 지정
 				monsterPacketArr[i].isLive = mon_pool.second[i].get_isLive();
 				monsterPacketArr[i].state = -1;

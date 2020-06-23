@@ -78,6 +78,16 @@ void Monster::set_animation_state(const short & ani_state)
 	m_animation_state = ani_state;
 }
 
+void Monster::set_trap_cooltime(const bool & flag)
+{
+	m_trap_cooltime = flag;
+}
+
+void Monster::set_collisionTime(const clock_t & time)
+{
+	m_trap_formerCollisionTime = time;
+}
+
 short Monster::get_monster_id()
 {
 	return m_id;
