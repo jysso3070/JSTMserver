@@ -29,12 +29,14 @@ public:
 	void init_DB();
 	void init_socket();
 
+	// thread
 	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
 	void do_worker_thread(); // 주 워커 스레드
 	void do_eventTimer_thread();
 	void do_monster_thread();
 	void do_packet_count();
 
+	// event queue add
 	void add_event_to_eventTimer(EVENT &ev);
 
 	void t_process_player_move(const int& id, void *buff);	// 테스트용

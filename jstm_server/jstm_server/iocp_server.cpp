@@ -258,6 +258,12 @@ void Iocp_server::do_worker_thread()
 			m_map_monsterPool[room_number][monster_id].set_monster_isLive(false);
 			delete over_ex;
 		}
+		else if (EV_MONSTER_TRAP_COLLISION == over_ex->event_type) {
+			short monster_id = (short)key;
+			short room_number = *(short *)(over_ex->net_buf);
+			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
+			delete over_ex;
+		}
 
 	}
 }
@@ -308,6 +314,12 @@ void Iocp_server::do_eventTimer_thread()
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
+		else if (EV_MONSTER_TRAP_COLLISION == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_MONSTER_TRAP_COLLISION;
+			*(short *)(over_ex->net_buf) = p_ev.target_obj;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
 	}
 }
 
@@ -323,7 +335,7 @@ void Iocp_server::do_monster_thread()
 		auto start = chrono::high_resolution_clock::now();
 		for (auto &mon_pool : m_map_monsterPool) {
 			struct MONSTER monsterPacketArr[MAX_MONSTER];
-			for (int i = 0; i < MAX_MONSTER; ++i) {
+			for (short i = 0; i < MAX_MONSTER; ++i) {
 				monsterPacketArr[i].id = i;
 				monsterPacketArr[i].isLive = false;
 				if (mon_pool.second[i].get_isLive() == false) { // 연산할필요없는 것 제외
@@ -375,13 +387,17 @@ void Iocp_server::do_monster_thread()
 					mon_pool.second[i].process_move_path();
 				}
 
-				for (int trap_idx = 0; i < MAX_TRAP; ++i) {
+				// trap collision
+				for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
+					if (mon_pool.second[i].get_isTrapCooltime() == true) { break; }
 					if (m_map_trap[mon_pool.first][trap_idx].get_enable() == false) {
 						continue;
 					}
 					float trap_dis = Vector3::Distance(m_map_trap[mon_pool.first][trap_idx].get_position(), mon_pool.second[i].get_position());
 					if (trap_dis < TRAP_COLLISION_RANGE) {
 						cout << "함정 피격" << endl;
+						mon_pool.second[i].set_trap_cooltime(true);
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, mon_pool.first };
 						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 					}
 				}
@@ -641,6 +657,8 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	m_map_trapIdPool[room_num] += 1;
 	m_map_player_info[id]->roomList_lock.unlock();
 
+	cout << "trap install" << endl;
+
 	// 설치한 트랩 정보 전송
 	for (int other_id : m_map_game_room[room_num]->players_id) {
 		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
@@ -830,6 +848,7 @@ void Iocp_server::process_packet(const int& id, void * buff)
 		process_join_room(id, buff);
 		break;
 	case CS_INSTALL_TRAP:
+		process_install_trap(id, buff);
 		break;
 	case CS_TEST:
 		cout << "테스트 패킷 전송 확인 \n";

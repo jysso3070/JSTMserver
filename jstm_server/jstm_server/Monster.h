@@ -26,7 +26,6 @@ public:
 	void set_target_id(const int& target_id);
 	void set_animation_state(const short& ani_state);
 	void set_trap_cooltime(const bool& flag);
-	void set_collisionTime(const clock_t& time);
 
 	short get_monster_id();
 	char get_monster_type();
@@ -59,7 +58,6 @@ private:
 	int m_target_id = -1;
 	short m_path_checkPoint = 0;
 	bool m_trap_cooltime = false;
-	clock_t m_trap_formerCollisionTime;
 
 	XMFLOAT4X4 m_4x4position;
 };
