@@ -283,3 +283,14 @@ void Database_manager::show_all_db()
 		cout << "level: " << d.level << endl;
 	}
 }
+
+bool Database_manager::check_nameLogin(const char * name)
+{
+	for (auto db : m_list_player_db) {
+		if (strcmp(db.name, name) == 0) {
+			cout << "name exist" << endl;
+			return true;
+		}
+	}
+	return false;
+}

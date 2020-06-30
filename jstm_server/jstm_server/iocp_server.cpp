@@ -240,6 +240,8 @@ void Iocp_server::do_worker_thread()
 		}
 		if (EV_TEST == over_ex->event_type) {
 			cout << "test event ! \n";
+			char tname[11] = "jys";
+			m_Database_manager->check_nameLogin(tname);
 			//std::string new_name = "qqq";
 			//m_database_manager->sql_insert_new_data(m_database_manager->m_list_player_db.size(), new_name);
 			/*get_player_db();
@@ -821,6 +823,12 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 	}
 }
 
+void Iocp_server::process_nameLogin(const int & id, void * buff)
+{
+	cs_packet_namelogin *login_packet = reinterpret_cast<cs_packet_namelogin*>(buff);
+	m_Database_manager->check_nameLogin(login_packet->name);
+}
+
 
 void Iocp_server::process_packet(const int& id, void * buff)
 {
@@ -859,6 +867,9 @@ void Iocp_server::process_packet(const int& id, void * buff)
 		break;
 	case CS_CLIENT_STATE_CHANGE:
 		process_client_state_change(id, buff);
+		break;
+	case CS_REQUEST_NAMELOGIN:
+		process_nameLogin(id, buff);
 		break;
 	default:
 		break;

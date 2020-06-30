@@ -55,6 +55,7 @@ public:
 	void send_all_room_list(const int& id);		// 모든 방정보 전송
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
 	void process_disconnect_client(const int& leaver_id);
+	void process_nameLogin(const int& id, void *buff);
 
 
 	void process_packet(const int& id, void *buff);
@@ -65,7 +66,6 @@ public:
 	void send_pos_packet(int id);
 
 	//void do_recv();
-
 
 private:
 	// class

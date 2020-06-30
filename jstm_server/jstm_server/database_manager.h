@@ -18,6 +18,8 @@ public:
 
 	void show_all_db();
 
+	bool check_nameLogin(const char* name);
+
 public:
 	list<PLAYER_DB> m_list_player_db;
 };
