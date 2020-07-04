@@ -826,7 +826,15 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 void Iocp_server::process_nameLogin(const int & id, void * buff)
 {
 	cs_packet_namelogin *login_packet = reinterpret_cast<cs_packet_namelogin*>(buff);
-	m_Database_manager->check_nameLogin(login_packet->name);
+	int ret = m_Database_manager->check_nameLogin(login_packet->name);
+	if (ret > 0) {
+		cout << "login success" << endl;
+		m_map_player_info[id]->DB_key = ret;
+	}
+	else {
+		cout << "login fail" << endl;
+	}
+	
 }
 
 

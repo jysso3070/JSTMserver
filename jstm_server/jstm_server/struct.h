@@ -16,6 +16,7 @@ struct PLAYER_INFO {
 	OVER_EX recv_over;
 	SOCKET socket;
 	int id;
+	int DB_key;
 	bool is_connect;
 	char player_state;
 	short animation_state;
