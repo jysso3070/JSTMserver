@@ -228,6 +228,7 @@ void Monster::process_move_path()
 			this->set_animation_state(2);
 		}
 	}
+	// stage 3
 	else if (m_stage_number == 3) { // stage 3
 		if (m_pathLine == 1) { // stage 3 path 1
 			if (m_path_checkPoint == 0) {

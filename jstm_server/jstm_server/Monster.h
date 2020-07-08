@@ -53,6 +53,7 @@ private:
 	char m_monster_type;
 	bool m_isLive = false;
 	short m_animation_state = 1;
+	short m_next_animation_state = 1;
 	short m_pathLine;
 	short m_stage_number;
 	int m_target_id = -1;
