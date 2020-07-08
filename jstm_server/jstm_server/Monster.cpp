@@ -139,7 +139,7 @@ void Monster::set_aggro_direction(DirectX::XMFLOAT3 target_postion)
 void Monster::process_move_path()
 {
 	if (m_stage_number == 1) { // stage 1
-		if (m_pathLine == 1) { // path 1
+		if (m_pathLine == 1) { // stage 1 path 1
 			if (m_path_checkPoint == 0) {
 				set_aggro_direction(stage1_line1_1);
 				if (Vector3::Distance(this->get_position(), stage1_line1_1) <= PATH_CHECKPOINT_RANGE) {
@@ -161,7 +161,7 @@ void Monster::process_move_path()
 			this->move_forward(5.f);
 			this->set_animation_state(2);
 		}
-		else if (m_pathLine == 2) { // path 2
+		else if (m_pathLine == 2) { // stage 1 path 2
 			if (m_path_checkPoint == 0) {
 				set_aggro_direction(stage1_line2_1);
 				if (Vector3::Distance(this->get_position(), stage1_line2_1) <= PATH_CHECKPOINT_RANGE) {
@@ -183,7 +183,7 @@ void Monster::process_move_path()
 			this->move_forward(5.f);
 			this->set_animation_state(2);
 		}
-		else if (m_pathLine == 3) { // path 3
+		else if (m_pathLine == 3) { // stage 1 path 3
 			if (m_path_checkPoint == 0) {
 				set_aggro_direction(stage1_line3_1);
 				if (Vector3::Distance(this->get_position(), stage1_line3_1) <= PATH_CHECKPOINT_RANGE) {
@@ -205,7 +205,7 @@ void Monster::process_move_path()
 			this->move_forward(5.f);
 			this->set_animation_state(2);
 		}
-		else if (m_pathLine == 4) { // path 3
+		else if (m_pathLine == 4) { // stage 1 path 3
 			if (m_path_checkPoint == 0) {
 				set_aggro_direction(stage1_line4_1);
 				if (Vector3::Distance(this->get_position(), stage1_line4_1) <= PATH_CHECKPOINT_RANGE) {
@@ -222,6 +222,36 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line4_3);
 				if (Vector3::Distance(this->get_position(), stage1_line4_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+	}
+	else if (m_stage_number == 3) { // stage 3
+		if (m_pathLine == 1) { // stage 3 path 1
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage3_line1_1);
+				if (Vector3::Distance(this->get_position(), stage3_line1_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage3_line1_2);
+				if (Vector3::Distance(this->get_position(), stage3_line1_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage3_line1_3);
+				if (Vector3::Distance(this->get_position(), stage3_line1_3) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(3);
+				}
+			}
+			else if (m_path_checkPoint == 3) {
+				set_aggro_direction(stage3_line1_4);
+				if (Vector3::Distance(this->get_position(), stage3_line1_4) <= PATH_CHECKPOINT_RANGE) {
+					std::cout << "Æ÷Å» µµÂø" << endl;
 				}
 			}
 			this->move_forward(5.f);

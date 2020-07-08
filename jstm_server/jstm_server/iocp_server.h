@@ -10,6 +10,7 @@
 
 #include "struct.h"
 #include "direct_vector.h"
+#include "monster_path.h"
 
 //class packet_manager;
 //class Database_manager;
