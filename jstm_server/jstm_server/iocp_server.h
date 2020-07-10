@@ -80,6 +80,7 @@ private:
 	HANDLE m_iocp_Handle; // iocp วฺต้
 	int m_new_user_id;
 	short m_new_room_num;
+	short m_new_trap_id;
 	Concurrency::concurrent_unordered_map<short, short> m_map_trapIdPool;
 
 	SOCKET m_accept_socket = NULL;

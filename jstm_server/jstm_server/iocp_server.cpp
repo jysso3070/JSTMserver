@@ -33,6 +33,7 @@ void Iocp_server::serverInitialize()
 
 	m_new_user_id = 0;
 	m_new_room_num = 1;
+	m_new_trap_id = 1;
 
 	m_Server_manager->get_server_ipAddress();
 	m_Server_manager->get_cpu_count();
@@ -651,12 +652,16 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	short room_num = m_map_player_info[id]->room_number;
 
 	m_map_player_info[id]->roomList_lock.lock();
-	short new_trapId = m_map_trapIdPool[room_num];
+	/*short new_trapId = m_map_trapIdPool[room_num];
 	auto &trapPool = m_map_trap[room_num];
 	trapPool[new_trapId].set_4x4position(packet->trap_world_pos);
 	trapPool[new_trapId].set_enable(true);
 	trapPool[new_trapId].set_trap_type(packet->trap_type);
-	m_map_trapIdPool[room_num] += 1;
+	m_map_trapIdPool[room_num] += 1;*/
+	short new_trapId = m_new_trap_id++;
+	m_map_trap[room_num][new_trapId].set_4x4position(packet->trap_world_pos);
+	m_map_trap[room_num][new_trapId].set_enable(true);
+	m_map_trap[room_num][new_trapId].set_trap_type(packet->trap_type);
 	m_map_player_info[id]->roomList_lock.unlock();
 
 	cout << "trap install" << endl;
