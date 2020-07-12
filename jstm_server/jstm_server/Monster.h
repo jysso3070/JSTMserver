@@ -26,6 +26,7 @@ public:
 	void set_target_id(const int& target_id);
 	void set_animation_state(const short& ani_state);
 	void set_trap_cooltime(const bool& flag);
+	void set_HP(const short& HP);
 
 	short get_monster_id();
 	char get_monster_type();
@@ -41,6 +42,7 @@ public:
 	short get_stageNum() { return m_stage_number; }
 	short get_checkPoint() { return m_path_checkPoint; }
 	bool get_isTrapCooltime() { return m_trap_cooltime; }
+	short get_HP() { return m_hp; }
 
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
@@ -59,6 +61,7 @@ private:
 	int m_target_id = -1;
 	short m_path_checkPoint = 0;
 	bool m_trap_cooltime = false;
+	short m_hp;
 
 	XMFLOAT4X4 m_4x4position;
 };

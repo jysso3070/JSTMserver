@@ -15,6 +15,7 @@ struct MONSTER {
 	char type;
 	short animation_state;
 	short state;
+	short hp;
 	DirectX::XMFLOAT4X4 world_pos;
 };
 

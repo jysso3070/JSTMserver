@@ -343,6 +343,19 @@ void Iocp_server::do_monster_thread()
 				monsterPacketArr[i].isLive = false;
 				if (mon_pool.second[i].get_isLive() == false) { // 연산할필요없는 것 제외
 					continue; }
+
+				// 몬스터 체력 0 이하 사망 이벤트 추가
+				if (mon_pool.second[i].get_HP() <= 0) {
+					add_monster_dead_event(mon_pool.first, i);
+					monsterPacketArr[i].isLive = mon_pool.second[i].get_isLive();
+					monsterPacketArr[i].state = -1;
+					monsterPacketArr[i].animation_state = mon_pool.second[i].get_animation_state();
+					monsterPacketArr[i].type = mon_pool.second[i].get_monster_type();
+					monsterPacketArr[i].hp = mon_pool.second[i].get_HP();
+					monsterPacketArr[i].world_pos = mon_pool.second[i].get_4x4position();
+					continue; 
+				}
+
 				// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
 				if (mon_pool.second[i].get_target_id() == -1) {
 					int near_id = -1;
@@ -400,10 +413,13 @@ void Iocp_server::do_monster_thread()
 					if (trap_dis < TRAP_COLLISION_RANGE) {
 						cout << "함정 피격" << endl;
 						mon_pool.second[i].set_trap_cooltime(true);
-						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, mon_pool.first };
 						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, mon_pool.first };
+
 					}
 				}
+
+				
 
 
 				// 패킷에 들어갈 몬스터배열 값 지정
@@ -411,6 +427,7 @@ void Iocp_server::do_monster_thread()
 				monsterPacketArr[i].state = -1;
 				monsterPacketArr[i].animation_state = mon_pool.second[i].get_animation_state();
 				monsterPacketArr[i].type = mon_pool.second[i].get_monster_type();
+				monsterPacketArr[i].hp = mon_pool.second[i].get_HP();
 				monsterPacketArr[i].world_pos = mon_pool.second[i].get_4x4position();
 			}
 			for (int i = 0; i < 4; ++i) {
@@ -731,6 +748,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 			m_map_monsterPool[room_number][i].set_checkPoint(0);
 			m_map_monsterPool[room_number][i].set_position(stage3_line1_start);
 			m_map_monsterPool[room_number][i].set_animation_state(2);
+			m_map_monsterPool[room_number][i].set_HP(100);
 			m_map_monsterPool[room_number][i].set_monster_isLive(true);
 			// pos, look 정보도 지정해줘야할듯
 		}

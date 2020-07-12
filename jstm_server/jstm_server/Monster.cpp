@@ -83,6 +83,11 @@ void Monster::set_trap_cooltime(const bool & flag)
 	m_trap_cooltime = flag;
 }
 
+void Monster::set_HP(const short & HP)
+{
+	m_hp = HP;
+}
+
 short Monster::get_monster_id()
 {
 	return m_id;
