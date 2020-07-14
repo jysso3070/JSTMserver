@@ -69,6 +69,7 @@ struct MONSTER {
 #define CS_CLIENT_STATE_CHANGE	10
 #define CS_GAME_START		11
 #define CS_REQUEST_NAMELOGIN	12
+#define CS_SHOOT	13
 
 #pragma pack(push ,1)
 
@@ -211,6 +212,13 @@ struct cs_packet_namelogin {
 	char type;
 	int id;
 	char name[11];
+};
+
+struct cs_packet_shoot {
+	char size;
+	char type;
+	int id;
+	//
 };
 
 

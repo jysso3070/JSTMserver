@@ -267,6 +267,10 @@ void Iocp_server::do_worker_thread()
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			delete over_ex;
 		}
+		else if (EV_CHECK_WAVE_END == over_ex->event_type) {
+			check_wave_end(key);
+			delete over_ex;
+		}
 
 	}
 }
@@ -321,6 +325,11 @@ void Iocp_server::do_eventTimer_thread()
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_MONSTER_TRAP_COLLISION;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
+		else if (EV_CHECK_WAVE_END == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_CHECK_WAVE_END;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
@@ -762,12 +771,12 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 
 void Iocp_server::check_wave_end(const short& room_number)
 {
-	bool end_flag = false;
+	bool end_flag = true;
 	for (int i = 0; i < MAX_MONSTER; ++i) {
 		if (m_map_monsterPool[room_number][i].get_isLive() == true) {
+			end_flag = false;
 			break;
 		}
-		end_flag = true;
 	}
 
 	if (end_flag == true) { // wave가 종료되면
@@ -775,7 +784,9 @@ void Iocp_server::check_wave_end(const short& room_number)
 		// 다음 웨이브 몬스터 젠 시키기
 	}
 	else if (end_flag == false) { // 종료안됨
-		// 10초후에 다시 체크하는 이벤트 생성
+		// n초후에 다시 체크하는 이벤트 생성
+		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_DEAD, 0 };
+		add_event_to_eventTimer(ev);
 	}
 }
 
