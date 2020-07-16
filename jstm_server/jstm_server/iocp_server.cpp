@@ -747,23 +747,26 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 		m_map_game_room[room_number]->wave_count =  wave + 1;
 	}
 	wave = m_map_game_room[room_number]->wave_count;
-	switch (wave)
+	if (m_map_game_room[room_number]->stage_number == 1)
 	{
-	case 1:
-		for (int i = 0; i < 1; ++i) {
-			m_map_game_room[room_number]->wave_count = 1;
-			m_map_monsterPool[room_number][i].set_stage_number(3);
-			m_map_monsterPool[room_number][i].set_pathLine(1);
-			m_map_monsterPool[room_number][i].set_checkPoint(0);
-			m_map_monsterPool[room_number][i].set_position(stage3_line1_start);
-			m_map_monsterPool[room_number][i].set_animation_state(2);
-			m_map_monsterPool[room_number][i].set_HP(100);
-			m_map_monsterPool[room_number][i].set_monster_isLive(true);
-			// pos, look 정보도 지정해줘야할듯
+		switch (wave)
+		{
+		case 1:
+			for (int i = 0; i < 1; ++i) {
+				m_map_game_room[room_number]->wave_count = 1;
+				m_map_monsterPool[room_number][i].set_stage_number(3);
+				m_map_monsterPool[room_number][i].set_pathLine(1);
+				m_map_monsterPool[room_number][i].set_checkPoint(0);
+				m_map_monsterPool[room_number][i].set_position(stage3_line1_start);
+				m_map_monsterPool[room_number][i].set_animation_state(2);
+				m_map_monsterPool[room_number][i].set_HP(100);
+				m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				// pos, look 정보도 지정해줘야할듯
+			}
+			break;
+		default:
+			break;
 		}
-		break;
-	default:
-		break;
 	}
 
 	cout << "gen complete" << endl;;
