@@ -271,7 +271,10 @@ void Iocp_server::do_worker_thread()
 			check_wave_end(key);
 			delete over_ex;
 		}
-
+		else if (EV_GEN_MONSTER == over_ex->event_type) {
+			process_gen_monster(key, 1, 1, 1);
+			delete over_ex;
+		}
 	}
 }
 
@@ -330,6 +333,11 @@ void Iocp_server::do_eventTimer_thread()
 		else if (EV_CHECK_WAVE_END == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_CHECK_WAVE_END;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
+		else if (EV_GEN_MONSTER == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_GEN_MONSTER;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
@@ -578,6 +586,7 @@ void Iocp_server::process_make_room(const int& id)
 	new_room->room_state = R_STATE_in_room;
 	new_room->wave_count = 0;
 	new_room->stage_number = 1;
+	new_room->portalLife = 0;
 	new_room->players_id[0] = id;
 	new_room->players_id[1] = -1;
 	new_room->players_id[2] = -1;
@@ -704,6 +713,8 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 
 void Iocp_server::process_game_start(const short& room_number, const short& stage_number)
 {
+	m_map_game_room[room_number]->portalLife = 20;
+
 	Monster *monsterArr = new Monster[MAX_MONSTER];
 	for (int i = 0; i < MAX_MONSTER; ++i) {
 		monsterArr[i].set_id(i);
@@ -785,6 +796,8 @@ void Iocp_server::check_wave_end(const short& room_number)
 	if (end_flag == true) { // wave가 종료되면
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
+		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };
+		add_event_to_eventTimer(ev);
 	}
 	else if (end_flag == false) { // 종료안됨
 		// n초후에 다시 체크하는 이벤트 생성

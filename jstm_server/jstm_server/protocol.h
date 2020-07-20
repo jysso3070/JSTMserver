@@ -6,6 +6,7 @@ struct GAME_ROOM {
 	char room_state;
 	short wave_count;
 	short stage_number;
+	short portalLife;
 	int players_id[4];
 };
 
