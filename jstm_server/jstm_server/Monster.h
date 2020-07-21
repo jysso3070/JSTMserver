@@ -49,6 +49,8 @@ public:
 
 	void process_move_path();
 
+public:
+	bool arrive_portal = false;
 
 private:
 	short m_id;

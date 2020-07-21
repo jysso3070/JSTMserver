@@ -210,7 +210,7 @@ void Monster::process_move_path()
 			this->move_forward(5.f);
 			this->set_animation_state(2);
 		}
-		else if (m_pathLine == 4) { // stage 1 path 3
+		else if (m_pathLine == 4) { // stage 1 path 4
 			if (m_path_checkPoint == 0) {
 				set_aggro_direction(stage1_line4_1);
 				if (Vector3::Distance(this->get_position(), stage1_line4_1) <= PATH_CHECKPOINT_RANGE) {
@@ -232,7 +232,322 @@ void Monster::process_move_path()
 			this->move_forward(5.f);
 			this->set_animation_state(2);
 		}
+		else if (m_pathLine == 5) { // stage 1 path 5
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage1_line5_1);
+				if (Vector3::Distance(this->get_position(), stage1_line5_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage1_line5_2);
+				if (Vector3::Distance(this->get_position(), stage1_line5_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage1_line5_3);
+				if (Vector3::Distance(this->get_position(), stage1_line5_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 6) { // stage 1 path 6
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage1_line6_1);
+			if (Vector3::Distance(this->get_position(), stage1_line6_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage1_line6_2);
+			if (Vector3::Distance(this->get_position(), stage1_line6_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage1_line6_3);
+			if (Vector3::Distance(this->get_position(), stage1_line6_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
 	}
+	else if (m_stage_number == 2) { // stage 2
+		if (m_pathLine == 1) { // stage 2 path 1
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage2_line1_1);
+				if (Vector3::Distance(this->get_position(), stage2_line1_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage2_line1_2);
+				if (Vector3::Distance(this->get_position(), stage2_line1_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage2_line1_3);
+				if (Vector3::Distance(this->get_position(), stage2_line1_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 2) { // stage 2 path 2
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage2_line2_1);
+				if (Vector3::Distance(this->get_position(), stage2_line2_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage2_line2_2);
+				if (Vector3::Distance(this->get_position(), stage2_line2_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage2_line2_3);
+				if (Vector3::Distance(this->get_position(), stage2_line2_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 3) { // stage 2 path 3
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage2_line3_1);
+				if (Vector3::Distance(this->get_position(), stage2_line3_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage2_line3_2);
+				if (Vector3::Distance(this->get_position(), stage2_line3_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage2_line3_3);
+				if (Vector3::Distance(this->get_position(), stage2_line3_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 4) { // stage 2 path 4
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage2_line4_1);
+				if (Vector3::Distance(this->get_position(), stage2_line4_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage2_line4_2);
+				if (Vector3::Distance(this->get_position(), stage2_line4_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage2_line4_3);
+				if (Vector3::Distance(this->get_position(), stage2_line4_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 5) { // stage 2 path 5
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage2_line5_1);
+				if (Vector3::Distance(this->get_position(), stage2_line5_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage2_line5_2);
+				if (Vector3::Distance(this->get_position(), stage2_line5_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage2_line5_3);
+				if (Vector3::Distance(this->get_position(), stage2_line5_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 6) { // stage 2 path 6
+			if (m_path_checkPoint == 0) {
+				set_aggro_direction(stage2_line6_1);
+				if (Vector3::Distance(this->get_position(), stage2_line6_1) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(1);
+				}
+			}
+			else if (m_path_checkPoint == 1) {
+				set_aggro_direction(stage2_line6_2);
+				if (Vector3::Distance(this->get_position(), stage2_line6_2) <= PATH_CHECKPOINT_RANGE) {
+					this->set_checkPoint(2);
+				}
+			}
+			else if (m_path_checkPoint == 2) {
+				set_aggro_direction(stage2_line6_3);
+				if (Vector3::Distance(this->get_position(), stage2_line6_3) <= PATH_CHECKPOINT_RANGE) {
+					//std::cout << "Æ÷Å» µµÂø" << endl;
+				}
+			}
+			this->move_forward(5.f);
+			this->set_animation_state(2);
+		}
+		else if (m_pathLine == 7) { // stage 2 path 7
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage2_line7_1);
+			if (Vector3::Distance(this->get_position(), stage2_line7_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage2_line7_2);
+			if (Vector3::Distance(this->get_position(), stage2_line7_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage2_line7_3);
+			if (Vector3::Distance(this->get_position(), stage2_line7_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
+		else if (m_pathLine == 8) { // stage 2 path 8
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage2_line8_1);
+			if (Vector3::Distance(this->get_position(), stage2_line8_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage2_line8_2);
+			if (Vector3::Distance(this->get_position(), stage2_line8_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage2_line8_3);
+			if (Vector3::Distance(this->get_position(), stage2_line8_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
+		else if (m_pathLine == 9) { // stage 2 path 9
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage2_line9_1);
+			if (Vector3::Distance(this->get_position(), stage2_line9_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage2_line9_2);
+			if (Vector3::Distance(this->get_position(), stage2_line9_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage2_line9_3);
+			if (Vector3::Distance(this->get_position(), stage2_line9_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
+		else if (m_pathLine == 10) { // stage 2 path 10
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage2_line10_1);
+			if (Vector3::Distance(this->get_position(), stage2_line10_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage2_line10_2);
+			if (Vector3::Distance(this->get_position(), stage2_line10_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage2_line10_3);
+			if (Vector3::Distance(this->get_position(), stage2_line10_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
+		else if (m_pathLine == 11) { // stage 2 path 11
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage2_line11_1);
+			if (Vector3::Distance(this->get_position(), stage2_line11_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage2_line11_2);
+			if (Vector3::Distance(this->get_position(), stage2_line11_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage2_line11_3);
+			if (Vector3::Distance(this->get_position(), stage2_line11_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
+		else if (m_pathLine == 12) { // stage 2 path 12
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(stage2_line12_1);
+			if (Vector3::Distance(this->get_position(), stage2_line12_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(stage2_line12_2);
+			if (Vector3::Distance(this->get_position(), stage2_line12_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(stage2_line12_3);
+			if (Vector3::Distance(this->get_position(), stage2_line12_3) <= PATH_CHECKPOINT_RANGE) {
+				//std::cout << "Æ÷Å» µµÂø" << endl;
+			}
+		}
+		this->move_forward(5.f);
+		this->set_animation_state(2);
+		}
+	}
+
+
+
+
+
 	// stage 3
 	else if (m_stage_number == 3) { // stage 3
 		if (m_pathLine == 1) { // stage 3 path 1

@@ -742,14 +742,14 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	m_map_trap.insert(make_pair(room_number, trapArr));
 	m_map_trapIdPool.insert(make_pair(room_number, 0));
 
-	for (auto m : m_map_monsterPool) {
+	/*for (auto m : m_map_monsterPool) {
 		cout << "----------room number: " << m.first << endl;
 		for (int i = 0; i < MAX_MONSTER; ++i) {
 			cout << "monster id: " << m.second[i].get_monster_id() << endl;
 		}
-	}
+	}*/
 	//
-	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_GEN_1stWAVE_MONSTER, 0 };
+	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, 0 };
 	add_event_to_eventTimer(g_ev);
 	
 }
@@ -785,12 +785,13 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 		switch (wave)
 		{
 		case 1:
-			for (int i = 0; i < 1; ++i) {
+			for (int i = 0; i < MAX_MONSTER; ++i) {
 				m_map_game_room[room_number]->wave_count = 1;
-				m_map_monsterPool[room_number][i].set_stage_number(3);
-				m_map_monsterPool[room_number][i].set_pathLine(1);
+				m_map_monsterPool[room_number][i].set_stage_number(2);
+				m_map_monsterPool[room_number][i].arrive_portal = false;
+				m_map_monsterPool[room_number][i].set_pathLine(6);
 				m_map_monsterPool[room_number][i].set_checkPoint(0);
-				m_map_monsterPool[room_number][i].set_position(stage3_line1_start);
+				m_map_monsterPool[room_number][i].set_position(stage2_line6_start);
 				m_map_monsterPool[room_number][i].set_animation_state(2);
 				m_map_monsterPool[room_number][i].set_HP(100);
 				m_map_monsterPool[room_number][i].set_monster_isLive(true);
@@ -893,6 +894,7 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 		if (copy_players[0] == -1 && copy_players[1] == -1 && copy_players[2] == -1 && copy_players[3] == -1) {
 			for (int i = 0; i < 100; ++i) {
 				// 방에 플레이어가 없으면 몬스터 다 false로
+				if (m_map_monsterPool[check_roomNum] == nullptr) { return; }
 				m_map_monsterPool[check_roomNum][i].set_monster_isLive(false);
 			}
 		}
