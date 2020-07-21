@@ -625,32 +625,39 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 	// 해당 방번호에 빈자리에 id 넣어주기?
 	short r_number = join_room_packet->room_number;
 
+	bool joinflag = false;
 	m_map_player_info[id]->roomList_lock.lock();
 	for (int i = 0; i < 4; ++i) {
 		if (m_map_game_room[r_number]->players_id[i] == -1) {
 			m_map_game_room[r_number]->players_id[i] = id;
+			joinflag = true;
 			break;
 		}
 	}
 	m_map_player_info[id]->roomList_lock.unlock();
 
-	m_map_player_info[id]->room_number = r_number;
+	if (joinflag == true) {
+		m_map_player_info[id]->room_number = r_number;
 
-	// 바뀐 방정보 모든 클라이언트들에게 전송
-	for (auto client : m_map_player_info) {
-		if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
-			m_Packet_manager->send_room_info_pakcet(id, client.second->socket, *m_map_game_room[r_number]);
+		// 바뀐 방정보 모든 클라이언트들에게 전송
+		for (auto client : m_map_player_info) {
+			if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
+				m_Packet_manager->send_room_info_pakcet(id, client.second->socket, *m_map_game_room[r_number]);
+			}
+		}
+
+		cout << "make room success \n";
+		auto copyRoom = m_map_game_room;
+		for (auto room : copyRoom) {
+			cout << "room info \n";
+			cout << "room number: " << room.second->room_number << "\n";
+			for (int i = 0; i < 4; ++i) {
+				cout << "player " << i + 1 << " id: " << room.second->players_id[i] << "\n";
+			}
 		}
 	}
-
-	cout << "make room success \n";
-	auto copyRoom = m_map_game_room;
-	for (auto room : copyRoom) {
-		cout << "room info \n";
-		cout << "room number: " << room.second->room_number << "\n";
-		for (int i = 0; i < 4; ++i) {
-			cout << "player " << i + 1 << " id: " << room.second->players_id[i] << "\n";
-		}
+	else {
+		cout << "join room fail \n";
 	}
 
 }
@@ -719,7 +726,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	for (int i = 0; i < MAX_MONSTER; ++i) {
 		monsterArr[i].set_id(i);
 		monsterArr[i].set_monster_isLive(false);
-		monsterArr[i].set_monster_type(M_TYPE_NORMAL);
+		monsterArr[i].set_monster_type(M_TYPE_ORC);
 		DirectX::XMFLOAT4X4 w_pos;
 		w_pos._41 = -200.f;
 		w_pos._42 = -50.f;
@@ -745,6 +752,21 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_GEN_1stWAVE_MONSTER, 0 };
 	add_event_to_eventTimer(g_ev);
 	
+}
+
+void Iocp_server::process_game_end(const short & room_number, const bool& clearFlag)
+{
+	for (short i = 0; i < MAX_MONSTER; ++i) {
+		m_map_monsterPool[room_number][i].set_monster_isLive(false);
+	}
+	for (int p_id : m_map_game_room[room_number]->players_id) {
+		if (p_id != -1 && m_map_player_info[p_id]->is_connect == true &&
+			m_map_player_info[p_id]->player_state == PLAYER_STATE_playing_game ) {
+			m_map_player_info[p_id]->player_state = PLAYER_STATE_in_room;
+			m_Packet_manager->send_game_end(p_id, m_map_player_info[p_id]->socket, clearFlag);
+		}
+	}
+
 }
 
 void Iocp_server::process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num)
@@ -794,6 +816,9 @@ void Iocp_server::check_wave_end(const short& room_number)
 	}
 
 	if (end_flag == true) { // wave가 종료되면
+		if (m_map_game_room[room_number]->wave_count == 20) { // 마지막 웨이브 종료
+
+		}
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };

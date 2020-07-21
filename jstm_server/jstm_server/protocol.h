@@ -41,9 +41,9 @@ struct MONSTER {
 #define R_STATE_wave_end			3
 
 // monster_type
-#define M_TYPE_NORMAL	1
-#define M_TYPE_MAGIC	2
-#define M_TYPE_AXE		3
+#define M_TYPE_ORC	1
+#define M_TYPE_SHAMAN	2
+#define M_TYPE_STRONGORC		3
 #define M_TYPE_RIDER	4
 
 
@@ -56,6 +56,7 @@ struct MONSTER {
 #define SC_JOIN_ROOM_OK		7
 #define SC_MAKE_ROOM_OK		8
 #define SC_MONSTER_POS		9
+#define SC_GAME_END			10
 
 
 #define CS_LEFT		1
@@ -134,6 +135,12 @@ struct sc_packet_monster_pos {
 	unsigned short size;
 	char type;
 	MONSTER monsterArr[100];
+};
+
+struct sc_packet_game_end {
+	unsigned short size;
+	char type;
+	bool clear;
 };
 
 

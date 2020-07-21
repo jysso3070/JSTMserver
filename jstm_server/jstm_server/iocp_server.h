@@ -48,6 +48,7 @@ public:
 	void process_install_trap(const int& id, void *buff);	// 함정설치
 
 	void process_game_start(const short& room_number, const short& stage_number);
+	void process_game_end(const short& room_number, const bool& clearFlag);
 
 	void process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // 몬스터 리젠
 	void check_wave_end(const short& room_number);

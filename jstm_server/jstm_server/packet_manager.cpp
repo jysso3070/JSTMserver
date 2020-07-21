@@ -136,6 +136,15 @@ void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONST
 	//packet.monsterArr = mon_arr;
 }
 
+void packet_manager::send_game_end(int client_id, SOCKET client_socket, bool clearFlag)
+{
+	sc_packet_game_end packet;
+	packet.type = SC_GAME_END;
+	packet.clear = clearFlag;
+	packet.size = sizeof(packet);
+	send_packet(client_id, client_socket, &packet);
+}
+
 void packet_manager::error_display(const char * msg, int err_no)
 {
 	WCHAR *lpMsgBuf;
