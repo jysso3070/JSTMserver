@@ -787,11 +787,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 		case 1:
 			for (int i = 0; i < MAX_MONSTER; ++i) {
 				m_map_game_room[room_number]->wave_count = 1;
-				m_map_monsterPool[room_number][i].set_stage_number(2);
+				m_map_monsterPool[room_number][i].set_stage_number(3);
 				m_map_monsterPool[room_number][i].arrive_portal = false;
-				m_map_monsterPool[room_number][i].set_pathLine(6);
+				m_map_monsterPool[room_number][i].set_pathLine(12);
 				m_map_monsterPool[room_number][i].set_checkPoint(0);
-				m_map_monsterPool[room_number][i].set_position(stage2_line6_start);
+				m_map_monsterPool[room_number][i].set_position(stage3_line12_start);
 				m_map_monsterPool[room_number][i].set_animation_state(2);
 				m_map_monsterPool[room_number][i].set_HP(100);
 				m_map_monsterPool[room_number][i].set_monster_isLive(true);
