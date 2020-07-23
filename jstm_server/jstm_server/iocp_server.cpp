@@ -780,22 +780,79 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 		m_map_game_room[room_number]->wave_count =  wave + 1;
 	}
 	wave = m_map_game_room[room_number]->wave_count;
-	if (m_map_game_room[room_number]->stage_number == 1)
+	//m_map_game_room[room_number]->wave_count = 1;
+	if (m_map_game_room[room_number]->stage_number == 1) // stage 1
 	{
 		switch (wave)
 		{
 		case 1:
-			for (int i = 0; i < MAX_MONSTER; ++i) {
-				m_map_game_room[room_number]->wave_count = 1;
-				m_map_monsterPool[room_number][i].set_stage_number(3);
-				m_map_monsterPool[room_number][i].arrive_portal = false;
-				m_map_monsterPool[room_number][i].set_pathLine(12);
-				m_map_monsterPool[room_number][i].set_checkPoint(0);
-				m_map_monsterPool[room_number][i].set_position(stage3_line12_start);
-				m_map_monsterPool[room_number][i].set_animation_state(2);
-				m_map_monsterPool[room_number][i].set_HP(100);
-				m_map_monsterPool[room_number][i].set_monster_isLive(true);
-				// pos, look 정보도 지정해줘야할듯
+			for (int i = 0; i < 30; ++i) {
+				if (i < 5) {
+					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
+					m_map_monsterPool[room_number][i].set_stage_number(1);
+					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_pathLine(1);
+					m_map_monsterPool[room_number][i].set_checkPoint(0);
+					m_map_monsterPool[room_number][i].set_position(stage1_line1_start);
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_HP(100);
+					m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				}
+				else if (i < 10) {
+					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
+					m_map_monsterPool[room_number][i].set_stage_number(1);
+					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_pathLine(2);
+					m_map_monsterPool[room_number][i].set_checkPoint(0);
+					m_map_monsterPool[room_number][i].set_position(stage1_line2_start);
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_HP(100);
+					m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				}
+				else if (i < 15) {
+					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
+					m_map_monsterPool[room_number][i].set_stage_number(1);
+					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_pathLine(3);
+					m_map_monsterPool[room_number][i].set_checkPoint(0);
+					m_map_monsterPool[room_number][i].set_position(stage1_line3_start);
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_HP(100);
+					m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				}
+				else if (i < 20) {
+					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
+					m_map_monsterPool[room_number][i].set_stage_number(1);
+					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_pathLine(4);
+					m_map_monsterPool[room_number][i].set_checkPoint(0);
+					m_map_monsterPool[room_number][i].set_position(stage1_line4_start);
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_HP(100);
+					m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				}
+				else if (i < 25) {
+					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
+					m_map_monsterPool[room_number][i].set_stage_number(1);
+					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_pathLine(5);
+					m_map_monsterPool[room_number][i].set_checkPoint(0);
+					m_map_monsterPool[room_number][i].set_position(stage1_line5_start);
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_HP(100);
+					m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				}
+				else if (i < 30) {
+					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
+					m_map_monsterPool[room_number][i].set_stage_number(1);
+					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_pathLine(6);
+					m_map_monsterPool[room_number][i].set_checkPoint(0);
+					m_map_monsterPool[room_number][i].set_position(stage1_line6_start);
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_HP(100);
+					m_map_monsterPool[room_number][i].set_monster_isLive(true);
+				}
 			}
 			break;
 		default:
