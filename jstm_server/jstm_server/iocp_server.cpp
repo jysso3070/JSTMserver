@@ -54,7 +54,7 @@ void Iocp_server::make_thread()
 
 	thread monster_thread{ &Iocp_server::do_monster_thread, this };
 
-	//thread packet_count_thread{ &Iocp_server::do_packet_count, this };
+	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
@@ -354,7 +354,9 @@ void Iocp_server::do_monster_thread()
 		//cout << "room cnt: " << m_map_monsterPool.size() << endl;
 		auto start = chrono::high_resolution_clock::now();
 		for (auto &mon_pool : m_map_monsterPool) {
-			struct MONSTER monsterPacketArr[MAX_MONSTER];
+			MONSTER monsterPacketArr[MAX_MONSTER];
+			ZeroMemory(monsterPacketArr, sizeof(monsterPacketArr));
+			//memset(monsterPacketArr, 0x00, sizeof(monsterPacketArr));
 			for (short i = 0; i < MAX_MONSTER; ++i) {
 				monsterPacketArr[i].id = i;
 				monsterPacketArr[i].isLive = false;
@@ -451,6 +453,7 @@ void Iocp_server::do_monster_thread()
 				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
 				if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
 					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
+					cout << "dd" << endl;
 				}
 			}
 		}
