@@ -453,7 +453,6 @@ void Iocp_server::do_monster_thread()
 				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
 				if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
 					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
-					cout << "dd" << endl;
 				}
 			}
 		}
