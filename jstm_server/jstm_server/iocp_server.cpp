@@ -50,9 +50,10 @@ void Iocp_server::make_thread()
 	thread worker_thread_2{ &Iocp_server::do_worker_thread, this};
 	thread worker_thread_3{ &Iocp_server::do_worker_thread, this};
 	thread worker_thread_4{ &Iocp_server::do_worker_thread, this };
+	thread worker_thread_5{ &Iocp_server::do_worker_thread, this };
 	thread eventTimer_thread{ &Iocp_server::do_eventTimer_thread, this};
 
-	thread monster_thread{ &Iocp_server::do_monster_thread, this };
+	//thread monster_thread{ &Iocp_server::do_monster_thread, this };
 
 	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
 	//thread collision_thread{}
@@ -62,11 +63,12 @@ void Iocp_server::make_thread()
 	worker_thread_2.join();
 	worker_thread_3.join();
 	worker_thread_4.join();
+	worker_thread_5.join();
 	eventTimer_thread.join();
 
-	monster_thread.join();
+	//monster_thread.join();
 
-	//packet_count_thread.join();
+	packet_count_thread.join();
 
 }
 
@@ -275,6 +277,10 @@ void Iocp_server::do_worker_thread()
 			process_gen_monster(key, 1, 1, 1);
 			delete over_ex;
 		}
+		else if (EV_MONSTER_THREAD_RUN == over_ex->event_type) {
+			do_monster_move(key);
+			delete over_ex;
+		}
 	}
 }
 
@@ -310,7 +316,10 @@ void Iocp_server::do_eventTimer_thread()
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
-			m_monsterThread_run = true;
+			//m_monsterThread_run = true;
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_MONSTER_THREAD_RUN;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
@@ -341,6 +350,112 @@ void Iocp_server::do_eventTimer_thread()
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
+}
+
+void Iocp_server::do_monster_move(const short room_number)
+{
+	auto &mon_pool = m_map_monsterPool[room_number];
+	MONSTER monsterPacketArr[MAX_MONSTER];
+	ZeroMemory(monsterPacketArr, sizeof(monsterPacketArr));
+	for (short i = 0; i < MAX_MONSTER; ++i) {
+		monsterPacketArr[i].id = i;
+		monsterPacketArr[i].isLive = false;
+		if (mon_pool[i].get_isLive() == false) { // 연산할필요없는 것 제외
+			continue;
+		}
+
+		// 몬스터 체력 0 이하 사망 이벤트 추가
+		if (mon_pool[i].get_HP() <= 0) {
+			add_monster_dead_event(room_number, i);
+			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
+			monsterPacketArr[i].state = -1;
+			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
+			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
+			monsterPacketArr[i].hp = mon_pool[i].get_HP();
+			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+			continue;
+		}
+
+		// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
+		if (mon_pool[i].get_target_id() == -1) {
+			int near_id = -1;
+			float near_dis = 300.f;
+			for (int player_index = 0; player_index < 4; ++player_index) {
+				int player_id = m_map_game_room[room_number]->players_id[player_index];
+				if (player_id == -1) { continue; }
+				if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+					float dis = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool[i].get_position());
+					if (dis <= 200.f) { // 어그로 범위 내
+						if (near_dis > dis) {
+							near_id = player_id;
+							near_dis = dis;
+						}
+					}
+				}
+			}
+			mon_pool[i].set_target_id(near_id);
+		}
+		// 타겟이 있을때 몬스터 행동
+		if (mon_pool[i].get_target_id() != -1) {
+			int target_id = mon_pool[i].get_target_id();
+			if (m_map_player_info[target_id]->player_state != PLAYER_STATE_playing_game) {
+				mon_pool[i].set_target_id(-1);
+				continue;
+			}
+			float dis = Vector3::Distance(m_map_player_info[target_id]->get_pos(), mon_pool[i].get_position());
+			if (dis <= 200.f && dis >= 70.f) { //어그로 범위
+				mon_pool[i].set_target_id(target_id);
+				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
+				mon_pool[i].move_forward(5.f);
+				mon_pool[i].set_animation_state(2);
+			}
+			else if (dis < 70.f) { // 공격범위
+				mon_pool[i].set_target_id(target_id);
+				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
+				mon_pool[i].set_animation_state(3);
+			}
+			else {
+				mon_pool[i].set_target_id(-1);
+			}
+		}
+		// 타겟이 없을때 행동
+		else {
+			mon_pool[i].process_move_path();
+		}
+
+		// trap collision
+		for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
+			if (mon_pool[i].get_isTrapCooltime() == true) { break; }
+			if (m_map_trap[room_number][trap_idx].get_enable() == false) {
+				continue;
+			}
+			float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			if (trap_dis < TRAP_COLLISION_RANGE) {
+				cout << "함정 피격" << endl;
+				mon_pool[i].set_trap_cooltime(true);
+				// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+				EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
+
+			}
+		}
+
+
+		// 패킷에 들어갈 몬스터배열 값 지정
+		monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
+		monsterPacketArr[i].state = -1;
+		monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
+		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
+		monsterPacketArr[i].hp = mon_pool[i].get_HP();
+		monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+	}
+	for (int i = 0; i < 4; ++i) {
+		int player_id = m_map_game_room[room_number]->players_id[i];
+		if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+			m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
+		}
+	}
+	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
+	add_event_to_eventTimer(ev);
 }
 
 void Iocp_server::do_monster_thread()
@@ -452,7 +567,7 @@ void Iocp_server::do_monster_thread()
 			for (int i = 0; i < 4; ++i) {
 				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
 				if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-					m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
+					//m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
 				}
 			}
 		}
@@ -863,6 +978,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 	}
 
 	cout << "gen complete" << endl;;
+	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
+	add_event_to_eventTimer(ev);
 }
 
 void Iocp_server::check_wave_end(const short& room_number)
