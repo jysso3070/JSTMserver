@@ -118,14 +118,18 @@ void Iocp_server::do_accept_thread()
 
 		int user_id = m_new_user_id++;
 		PLAYER_INFO *new_player = new PLAYER_INFO;
+		ZeroMemory(new_player, sizeof(new_player));
 		new_player->id = user_id;
 		new_player->socket = clientSocket;
 		new_player->room_number = -1;
+		new_player->animation_state = 0;
+		new_player->hp = 200;
+		new_player->gold = 500;
 		new_player->recv_over.wsabuf[0].len = MAX_BUFFER;
 		new_player->recv_over.wsabuf[0].buf = new_player->recv_over.net_buf;
 		new_player->recv_over.event_type = EV_RECV;
-		new_player->is_connect = true;
 		new_player->player_state = PLAYER_STATE_default;
+		new_player->is_connect = true;
 
 		m_map_player_info.insert(make_pair(user_id, new_player)); // 플레이어 map에 인서트
 
@@ -716,7 +720,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	for (int i = 0; i < MAX_MONSTER; ++i) {
 		monsterArr[i].set_id(i);
 		monsterArr[i].set_monster_isLive(false);
-		monsterArr[i].set_monster_type(M_TYPE_ORC);
+		monsterArr[i].set_monster_type(TYPE_ORC);
 		DirectX::XMFLOAT4X4 w_pos;
 		w_pos._41 = -200.f;
 		w_pos._42 = -50.f;
@@ -777,70 +781,55 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 		{
 		case 1:
 			for (int i = 0; i < 30; ++i) {
+				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
+				m_map_monsterPool[room_number][i].set_HP(ORC_HP);
+				m_map_monsterPool[room_number][i].set_stage_number(1);
 				if (i < 5) {
-					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
-					m_map_monsterPool[room_number][i].set_stage_number(1);
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(1);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(stage1_line1_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_HP(100);
 					m_map_monsterPool[room_number][i].set_monster_isLive(true);
 				}
 				else if (i < 10) {
-					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
-					m_map_monsterPool[room_number][i].set_stage_number(1);
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(2);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(stage1_line2_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_HP(100);
 					m_map_monsterPool[room_number][i].set_monster_isLive(true);
 				}
 				else if (i < 15) {
-					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
-					m_map_monsterPool[room_number][i].set_stage_number(1);
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(3);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(stage1_line3_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_HP(100);
 					m_map_monsterPool[room_number][i].set_monster_isLive(true);
 				}
 				else if (i < 20) {
-					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
-					m_map_monsterPool[room_number][i].set_stage_number(1);
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(4);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(stage1_line4_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_HP(100);
 					m_map_monsterPool[room_number][i].set_monster_isLive(true);
 				}
 				else if (i < 25) {
-					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
-					m_map_monsterPool[room_number][i].set_stage_number(1);
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(5);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(stage1_line5_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_HP(100);
 					m_map_monsterPool[room_number][i].set_monster_isLive(true);
 				}
 				else if (i < 30) {
-					m_map_monsterPool[room_number][i].set_monster_type(M_TYPE_ORC);
-					m_map_monsterPool[room_number][i].set_stage_number(1);
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(6);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(stage1_line6_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_HP(100);
 					m_map_monsterPool[room_number][i].set_monster_isLive(true);
 				}
 			}
@@ -853,10 +842,14 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 	cout << "gen complete" << endl;;
 	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_eventTimer(ev);
+
+	EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
+	add_event_to_eventTimer(ev_waveCheck);
 }
 
 void Iocp_server::check_wave_end(const short& room_number)
 {
+	cout << "check wave end \n";
 	bool end_flag = true;
 	for (int i = 0; i < MAX_MONSTER; ++i) {
 		if (m_map_monsterPool[room_number][i].get_isLive() == true) {
@@ -866,17 +859,18 @@ void Iocp_server::check_wave_end(const short& room_number)
 	}
 
 	if (end_flag == true) { // wave가 종료되면
-		if (m_map_game_room[room_number]->wave_count == 20) { // 마지막 웨이브 종료
-
+		if (m_map_game_room[room_number]->wave_count == 20) { // 마지막 웨이브 종료시 게임종료 시킴
+			return;
 		}
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
+		m_map_game_room[room_number]->wave_count += 1;
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };
 		add_event_to_eventTimer(ev);
 	}
 	else if (end_flag == false) { // 종료안됨
 		// n초후에 다시 체크하는 이벤트 생성
-		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_DEAD, 0 };
+		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
 		add_event_to_eventTimer(ev);
 	}
 }

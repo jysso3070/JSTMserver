@@ -20,10 +20,11 @@ struct PLAYER_INFO {
 	int DB_key;
 	bool is_connect;
 	char player_state;
-	short animation_state;
-
 	short room_number;
 	short x, y;
+	short hp;
+	short gold;
+	short animation_state;
 	DirectX::XMFLOAT4X4 player_world_pos;
 
 	mutex player_info_lock;

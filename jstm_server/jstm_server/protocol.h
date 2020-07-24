@@ -21,11 +21,11 @@ struct MONSTER {
 };
 
 
-#define MAX_BUFFER 16384
-#define SERVER_PORT	3500
+#define MAX_BUFFER			16384
+#define SERVER_PORT			3500
 #define MONSTER_ID_START	100
-#define MAX_MONSTER		100
-#define MAX_TRAP		50
+#define MAX_MONSTER			100
+#define MAX_TRAP			50
 #define TRAP_COLLISION_RANGE	50.f
 
 // user_state
@@ -41,10 +41,16 @@ struct MONSTER {
 #define R_STATE_wave_end			3
 
 // monster_type
-#define M_TYPE_ORC	1
-#define M_TYPE_SHAMAN	2
-#define M_TYPE_STRONGORC		3
-#define M_TYPE_RIDER	4
+#define TYPE_ORC		1
+#define TYPE_SHAMAN		2
+#define TYPE_STRONGORC	3
+#define TYPE_RIDER		4
+// monster_health
+#define ORC_HP			200
+#define SHAMAN_HP		150
+#define STRONGORC_HP	500
+#define RIDER_HP		10000
+
 
 
 #define SC_SEND_ID			1
@@ -59,19 +65,19 @@ struct MONSTER {
 #define SC_GAME_END			10
 
 
-#define CS_LEFT		1
-#define CS_RIGHT	2
-#define CS_UP		3
-#define CS_DOWN		4
-#define CS_MAKE_ROOM	5
+#define CS_LEFT					1
+#define CS_RIGHT				2
+#define CS_UP					3
+#define CS_DOWN					4
+#define CS_MAKE_ROOM			5
 #define CS_REQUEST_JOIN_ROOM	6
-#define CS_POS		7
-#define CS_TEST		8
-#define CS_INSTALL_TRAP		9
+#define CS_POS					7
+#define CS_TEST					8
+#define CS_INSTALL_TRAP			9
 #define CS_CLIENT_STATE_CHANGE	10
-#define CS_GAME_START		11
+#define CS_GAME_START			11
 #define CS_REQUEST_NAMELOGIN	12
-#define CS_SHOOT	13
+#define CS_SHOOT				13
 
 #pragma pack(push ,1)
 
