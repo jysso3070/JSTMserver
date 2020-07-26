@@ -81,11 +81,16 @@ void packet_manager::send_remove_player_packet(int client_id, SOCKET client_sock
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, GAME_ROOM game_room)
+void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, GAME_ROOM* game_room)
 {
 	sc_packet_room_info packet;
 	packet.type = SC_SEND_ROOM_LIST;
-	packet.game_room = game_room;
+	packet.room_number = game_room->room_number;
+	packet.room_state = game_room->room_state;
+	packet.stage_number = game_room->stage_number;
+	for (short i = 0; i < 4; ++i) {
+		packet.players_id[i] = game_room->players_id[i];
+	}
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);

@@ -1,14 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
 
-struct GAME_ROOM {
-	short room_number;
-	char room_state;
-	short wave_count;
-	short stage_number;
-	short portalLife;
-	int players_id[4];
-};
 
 struct MONSTER {
 	short id;
@@ -112,7 +104,10 @@ struct sc_packet_remove_player {
 struct sc_packet_room_info {
 	unsigned short size;
 	char type;
-	GAME_ROOM game_room;
+	short room_number;
+	char room_state;
+	short stage_number;
+	int players_id[4];
 };
 
 struct sc_packet_trap_info {

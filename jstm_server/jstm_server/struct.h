@@ -35,6 +35,16 @@ struct PLAYER_INFO {
 	}
 };
 
+struct GAME_ROOM {
+	short room_number;
+	char room_state;
+	short wave_count;
+	short stage_number;
+	short portalLife;
+	int players_id[4];
+	mutex gameRoom_lock;
+};
+
 struct PLAYER_DB {
 	int DB_key_id;
 	char name[11];

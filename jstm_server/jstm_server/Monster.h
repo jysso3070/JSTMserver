@@ -18,7 +18,7 @@ public:
 	void set_4x4position(const XMFLOAT4X4& pos);
 	void set_look(const XMFLOAT3& look);
 	void set_monster_type(const char& monster_type);
-	void set_monster_isLive(const bool& flag);
+	void set_isLive(const bool& flag);
 	void set_pathLine(const short& line);
 	void set_checkPoint(const short& checkNum);
 	void set_stage_number(const short& stageNum);

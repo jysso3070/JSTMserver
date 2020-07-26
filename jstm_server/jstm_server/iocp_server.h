@@ -35,7 +35,6 @@ public:
 	void do_worker_thread(); // 주 워커 스레드
 	void do_eventTimer_thread();
 	void do_monster_move(const short room_number);
-	void do_monster_thread();
 	void do_packet_count();
 
 	// event queue add
@@ -69,6 +68,7 @@ public:
 	void send_pos_packet(int id);
 
 	//void do_recv();
+	void do_monster_thread();
 
 private:
 	// class
