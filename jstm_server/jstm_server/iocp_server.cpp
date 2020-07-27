@@ -454,6 +454,7 @@ void Iocp_server::do_monster_move(const short room_number)
 		// 타겟이 없을때 행동
 		else {
 			mon_pool[i].process_move_path();
+			mon_pool[i].move_forward(5.f);
 		}
 
 		// trap collision
