@@ -150,6 +150,19 @@ void packet_manager::send_game_end(int client_id, SOCKET client_socket, bool cle
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_stat_change(int client_id, SOCKET client_socket, short hp, short gold)
+{
+	sc_packet_stat_change packet;
+	packet.type = SC_PLAYER_STAT_CHANGE;
+	packet.id = client_id;
+	packet.hp = hp;
+	packet.gold = gold;
+	packet.size = sizeof(packet);
+	send_packet(client_id, client_socket, &packet);
+}
+
+
+
 void packet_manager::error_display(const char * msg, int err_no)
 {
 	WCHAR *lpMsgBuf;

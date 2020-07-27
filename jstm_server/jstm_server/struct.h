@@ -3,7 +3,7 @@
 enum EVENT_TYPE {
 	EV_RECV, EV_SEND, EV_MOVE, EV_PLAYER_MOVE_NOTIFY, EV_MOVE_TARGET,
 	EV_TEST, EV_MONSTER_THREAD_RUN, EV_GEN_1stWAVE_MONSTER, EV_MONSTER_DEAD, EV_MONSTER_TRAP_COLLISION, 
-	EV_CHECK_WAVE_END, EV_GEN_MONSTER
+	EV_CHECK_WAVE_END, EV_GEN_MONSTER, EV_MONSTER_ATTACK, EV_PLAYER_DAMAGE_COOLTIME
 };
 
 struct OVER_EX {		
@@ -26,6 +26,7 @@ struct PLAYER_INFO {
 	short gold;
 	short animation_state;
 	DirectX::XMFLOAT4X4 player_world_pos;
+	bool damageCooltime;
 
 	mutex player_info_lock;
 	mutex roomList_lock;

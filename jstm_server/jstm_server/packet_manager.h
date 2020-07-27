@@ -23,6 +23,7 @@ public:
 	void send_trap_info_packet(int client_id, SOCKET client_socket, short trap_id, DirectX::XMFLOAT4X4 trap_pos, char trap_type);
 	void send_monster_pos(int client_id, SOCKET client_socket, MONSTER mon_arr[]);
 	void send_game_end(int client_id, SOCKET client_socket, bool clearFlag);
+	void send_stat_change(int client_id, SOCKET client_socket, short hp, short gold);
 
 
 	void error_display(const char* msg, int err_no); // 에러 출력 함수

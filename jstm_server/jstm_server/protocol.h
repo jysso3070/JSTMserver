@@ -20,6 +20,8 @@ struct MONSTER {
 #define MAX_TRAP			50
 #define TRAP_COLLISION_RANGE	50.f
 
+#define ORC_ATT_RANGE	70.f
+
 // user_state
 #define PLAYER_STATE_default		0
 #define PLAYER_STATE_playing_game	1
@@ -55,6 +57,7 @@ struct MONSTER {
 #define SC_MAKE_ROOM_OK		8
 #define SC_MONSTER_POS		9
 #define SC_GAME_END			10
+#define SC_PLAYER_STAT_CHANGE	11
 
 
 #define CS_LEFT					1
@@ -142,6 +145,14 @@ struct sc_packet_game_end {
 	unsigned short size;
 	char type;
 	bool clear;
+};
+
+struct sc_packet_stat_change {
+	unsigned short size;
+	char type;
+	int id;
+	short hp;
+	short gold;
 };
 
 

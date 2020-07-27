@@ -50,7 +50,6 @@ public:
 	void process_game_start(const short& room_number, const short& stage_number);
 	void process_game_end(const short& room_number, const bool& clearFlag);
 
-	void process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // 몬스터 리젠
 	void check_wave_end(const short& room_number);
 	void add_monster_dead_event(const short& room_number, const short& monster_id);
 
@@ -58,16 +57,13 @@ public:
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
 	void process_disconnect_client(const int& leaver_id);
 	void process_nameLogin(const int& id, void *buff);
-
+	void check_monster_attack(const short& room_number, const short& monster_id);
 
 	void process_packet(const int& id, void *buff);
+
+	void process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // 몬스터 리젠
 	
-
-	// 패킷 송신
-	void send_id_packet(int id);
-	void send_pos_packet(int id);
-
-	//void do_recv();
+	//
 	void do_monster_thread();
 
 private:

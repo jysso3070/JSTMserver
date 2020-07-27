@@ -51,6 +51,7 @@ public:
 
 public:
 	bool arrive_portal = false;
+	bool attack_coolTime = false;
 
 private:
 	short m_id;
