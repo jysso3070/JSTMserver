@@ -211,7 +211,7 @@ void Iocp_server::do_worker_thread()
 			over_ex->net_buf[num_byte] = 0;
 			//process_packet(key, over_ex->net_buf);
 
-			unsigned int in_packet_size = 0;
+			unsigned int cur_packet_size = 0;
 			unsigned int saved_packet_size = 0;
 			DWORD rest_byte = num_byte;
 
@@ -220,15 +220,15 @@ void Iocp_server::do_worker_thread()
 
 			while (rest_byte != 0)
 			{
-				if (in_packet_size == 0) {
-					in_packet_size = temp[0];
+				if (cur_packet_size == 0) {
+					cur_packet_size = temp[0];
 				}
-				if (rest_byte + saved_packet_size >= in_packet_size) {
-					memcpy(tempBuf + saved_packet_size, temp, in_packet_size - saved_packet_size);
+				if (rest_byte + saved_packet_size >= cur_packet_size) {
+					memcpy(tempBuf + saved_packet_size, temp, cur_packet_size - saved_packet_size);
 					process_packet(key, tempBuf);
-					temp += in_packet_size - saved_packet_size;
-					rest_byte -= in_packet_size - saved_packet_size;
-					in_packet_size = 0;
+					temp += cur_packet_size - saved_packet_size;
+					rest_byte -= cur_packet_size - saved_packet_size;
+					cur_packet_size = 0;
 					saved_packet_size = 0;
 				}
 				else {
