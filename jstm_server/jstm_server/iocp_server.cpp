@@ -213,28 +213,30 @@ void Iocp_server::do_worker_thread()
 
 			unsigned int cur_packet_size = 0;
 			unsigned int saved_packet_size = 0;
-			DWORD rest_byte = num_byte;
+			DWORD buf_byte = num_byte;
 
 			char * temp = reinterpret_cast<char*>(over_ex->net_buf);
 			char tempBuf[MAX_BUFFER];
 
-			while (rest_byte != 0)
+			while (buf_byte != 0)
 			{
 				if (cur_packet_size == 0) {
-					cur_packet_size = temp[0];
+					cur_packet_size = temp[0]; // 첫 패킷사이즈 저장
 				}
-				if (rest_byte + saved_packet_size >= cur_packet_size) {
+				if (buf_byte + saved_packet_size >= cur_packet_size) {
+					// 첫 패킷 사이즈보다 새로받은 버퍼 + 저장되있던 패킷사이즈보다 크면 패킷을처리하고
+					// 처리한 패킷크기만큼 버퍼포인터, 받은 패킷사이즈들 갱신
 					memcpy(tempBuf + saved_packet_size, temp, cur_packet_size - saved_packet_size);
 					process_packet(key, tempBuf);
 					temp += cur_packet_size - saved_packet_size;
-					rest_byte -= cur_packet_size - saved_packet_size;
+					buf_byte -= cur_packet_size - saved_packet_size;
 					cur_packet_size = 0;
 					saved_packet_size = 0;
 				}
 				else {
-					memcpy(tempBuf + saved_packet_size, temp, rest_byte);
-					saved_packet_size += rest_byte;
-					rest_byte = 0;
+					memcpy(tempBuf + saved_packet_size, temp, buf_byte);
+					saved_packet_size += buf_byte;
+					buf_byte = 0;
 				}
 			}
 
