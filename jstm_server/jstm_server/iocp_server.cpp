@@ -741,7 +741,7 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 
 	cout << "trap install" << endl;
 	m_map_player_info[id]->gold -= -100;
-	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1, m_map_player_info[id]->gold);
+	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1000, m_map_player_info[id]->gold);
 
 	// 설치한 트랩 정보 전송
 	for (int other_id : m_map_game_room[room_num]->players_id) {
@@ -948,7 +948,7 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				cout << "공격성공\n";
 				// hp감소하고 패킷전송
 				m_map_player_info[target_id]->hp -= ORC_ATT;
-				m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1);
+				m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
 
 				m_map_player_info[target_id]->damageCooltime = true;
 				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
