@@ -30,7 +30,7 @@ struct MONSTER {
 
 // room state
 #define R_STATE_in_room				0
-#define R_STATE_wait_first_wave		1
+#define R_STATE_gameStart			1
 #define R_STATE_wave_start			2
 #define R_STATE_wave_end			3
 
@@ -46,6 +46,15 @@ struct MONSTER {
 #define RIDER_HP		10000
 // monster_att
 #define ORC_ATT			10
+#define SHAMAN_ATT		10
+#define STRONGORC_ATT	10
+#define RIDER_ATT		10
+// monster animation num
+#define M_ANIM_IDLE		0
+#define	M_ANIM_WALK		1
+#define M_ANIM_RUN		2
+#define M_ANIM_ATT		3
+#define M_ANIM_DEATH	6
 
 
 #define SC_SEND_ID			1
@@ -119,7 +128,7 @@ struct sc_packet_trap_info {
 	char type;
 	int id;
 	char trap_type;
-	DirectX::XMFLOAT4X4 trap_world_pos;
+	DirectX::XMFLOAT3 trap_pos;
 };
 
 struct sc_packet_join_room_ok {
@@ -212,6 +221,7 @@ struct cs_packet_install_trap {
 	int id;
 	char trap_type;
 	DirectX::XMFLOAT4X4 trap_world_pos;
+	DirectX::XMFLOAT3 trap_pos;
 };
 
 struct cs_packet_client_state_change {

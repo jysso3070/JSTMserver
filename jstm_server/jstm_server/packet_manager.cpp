@@ -118,13 +118,13 @@ void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, shor
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, short trap_id, DirectX::XMFLOAT4X4 trap_pos, char trap_type)
+void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, short trap_id, DirectX::XMFLOAT3 trap_pos, char trap_type)
 {
 	sc_packet_trap_info packet;
 	packet.type = SC_TRAP_INFO;
 	packet.trap_type = trap_type;
 	packet.id = trap_id;
-	packet.trap_world_pos = trap_pos;
+	packet.trapPos = trap_pos;
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);

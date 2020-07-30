@@ -390,6 +390,7 @@ void Iocp_server::do_monster_move(const short room_number)
 
 		// 몬스터 체력 0 이하 사망 이벤트 추가
 		if (mon_pool[i].get_HP() <= 0) {
+			mon_pool[i].set_animation_state(M_ANIM_DEATH);
 			add_monster_dead_event(room_number, i);
 			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
 			monsterPacketArr[i].state = -1;
@@ -436,12 +437,12 @@ void Iocp_server::do_monster_move(const short room_number)
 				mon_pool[i].set_target_id(target_id);
 				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
 				mon_pool[i].move_forward(5.f);
-				mon_pool[i].set_animation_state(2);
+				mon_pool[i].set_animation_state(M_ANIM_RUN);
 			}
 			else if (dis < ORC_ATT_RANGE) { // 공격범위
 				mon_pool[i].set_target_id(target_id);
 				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-				mon_pool[i].set_animation_state(3);
+				mon_pool[i].set_animation_state(M_ANIM_ATT);
 				if (mon_pool[i].attack_coolTime == false && 
 					m_map_player_info[mon_pool[i].get_target_id()]->damageCooltime == false) {
 					EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
@@ -700,7 +701,7 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
 		if (m_map_game_room[m_map_player_info[id]->room_number]->room_state == R_STATE_in_room) {
 			m_map_player_info[id]->roomList_lock.lock();
-			m_map_game_room[m_map_player_info[id]->room_number]->room_state = R_STATE_wait_first_wave;
+			m_map_game_room[m_map_player_info[id]->room_number]->room_state = R_STATE_gameStart;
 			m_map_player_info[id]->roomList_lock.unlock();
 			process_game_start(m_map_player_info[id]->room_number, 1);
 		}
@@ -724,26 +725,26 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	// 플레이어의 방번호를 가지고 함정정보
 	short room_num = m_map_player_info[id]->room_number;
 
-	m_map_player_info[id]->roomList_lock.lock();
 	/*short new_trapId = m_map_trapIdPool[room_num];
 	auto &trapPool = m_map_trap[room_num];
 	trapPool[new_trapId].set_4x4position(packet->trap_world_pos);
 	trapPool[new_trapId].set_enable(true);
 	trapPool[new_trapId].set_trap_type(packet->trap_type);
 	m_map_trapIdPool[room_num] += 1;*/
+	m_map_player_info[id]->roomList_lock.lock();
 	short new_trapId = m_new_trap_id++;
-	m_map_trap[room_num][new_trapId].set_4x4position(packet->trap_world_pos);
+	m_map_player_info[id]->roomList_lock.unlock();
+	m_map_trap[room_num][new_trapId].set_trapPos(packet->trap_pos);
 	m_map_trap[room_num][new_trapId].set_enable(true);
 	m_map_trap[room_num][new_trapId].set_trap_type(packet->trap_type);
-	m_map_player_info[id]->roomList_lock.unlock();
 
 	cout << "trap install" << endl;
 
 	// 설치한 트랩 정보 전송
 	for (int other_id : m_map_game_room[room_num]->players_id) {
 		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
-			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
-			m_Packet_manager->send_trap_info_packet(other_id, m_map_player_info[other_id]->socket, new_trapId, packet->trap_world_pos,
+			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game /*&& other_id != id*/) {
+			m_Packet_manager->send_trap_info_packet(other_id, m_map_player_info[other_id]->socket, new_trapId, packet->trap_pos,
 				packet->trap_type);
 		}
 	}
@@ -754,6 +755,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	m_map_game_room[room_number]->portalLife = 20;
 
 	Monster *monsterArr = new Monster[MAX_MONSTER];
+	//ZeroMemory(monsterArr, sizeof(monsterArr));
 	for (int i = 0; i < MAX_MONSTER; ++i) {
 		monsterArr[i].set_id(i);
 		monsterArr[i].set_isLive(false);
@@ -767,6 +769,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	m_map_monsterPool.insert(make_pair(room_number, monsterArr));
 
 	Trap *trapArr = new Trap[MAX_TRAP];
+	//ZeroMemory(trapArr, sizeof(trapArr));
 	for (int i = 0; i < MAX_TRAP; ++i) {
 		trapArr[i].set_enable(false);
 	}
@@ -841,7 +844,7 @@ void Iocp_server::add_monster_dead_event(const short & room_number, const short 
 {
 	int room_num = room_number;
 	int mon_id = monster_id;
-	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_DEAD, mon_id };
+	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_DEAD, mon_id };
 	add_event_to_eventTimer(ev);
 }
 

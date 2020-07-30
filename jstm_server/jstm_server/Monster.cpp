@@ -165,7 +165,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 2) { // stage 1 path 2
 			if (m_path_checkPoint == 0) {
@@ -188,7 +188,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 3) { // stage 1 path 3
 			if (m_path_checkPoint == 0) {
@@ -211,7 +211,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 4) { // stage 1 path 4
 			if (m_path_checkPoint == 0) {
@@ -234,7 +234,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 5) { // stage 1 path 5
 			if (m_path_checkPoint == 0) {
@@ -257,7 +257,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 6) { // stage 1 path 6
 			if (m_path_checkPoint == 0) {
@@ -280,7 +280,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 	}
 	// -------------stage 2--------------------------------------------------------
@@ -306,7 +306,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 2) { // stage 2 path 2
 			if (m_path_checkPoint == 0) {
@@ -329,7 +329,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 3) { // stage 2 path 3
 			if (m_path_checkPoint == 0) {
@@ -352,7 +352,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 4) { // stage 2 path 4
 			if (m_path_checkPoint == 0) {
@@ -375,7 +375,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 5) { // stage 2 path 5
 			if (m_path_checkPoint == 0) {
@@ -398,7 +398,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 6) { // stage 2 path 6
 			if (m_path_checkPoint == 0) {
@@ -421,7 +421,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 7) { // stage 2 path 7
 			if (m_path_checkPoint == 0) {
@@ -444,7 +444,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 8) { // stage 2 path 8
 			if (m_path_checkPoint == 0) {
@@ -467,7 +467,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 9) { // stage 2 path 9
 			if (m_path_checkPoint == 0) {
@@ -490,7 +490,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 10) { // stage 2 path 10
 			if (m_path_checkPoint == 0) {
@@ -513,7 +513,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 11) { // stage 2 path 11
 			if (m_path_checkPoint == 0) {
@@ -536,7 +536,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 12) { // stage 2 path 12
 			if (m_path_checkPoint == 0) {
@@ -559,7 +559,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 	}
 	// -------------stage 3--------------------------------------------------------
@@ -591,7 +591,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 2) { // stage 3 path 2
 			if (m_path_checkPoint == 0) {
@@ -620,7 +620,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 3) { // stage 3 path 3
 			if (m_path_checkPoint == 0) {
@@ -649,7 +649,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 4) { // stage 3 path 4
 			if (m_path_checkPoint == 0) {
@@ -678,7 +678,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 5) { // stage 3 path 5
 			if (m_path_checkPoint == 0) {
@@ -707,7 +707,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 6) { // stage 3 path 6
 			if (m_path_checkPoint == 0) {
@@ -736,7 +736,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 7) { // stage 3 path 7
 			if (m_path_checkPoint == 0) {
@@ -765,7 +765,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 8) { // stage 3 path 8
 			if (m_path_checkPoint == 0) {
@@ -794,7 +794,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 9) { // stage 3 path 9
 			if (m_path_checkPoint == 0) {
@@ -823,7 +823,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 10) { // stage 3 path 10
 			if (m_path_checkPoint == 0) {
@@ -852,7 +852,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 11) { // stage 3 path 11
 			if (m_path_checkPoint == 0) {
@@ -881,7 +881,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 		else if (m_pathLine == 12) { // stage 3 path 12
 			if (m_path_checkPoint == 0) {
@@ -910,7 +910,7 @@ void Monster::process_move_path()
 				}
 			}
 			//this->move_forward(5.f);
-			this->set_animation_state(2);
+			this->set_animation_state(M_ANIM_RUN);
 		}
 	}
 }
