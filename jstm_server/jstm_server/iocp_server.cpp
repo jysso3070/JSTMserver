@@ -739,6 +739,8 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	m_map_trap[room_num][new_trapId].set_trap_type(packet->trap_type);
 
 	cout << "trap install" << endl;
+	m_map_player_info[id]->gold -= -100;
+	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1, m_map_player_info[id]->gold);
 
 	// 설치한 트랩 정보 전송
 	for (int other_id : m_map_game_room[room_num]->players_id) {
