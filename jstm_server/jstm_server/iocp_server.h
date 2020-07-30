@@ -61,7 +61,7 @@ public:
 
 	void process_packet(const int& id, void *buff);
 
-	void process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num); // ∏ÛΩ∫≈Õ ∏Æ¡®
+	void process_gen_monster(const short& room_number, const short& stage_number); // ∏ÛΩ∫≈Õ ∏Æ¡®
 	
 	//
 	void do_monster_thread();

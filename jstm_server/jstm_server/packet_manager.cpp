@@ -173,6 +173,18 @@ void packet_manager::send_game_info_update(int client_id, SOCKET client_socket, 
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_game_start(int client_id, SOCKET client_socket, short stage_number, short wave, short portalLife)
+{
+	sc_packet_game_start packet;
+	packet.type = SC_GAME_START;
+	packet.stage_number = stage_number;
+	packet.wave = wave;
+	packet.portalLife = portalLife;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 
 
 void packet_manager::error_display(const char * msg, int err_no)

@@ -69,6 +69,7 @@ struct MONSTER {
 #define SC_GAME_END			10
 #define SC_PLAYER_STAT_CHANGE	11
 #define SC_GAME_INFO_UPDATE		12
+#define SC_GAME_START			13
 
 
 #define CS_LEFT					1
@@ -174,6 +175,14 @@ struct sc_packet_game_info_update {
 	short portalLife;
 };
 
+struct sc_packet_game_start {
+	unsigned short size;
+	char type;
+	short stage_number;
+	short wave;
+	short portalLife;
+};
+
 
 // client to server
 
@@ -238,6 +247,7 @@ struct cs_packet_client_state_change {
 	char type;
 	int id;
 	char change_state;
+	short stage_number;
 };
 
 struct cs_packet_game_start {

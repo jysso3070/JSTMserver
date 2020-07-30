@@ -257,7 +257,8 @@ void Iocp_server::do_worker_thread()
 			delete over_ex;
 		}
 		else if (EV_GEN_1stWAVE_MONSTER == over_ex->event_type) {
-			process_gen_monster(key, 1, 1, 1);
+			short stage_number = *(short *)(over_ex->net_buf);
+			process_gen_monster(key, stage_number);
 			delete over_ex;
 		}
 		else if (EV_MONSTER_DEAD == over_ex->event_type) {
@@ -277,7 +278,8 @@ void Iocp_server::do_worker_thread()
 			delete over_ex;
 		}
 		else if (EV_GEN_MONSTER == over_ex->event_type) {
-			process_gen_monster(key, 1, 1, 1);
+			short stage_number = m_map_game_room[key]->stage_number;
+			process_gen_monster(key, stage_number);
 			delete over_ex;
 		}
 		else if (EV_MONSTER_THREAD_RUN == over_ex->event_type) {
@@ -337,6 +339,7 @@ void Iocp_server::do_eventTimer_thread()
 		else if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_GEN_1stWAVE_MONSTER;
+			*(short *)(over_ex->net_buf) = p_ev.target_obj; // stage number;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 			//gen_monster(p_ev.obj_id, 1, 1, 1);
 		}
@@ -619,7 +622,7 @@ void Iocp_server::process_make_room(const int& id)
 	new_room->room_state = R_STATE_in_room;
 	new_room->wave_count = 0;
 	new_room->stage_number = 1;
-	new_room->portalLife = 0;
+	new_room->portalLife = 20;
 	new_room->players_id[0] = id;
 	new_room->players_id[1] = -1;
 	new_room->players_id[2] = -1;
@@ -699,12 +702,21 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 {
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
 	m_map_player_info[id]->player_state = packet->change_state;
+
+
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
+		m_map_player_info[id]->hp = 200;
+		m_map_player_info[id]->gold = 500;
+		short myroom_num = m_map_player_info[id]->room_number;
+		m_Packet_manager->send_game_start(id, m_map_player_info[id]->socket, 1,
+			m_map_game_room[myroom_num]->wave_count, m_map_game_room[myroom_num]->portalLife);
+
 		if (m_map_game_room[m_map_player_info[id]->room_number]->room_state == R_STATE_in_room) {
 			m_map_player_info[id]->roomList_lock.lock();
 			m_map_game_room[m_map_player_info[id]->room_number]->room_state = R_STATE_gameStart;
+			m_map_game_room[m_map_player_info[id]->room_number]->stage_number = packet->stage_number;
 			m_map_player_info[id]->roomList_lock.unlock();
-			process_game_start(m_map_player_info[id]->room_number, 1);
+			process_game_start(m_map_player_info[id]->room_number, packet->stage_number);
 		}
 
 		for (int i = 0; i < 4; ++i) {	// 같은 방의 클라이언트에게 put player 상호 전송
@@ -756,6 +768,7 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 void Iocp_server::process_game_start(const short& room_number, const short& stage_number)
 {
 	m_map_game_room[room_number]->portalLife = 20;
+	m_map_game_room[room_number]->wave_count = 0;
 
 	Monster *monsterArr = new Monster[MAX_MONSTER];
 	//ZeroMemory(monsterArr, sizeof(monsterArr));
@@ -786,7 +799,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 		}
 	}*/
 	//
-	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, 0 };
+	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
 	add_event_to_eventTimer(g_ev);
 	
 }
@@ -839,7 +852,7 @@ void Iocp_server::check_wave_end(const short& room_number)
 				if (m_map_player_info[temp_id]->is_connect == true &&
 					m_map_player_info[temp_id]->player_state == PLAYER_STATE_playing_game) {
 					m_Packet_manager->send_game_info_update(temp_id, m_map_player_info[temp_id]->socket,
-						m_map_game_room[room_number]->wave_count, -1);
+						m_map_game_room[room_number]->wave_count, -1000);
 				}
 			}
 		}
@@ -1017,7 +1030,7 @@ void Iocp_server::process_packet(const int& id, void * buff)
 
 }
 
-void Iocp_server::process_gen_monster(const short& room_number, const short& wave_number, const short& stage_number, const short & path_num)
+void Iocp_server::process_gen_monster(const short& room_number, const short& stage_number)
 {
 	if (m_map_monsterPool.find(room_number) == m_map_monsterPool.end()) {
 		cout << "room does not exist" << endl;
@@ -1093,7 +1106,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 		}
 	}
 
-	cout << "gen complete" << endl;;
+	cout<<"room: " << room_number<<"stage: "<< stage_number <<"gen complete" << endl;;
 	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_eventTimer(ev);
 
