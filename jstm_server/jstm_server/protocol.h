@@ -44,7 +44,8 @@ struct MONSTER {
 #define SHAMAN_HP		150
 #define STRONGORC_HP	500
 #define RIDER_HP		10000
-
+// monster_att
+#define ORC_ATT			10
 
 
 #define SC_SEND_ID			1

@@ -924,13 +924,28 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 {
 	int target_id = m_map_monsterPool[room_number][monster_id].get_target_id();
 	if (target_id != -1) { //타겟이 존재할때
-		if (Vector3::Distance(m_map_player_info[target_id]->get_pos(),
-			m_map_monsterPool[room_number][monster_id].get_position()) < ORC_ATT_RANGE) {
-			// 공격
-			cout << "공격성공\n";
-			m_map_player_info[target_id]->damageCooltime = true;
-			EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
-			add_event_to_eventTimer(ev);
+		if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_ORC) {
+			if (Vector3::Distance(m_map_player_info[target_id]->get_pos(),
+				m_map_monsterPool[room_number][monster_id].get_position()) < ORC_ATT_RANGE) {
+				// 공격
+				cout << "공격성공\n";
+				// hp감소하고 패킷전송
+				m_map_player_info[target_id]->hp -= ORC_ATT;
+				m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1);
+
+				m_map_player_info[target_id]->damageCooltime = true;
+				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
+				add_event_to_eventTimer(ev);
+			}
+		}
+		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_SHAMAN) {
+
+		}
+		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_STRONGORC) {
+
+		}
+		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_RIDER) {
+
 		}
 	}
 	m_map_monsterPool[room_number][monster_id].attack_coolTime = false;
@@ -1014,7 +1029,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
-				/*else if (i < 10) {
+				else if (i < 10) {
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(2);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
@@ -1053,7 +1068,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& wav
 					m_map_monsterPool[room_number][i].set_position(stage1_line6_start);
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
-				}*/
+				}
 			}
 			break;
 		default:
