@@ -1106,7 +1106,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 		}
 	}
 
-	cout<<"room: " << room_number<<"stage: "<< stage_number <<"gen complete" << endl;;
+	cout<<"room: " << room_number<<"stage: "<< stage_number<<"wave: "<< wave <<"gen complete" << endl;;
 	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_eventTimer(ev);
 
