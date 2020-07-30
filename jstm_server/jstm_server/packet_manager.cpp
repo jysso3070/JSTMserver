@@ -124,7 +124,7 @@ void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, 
 	packet.type = SC_TRAP_INFO;
 	packet.trap_type = trap_type;
 	packet.id = trap_id;
-	packet.trapPos = trap_pos;
+	packet.trap_pos = trap_pos;
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);
@@ -158,6 +158,18 @@ void packet_manager::send_stat_change(int client_id, SOCKET client_socket, short
 	packet.hp = hp;
 	packet.gold = gold;
 	packet.size = sizeof(packet);
+	send_packet(client_id, client_socket, &packet);
+}
+
+void packet_manager::send_game_info_update(int client_id, SOCKET client_socket, short wave, short portalLife)
+{
+	sc_packet_game_info_update packet;
+	packet.type = SC_GAME_INFO_UPDATE;
+	packet.id = client_id;
+	packet.wave = wave;
+	packet.portalLife = portalLife;
+	packet.size = sizeof(packet);
+
 	send_packet(client_id, client_socket, &packet);
 }
 

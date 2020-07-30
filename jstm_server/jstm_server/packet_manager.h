@@ -24,6 +24,7 @@ public:
 	void send_monster_pos(int client_id, SOCKET client_socket, MONSTER mon_arr[]);
 	void send_game_end(int client_id, SOCKET client_socket, bool clearFlag);
 	void send_stat_change(int client_id, SOCKET client_socket, short hp, short gold);
+	void send_game_info_update(int client_id, SOCKET client_socket, short wave, short portalLife);
 
 
 	void error_display(const char* msg, int err_no); // 에러 출력 함수

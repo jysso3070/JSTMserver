@@ -68,6 +68,7 @@ struct MONSTER {
 #define SC_MONSTER_POS		9
 #define SC_GAME_END			10
 #define SC_PLAYER_STAT_CHANGE	11
+#define SC_GAME_INFO_UPDATE		12
 
 
 #define CS_LEFT					1
@@ -163,6 +164,14 @@ struct sc_packet_stat_change {
 	int id;
 	short hp;
 	short gold;
+};
+
+struct sc_packet_game_info_update {
+	unsigned short size;
+	char type;
+	int id;
+	short wave;
+	short portalLife;
 };
 
 

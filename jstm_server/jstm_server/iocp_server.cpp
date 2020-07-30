@@ -404,6 +404,7 @@ void Iocp_server::do_monster_move(const short room_number)
 		if (mon_pool[i].arrive_portal == true) {
 			mon_pool[i].set_isLive(false);
 			m_map_game_room[room_number]->portalLife -= 1;
+			// 포탈라이프 업데이트하는 패킷 수신
 		}
 
 		// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
@@ -832,12 +833,23 @@ void Iocp_server::check_wave_end(const short& room_number)
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
 		m_map_game_room[room_number]->wave_count += 1;
+		for (short p_idx = 0; p_idx < 4; ++p_idx) {
+			int temp_id = m_map_game_room[room_number]->players_id[p_idx];
+			if (temp_id != -1) {
+				if (m_map_player_info[temp_id]->is_connect == true &&
+					m_map_player_info[temp_id]->player_state == PLAYER_STATE_playing_game) {
+					m_Packet_manager->send_game_info_update(temp_id, m_map_player_info[temp_id]->socket,
+						m_map_game_room[room_number]->wave_count, -1);
+				}
+			}
+		}
+
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };
 		add_event_to_eventTimer(ev);
 	}
 	else if (end_flag == false) { // 종료안됨
 		// n초후에 다시 체크하는 이벤트 생성
-		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
+		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 3s, EV_CHECK_WAVE_END, 0 };
 		add_event_to_eventTimer(ev);
 	}
 }
