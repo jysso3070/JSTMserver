@@ -1047,57 +1047,74 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 		switch (wave)
 		{
 		case 1:
+			XMFLOAT3 line1 = stage1_line1_start;
+			XMFLOAT3 line2 = stage1_line2_start;
+			XMFLOAT3 line3 = stage1_line3_start;
+			XMFLOAT3 line4 = stage1_line4_start;
+			XMFLOAT3 line5 = stage1_line5_start;
+			XMFLOAT3 line6 = stage1_line6_start;
 			for (int i = 0; i < 30; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				m_map_monsterPool[room_number][i].set_HP(ORC_HP);
 				m_map_monsterPool[room_number][i].set_stage_number(1);
 				if (i < 1) {
+					short num = 0;
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(1);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(stage1_line1_start);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x, line1.y, (line1.z + num *10) ));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					++num;
 				}
 				else if (i < 10) {
+					short num = 0;
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(2);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(stage1_line2_start);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line2.x, line2.y, (line2.z + num * 10)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					++num;
 				}
 				else if (i < 15) {
+					short num = 0;
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(3);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(stage1_line3_start);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line3.x, line3.y, (line3.z + num * 10)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					++num;
 				}
 				else if (i < 20) {
+					short num = 0;
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(4);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(stage1_line4_start);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x, line4.y, (line4.z + num * 10)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 25) {
+					short num = 0;
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(5);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(stage1_line5_start);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line5.x, line5.y, (line5.z + num * 10)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					++num;
 				}
 				else if (i < 30) {
+					short num = 0;
 					m_map_monsterPool[room_number][i].arrive_portal = false;
 					m_map_monsterPool[room_number][i].set_pathLine(6);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(stage1_line6_start);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line6.x, line6.y, (line6.z + num * 10)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					++num;
 				}
 			}
 			break;
