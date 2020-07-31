@@ -134,7 +134,7 @@ struct sc_packet_room_info {
 struct sc_packet_trap_info {
 	unsigned short size;
 	char type;
-	int id;
+	short trap_id;
 	char trap_type;
 	DirectX::XMFLOAT3 trap_pos;
 };
@@ -245,7 +245,6 @@ struct cs_packet_install_trap {
 	char type;
 	int id;
 	char trap_type;
-	DirectX::XMFLOAT4X4 trap_world_pos;
 	DirectX::XMFLOAT3 trap_pos;
 };
 
@@ -275,6 +274,7 @@ struct cs_packet_shoot {
 	char size;
 	char type;
 	int id;
+	short monster_id;
 	//
 };
 

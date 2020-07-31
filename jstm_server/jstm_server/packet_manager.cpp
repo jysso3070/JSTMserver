@@ -126,7 +126,7 @@ void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, 
 	sc_packet_trap_info packet;
 	packet.type = SC_TRAP_INFO;
 	packet.trap_type = trap_type;
-	packet.id = trap_id;
+	packet.trap_id = trap_id;
 	packet.trap_pos = trap_pos;
 	packet.size = sizeof(packet);
 
