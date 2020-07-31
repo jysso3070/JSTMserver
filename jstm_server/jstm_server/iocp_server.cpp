@@ -495,8 +495,11 @@ void Iocp_server::do_monster_move(const short room_number)
 			m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
 		}
 	}
-	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
-	add_event_to_eventTimer(ev);
+	if (m_map_game_room[room_number]->wave_on == true) {
+		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
+		add_event_to_eventTimer(ev);
+	}
+	cout << "mon run \n";
 }
 
 
@@ -623,6 +626,7 @@ void Iocp_server::process_make_room(const int& id)
 	new_room->wave_count = 0;
 	new_room->stage_number = 1;
 	new_room->portalLife = 20;
+	new_room->wave_on = false;
 	new_room->players_id[0] = id;
 	new_room->players_id[1] = -1;
 	new_room->players_id[2] = -1;
@@ -839,6 +843,7 @@ void Iocp_server::check_wave_end(const short& room_number)
 	}
 
 	if (end_flag == true) { // wave가 종료되면
+		m_map_game_room[room_number]->wave_on = false;
 		if (m_map_game_room[room_number]->wave_count == 20) { // 마지막 웨이브 종료시 게임종료 시킴
 			process_game_end(room_number, true);
 			return;
@@ -1126,6 +1131,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 	cout<<"room: " << room_number<<"stage: "<< stage_number<<"wave: "<< wave <<"gen complete" << endl;;
 	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_eventTimer(ev);
+	m_map_game_room[room_number]->wave_on = true;
 
 	EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
 	add_event_to_eventTimer(ev_waveCheck);

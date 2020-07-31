@@ -43,6 +43,7 @@ struct GAME_ROOM {
 	short stage_number;
 	short portalLife;
 	int players_id[4];
+	bool wave_on;
 	mutex gameRoom_lock;
 };
 
