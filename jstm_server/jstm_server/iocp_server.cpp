@@ -679,6 +679,7 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 
 	if (joinflag == true) {
 		m_map_player_info[id]->room_number = r_number;
+		m_Packet_manager->send_join_room_ok(id, m_map_player_info[id]->socket, r_number, m_map_game_room[r_number]);
 
 		// 바뀐 방정보 모든 클라이언트들에게 전송
 		for (auto client : m_map_player_info) {

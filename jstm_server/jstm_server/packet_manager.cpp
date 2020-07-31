@@ -107,12 +107,15 @@ void packet_manager::send_make_room_ok(int client_id, SOCKET client_socket, shor
 	send_packet(client_id, client_socket, &packet);
 }
 
-void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, short room_number)
+void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, short room_number, GAME_ROOM* game_room)
 {
 	sc_packet_join_room_ok packet;
 	packet.type = SC_JOIN_ROOM_OK;
 	packet.id = client_id;
 	packet.room_number = room_number;
+	for (short i = 0; i < 4; ++i) {
+		packet.players_id[i] = game_room->players_id[i];
+	}
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);

@@ -144,6 +144,7 @@ struct sc_packet_join_room_ok {
 	char type;
 	int id;
 	short room_number;
+	int players_id[4];
 };
 
 struct sc_packet_make_room_ok {
