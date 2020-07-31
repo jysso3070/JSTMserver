@@ -56,6 +56,12 @@ struct MONSTER {
 #define M_ANIM_ATT		3
 #define M_ANIM_DEATH	6
 
+// trap type
+#define TRAP_NEEDLE		0
+#define TRAP_FIRE		1
+#define TRAP_SLOW		2
+#define TRAP_ARROW		3
+
 
 #define SC_SEND_ID			1
 #define SC_POS				2
