@@ -405,8 +405,9 @@ void Iocp_server::do_monster_move(const short room_number)
 		}
 		// 포탈에 도착한 몬스터
 		if (mon_pool[i].arrive_portal == true) {
-			mon_pool[i].set_isLive(false);
 			m_map_game_room[room_number]->portalLife -= 1;
+			//if (m_map_game_room[room_number]->portalLife <= 0) {}
+			mon_pool[i].set_isLive(false);
 			// 포탈라이프 업데이트하는 패킷 수신
 		}
 
@@ -499,7 +500,7 @@ void Iocp_server::do_monster_move(const short room_number)
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(ev);
 	}
-	cout << "mon run \n";
+	//cout << "mon run \n";
 }
 
 
@@ -774,27 +775,31 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	m_map_game_room[room_number]->portalLife = 20;
 	m_map_game_room[room_number]->wave_count = 0;
 
-	Monster *monsterArr = new Monster[MAX_MONSTER];
-	//ZeroMemory(monsterArr, sizeof(monsterArr));
-	for (int i = 0; i < MAX_MONSTER; ++i) {
-		monsterArr[i].set_id(i);
-		monsterArr[i].set_isLive(false);
-		monsterArr[i].set_monster_type(TYPE_ORC);
-		DirectX::XMFLOAT4X4 w_pos;
-		w_pos._41 = -200.f;
-		w_pos._42 = -50.f;
-		w_pos._43 = 150.f;
-		monsterArr[i].set_4x4position(w_pos);
-	}
-	m_map_monsterPool.insert(make_pair(room_number, monsterArr));
+	auto p = m_map_monsterPool.find(room_number);
+	if (p == m_map_monsterPool.end()) {
+		cout << "first make monpool \n";
+		Monster *monsterArr = new Monster[MAX_MONSTER];
+		//ZeroMemory(monsterArr, sizeof(monsterArr));
+		for (int i = 0; i < MAX_MONSTER; ++i) {
+			monsterArr[i].set_id(i);
+			monsterArr[i].set_isLive(false);
+			monsterArr[i].set_monster_type(TYPE_ORC);
+			DirectX::XMFLOAT4X4 w_pos;
+			w_pos._41 = -200.f;
+			w_pos._42 = -50.f;
+			w_pos._43 = 150.f;
+			monsterArr[i].set_4x4position(w_pos);
+		}
+		m_map_monsterPool.insert(make_pair(room_number, monsterArr));
 
-	Trap *trapArr = new Trap[MAX_TRAP];
-	//ZeroMemory(trapArr, sizeof(trapArr));
-	for (int i = 0; i < MAX_TRAP; ++i) {
-		trapArr[i].set_enable(false);
+		Trap *trapArr = new Trap[MAX_TRAP];
+		//ZeroMemory(trapArr, sizeof(trapArr));
+		for (int i = 0; i < MAX_TRAP; ++i) {
+			trapArr[i].set_enable(false);
+		}
+		m_map_trap.insert(make_pair(room_number, trapArr));
+		m_map_trapIdPool.insert(make_pair(room_number, 0));
 	}
-	m_map_trap.insert(make_pair(room_number, trapArr));
-	m_map_trapIdPool.insert(make_pair(room_number, 0));
 
 	/*for (auto m : m_map_monsterPool) {
 		cout << "----------room number: " << m.first << endl;
@@ -813,6 +818,9 @@ void Iocp_server::process_game_end(const short & room_number, const bool& clearF
 	for (short i = 0; i < MAX_MONSTER; ++i) {
 		m_map_monsterPool[room_number][i].set_isLive(false);
 	}
+	for (short i = 0; i < MAX_TRAP; ++i) {
+		m_map_trap[room_number][i].set_enable(false);
+	}
 	for (int p_id : m_map_game_room[room_number]->players_id) {
 		if (p_id != -1 && m_map_player_info[p_id]->is_connect == true &&
 			m_map_player_info[p_id]->player_state == PLAYER_STATE_playing_game ) {
@@ -830,7 +838,9 @@ void Iocp_server::check_wave_end(const short& room_number)
 	short pLife = m_map_game_room[room_number]->portalLife;
 	m_map_game_room[room_number]->gameRoom_lock.unlock();
 	if (pLife <= 0) { // 포탈라이프 0이하
+		m_map_game_room[room_number]->wave_on = false;
 		process_game_end(room_number, false);
+		return;
 	}
 
 	cout << "check wave end \n";
