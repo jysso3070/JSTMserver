@@ -506,8 +506,6 @@ void Iocp_server::process_monster_move(const short room_number)
 	//cout << "mon run \n";
 }
 
-
-
 void Iocp_server::run_packet_countThread()
 {
 	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
@@ -788,6 +786,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 			monsterArr[i].set_id(i);
 			monsterArr[i].set_isLive(false);
 			monsterArr[i].set_monster_type(TYPE_ORC);
+			monsterArr[i].set_buffType(MONSTER_BUFF_NONE);
 			DirectX::XMFLOAT4X4 w_pos;
 			w_pos._41 = -200.f;
 			w_pos._42 = -50.f;

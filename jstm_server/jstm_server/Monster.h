@@ -29,6 +29,7 @@ public:
 	void set_HP(const short& HP);
 	void set_arrivePortal(const bool& flag);
 	void set_attackCooltime(const bool& flag);
+	void set_buffType(const char& buffType);
 
 	short get_monster_id();
 	char get_monster_type();
@@ -47,6 +48,7 @@ public:
 	short get_HP() { return m_hp; }
 	bool get_arrivePortal() { return m_arrive_portal; }
 	bool get_attackCooltime() { return m_attack_coolTime; }
+	char get_buffType() { return m_buffType; }
 
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
@@ -68,6 +70,7 @@ private:
 	short m_hp;
 	bool m_arrive_portal = false;
 	bool m_attack_coolTime = false;
+	char m_buffType = BUFF_NONE;
 
 	XMFLOAT4X4 m_4x4position;
 };

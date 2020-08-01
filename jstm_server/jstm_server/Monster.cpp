@@ -98,6 +98,11 @@ void Monster::set_attackCooltime(const bool & flag)
 	m_attack_coolTime = flag;
 }
 
+void Monster::set_monsterBuff(const char & buffType)
+{
+	m_buffType = buffType;
+}
+
 short Monster::get_monster_id()
 {
 	return m_id;

@@ -18,7 +18,6 @@ struct MONSTER {
 #define MONSTER_ID_START	100
 #define MAX_MONSTER			100
 #define MAX_TRAP			50
-#define TRAP_NEEDLE_RANGE	50.f
 
 // user_state
 #define PLAYER_STATE_default		0
@@ -37,16 +36,19 @@ struct MONSTER {
 #define TYPE_SHAMAN		2
 #define TYPE_STRONGORC	3
 #define TYPE_RIDER		4
+
 // monster_health
 #define ORC_HP			200
 #define SHAMAN_HP		150
 #define STRONGORC_HP	500
 #define RIDER_HP		10000
+
 // monster_att
 #define ORC_ATT			10
 #define SHAMAN_ATT		10
 #define STRONGORC_ATT	10
 #define RIDER_ATT		10
+
 // monster att range
 #define ORC_ATT_RANGE		70.f
 #define SHAMAN_ATT_RANGE	70.f
@@ -59,12 +61,21 @@ struct MONSTER {
 #define M_ANIM_RUN		2
 #define M_ANIM_ATT		3
 #define M_ANIM_DEATH	6
+// monster buff type
+#define MONSTER_BUFF_NONE		0
+#define MONSTER_BUFF_SLOW		1
 
 // trap type
 #define TRAP_NEEDLE		0
 #define TRAP_FIRE		1
 #define TRAP_SLOW		2
 #define TRAP_ARROW		3
+
+// trap range
+#define TRAP_NEEDLE_RANGE	50.f
+#define TRAP_FIRE_RANGE		50.f
+#define TRAP_SLOW_RANGE		50.f
+#define TRAP_ARROW_RANGE	50.f
 
 
 #define SC_SEND_ID			1
