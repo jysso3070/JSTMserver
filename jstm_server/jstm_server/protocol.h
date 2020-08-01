@@ -18,7 +18,7 @@ struct MONSTER {
 #define MONSTER_ID_START	100
 #define MAX_MONSTER			100
 #define MAX_TRAP			50
-#define TRAP_COLLISION_RANGE	50.f
+#define TRAP_NEEDLE_RANGE	50.f
 
 #define ORC_ATT_RANGE	70.f
 
