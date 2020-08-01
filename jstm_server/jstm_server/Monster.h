@@ -50,6 +50,7 @@ public:
 	bool get_attackCooltime() { return m_attack_coolTime; }
 	char get_buffType() { return m_buffType; }
 
+	void decrease_hp(const short& damage);
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
 
@@ -70,7 +71,7 @@ private:
 	short m_hp;
 	bool m_arrive_portal = false;
 	bool m_attack_coolTime = false;
-	char m_buffType = BUFF_NONE;
+	char m_buffType = MONSTER_BUFF_NONE;
 
 	XMFLOAT4X4 m_4x4position;
 };

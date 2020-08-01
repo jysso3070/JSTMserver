@@ -98,7 +98,7 @@ void Monster::set_attackCooltime(const bool & flag)
 	m_attack_coolTime = flag;
 }
 
-void Monster::set_monsterBuff(const char & buffType)
+void Monster::set_buffType(const char & buffType)
 {
 	m_buffType = buffType;
 }
@@ -123,6 +123,11 @@ DirectX::XMFLOAT4X4 Monster::get_4x4position()
 	return m_4x4position;
 }
 
+
+void Monster::decrease_hp(const short & damage)
+{
+	m_hp -= damage;
+}
 
 void Monster::move_forward(const float& distance)
 {

@@ -71,12 +71,17 @@ struct MONSTER {
 #define TRAP_SLOW		2
 #define TRAP_ARROW		3
 
+// trap ATT
+#define TRAP_NEEDLE_ATT		10
+#define TRAP_FIRE_ATT		10
+#define TRAP_SLOW_ATT		10
+#define TRAP_ARROW_ATT		10
+
 // trap range
 #define TRAP_NEEDLE_RANGE	50.f
 #define TRAP_FIRE_RANGE		50.f
 #define TRAP_SLOW_RANGE		50.f
 #define TRAP_ARROW_RANGE	50.f
-
 
 #define SC_SEND_ID			1
 #define SC_POS				2

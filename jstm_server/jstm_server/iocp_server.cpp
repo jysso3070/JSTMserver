@@ -473,14 +473,22 @@ void Iocp_server::process_monster_move(const short room_number)
 				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_NEEDLE_RANGE) {
 					cout << "함정 피격" << endl;
-					mon_pool[i].set_trap_cooltime(true);
 					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+					mon_pool[i].set_trap_cooltime(true);
+					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
 					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
 					add_event_to_queue(trap_ev);
 				}
 			}
 			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
-
+				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				if (trap_dis < TRAP_SLOW_RANGE) {
+					cout << "함정 피격" << endl;
+					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+					mon_pool[i].set_trap_cooltime(true);
+					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
+					add_event_to_queue(trap_ev);
+				}
 			}
 		}
 
