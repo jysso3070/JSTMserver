@@ -45,24 +45,24 @@ void Iocp_server::serverInitialize()
 
 void Iocp_server::make_thread()
 {
-	thread accept_thread{ &Iocp_server::do_accept_thread, this};
-	thread worker_thread_1{ &Iocp_server::do_worker_thread, this};
-	thread worker_thread_2{ &Iocp_server::do_worker_thread, this};
-	thread worker_thread_3{ &Iocp_server::do_worker_thread, this};
-	thread worker_thread_4{ &Iocp_server::do_worker_thread, this };
-	thread worker_thread_5{ &Iocp_server::do_worker_thread, this };
-	thread eventTimer_thread{ &Iocp_server::do_eventTimer_thread, this};
+	thread accept_thread{ &Iocp_server::run_acceptThread, this};
+	thread mainThread_1{ &Iocp_server::run_mainThread, this};
+	thread mainThread_2{ &Iocp_server::run_mainThread, this};
+	thread mainThread_3{ &Iocp_server::run_mainThread, this};
+	thread mainThread_4{ &Iocp_server::run_mainThread, this };
+	thread mainThread_5{ &Iocp_server::run_mainThread, this };
+	thread eventQueueThread{ &Iocp_server::run_eventQueueThread, this};
 
-	thread packet_count_thread{ &Iocp_server::do_packet_count, this };
+	thread packet_count_thread{ &Iocp_server::run_packet_countThread, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
-	worker_thread_1.join();
-	worker_thread_2.join();
-	worker_thread_3.join();
-	worker_thread_4.join();
-	worker_thread_5.join();
-	eventTimer_thread.join();
+	mainThread_1.join();
+	mainThread_2.join();
+	mainThread_3.join();
+	mainThread_4.join();
+	mainThread_5.join();
+	eventQueueThread.join();
 
 	packet_count_thread.join();
 
@@ -95,7 +95,7 @@ void Iocp_server::init_socket()
 	m_accept_socket = listenSocket;
 }
 
-void Iocp_server::do_accept_thread()
+void Iocp_server::run_acceptThread()
 {
 
 	// 수신 대기 설정
@@ -163,7 +163,7 @@ void Iocp_server::do_accept_thread()
 		m_map_player_info[user_id]->y = 300;
 
 		EVENT ev{ user_id, chrono::high_resolution_clock::now() + 10s, EV_TEST, 0 };
-		add_event_to_eventTimer(ev);
+		add_event_to_queue(ev);
 
 		/*EVENT tev{ -10, chrono::high_resolution_clock::now() + 5s, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_eventTimer(tev);*/
@@ -184,7 +184,7 @@ void Iocp_server::do_accept_thread()
 
 }
 
-void Iocp_server::do_worker_thread()
+void Iocp_server::run_mainThread()
 {
 	while (true) {
 		DWORD num_byte;
@@ -283,7 +283,7 @@ void Iocp_server::do_worker_thread()
 			delete over_ex;
 		}
 		else if (EV_MONSTER_THREAD_RUN == over_ex->event_type) {
-			do_monster_move(key);
+			process_monster_move(key);
 			delete over_ex;
 		}
 		else if (EV_MONSTER_ATTACK == over_ex->event_type) {
@@ -299,7 +299,7 @@ void Iocp_server::do_worker_thread()
 	}
 }
 
-void Iocp_server::do_eventTimer_thread()
+void Iocp_server::run_eventQueueThread()
 {
 	while (true) {
 		m_eventTimer_lock.lock();
@@ -379,7 +379,7 @@ void Iocp_server::do_eventTimer_thread()
 	}
 }
 
-void Iocp_server::do_monster_move(const short room_number)
+void Iocp_server::process_monster_move(const short room_number)
 {
 	auto &mon_pool = m_map_monsterPool[room_number];
 	MONSTER monsterPacketArr[MAX_MONSTER];
@@ -404,7 +404,7 @@ void Iocp_server::do_monster_move(const short room_number)
 			continue;
 		}
 		// 포탈에 도착한 몬스터
-		if (mon_pool[i].arrive_portal == true) {
+		if (mon_pool[i].get_arrivePortal() == true) {
 			m_map_game_room[room_number]->portalLife -= 1;
 			//if (m_map_game_room[room_number]->portalLife <= 0) {}
 			mon_pool[i].set_isLive(false);
@@ -448,11 +448,11 @@ void Iocp_server::do_monster_move(const short room_number)
 				mon_pool[i].set_target_id(target_id);
 				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
 				mon_pool[i].set_animation_state(M_ANIM_ATT);
-				if (mon_pool[i].attack_coolTime == false && 
+				if (mon_pool[i].get_attackCooltime() == false && 
 					m_map_player_info[mon_pool[i].get_target_id()]->damageCooltime == false) {
 					EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
-					add_event_to_eventTimer(ev_monAttck);
-					mon_pool[i].attack_coolTime = true;
+					add_event_to_queue(ev_monAttck);
+					mon_pool[i].set_attackCooltime(true);
 				}
 			}
 			else {
@@ -476,7 +476,7 @@ void Iocp_server::do_monster_move(const short room_number)
 					mon_pool[i].set_trap_cooltime(true);
 					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
-					add_event_to_eventTimer(trap_ev);
+					add_event_to_queue(trap_ev);
 				}
 			}
 			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
@@ -501,14 +501,14 @@ void Iocp_server::do_monster_move(const short room_number)
 	}
 	if (m_map_game_room[room_number]->wave_on == true) {
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
-		add_event_to_eventTimer(ev);
+		add_event_to_queue(ev);
 	}
 	//cout << "mon run \n";
 }
 
 
 
-void Iocp_server::do_packet_count()
+void Iocp_server::run_packet_countThread()
 {
 	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
 	while (true) {
@@ -521,7 +521,7 @@ void Iocp_server::do_packet_count()
 	}
 }
 
-void Iocp_server::add_event_to_eventTimer(EVENT & ev)
+void Iocp_server::add_event_to_queue(EVENT & ev)
 {
 	m_eventTimer_lock.lock();
 	m_eventTimer_queue.push(ev);
@@ -813,7 +813,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 	}*/
 	//
 	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
-	add_event_to_eventTimer(g_ev);
+	add_event_to_queue(g_ev);
 	
 }
 
@@ -877,12 +877,12 @@ void Iocp_server::check_wave_end(const short& room_number)
 		}
 
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };
-		add_event_to_eventTimer(ev);
+		add_event_to_queue(ev);
 	}
 	else if (end_flag == false) { // 종료안됨
 		// n초후에 다시 체크하는 이벤트 생성
 		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 3s, EV_CHECK_WAVE_END, 0 };
-		add_event_to_eventTimer(ev);
+		add_event_to_queue(ev);
 	}
 }
 
@@ -891,7 +891,7 @@ void Iocp_server::add_monster_dead_event(const short & room_number, const short 
 	int room_num = room_number;
 	int mon_id = monster_id;
 	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_DEAD, mon_id };
-	add_event_to_eventTimer(ev);
+	add_event_to_queue(ev);
 }
 
 void Iocp_server::send_all_room_list(const int& id)
@@ -984,20 +984,31 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 
 				m_map_player_info[target_id]->damageCooltime = true;
 				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
-				add_event_to_eventTimer(ev);
+				add_event_to_queue(ev);
 			}
 		}
 		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_SHAMAN) {
 
 		}
 		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_STRONGORC) {
+			if (Vector3::Distance(m_map_player_info[target_id]->get_pos(),
+				m_map_monsterPool[room_number][monster_id].get_position()) < STRONGORC_ATT_RANGE) {
+				// 공격
+				cout << "공격성공\n";
+				// hp감소하고 패킷전송
+				m_map_player_info[target_id]->hp -= STRONGORC_ATT;
+				m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
 
+				m_map_player_info[target_id]->damageCooltime = true;
+				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
+				add_event_to_queue(ev);
+			}
 		}
 		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_RIDER) {
 
 		}
 	}
-	m_map_monsterPool[room_number][monster_id].attack_coolTime = false;
+	m_map_monsterPool[room_number][monster_id].set_attackCooltime(false);
 }
 
 
@@ -1077,7 +1088,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				m_map_monsterPool[room_number][i].set_HP(ORC_HP);
 				m_map_monsterPool[room_number][i].set_stage_number(1);
 				if (i < 5) { // line 1
-					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(1);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x, line1.y, (line1.z + (i%5) * 40) ));
@@ -1085,7 +1096,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 10) { // line 2
-					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(2);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line2.x, line2.y, (line2.z + (i % 5) * 40)));
@@ -1093,7 +1104,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 15) { // line 3
-					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(3);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line3.x, line3.y, (line3.z + (i % 5) * 40)));
@@ -1101,7 +1112,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 20) { // line 4
-					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(4);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x, line4.y, (line4.z + (i % 5) * 40)));
@@ -1109,7 +1120,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 25) { // line 5
-					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(5);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line5.x, line5.y, (line5.z + (i % 5) * 40)));
@@ -1117,7 +1128,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 30) { // line 6
-					m_map_monsterPool[room_number][i].arrive_portal = false;
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(6);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line6.x, line6.y, (line6.z + (i % 5) * 40)));
@@ -1140,7 +1151,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				m_map_monsterPool[room_number][i].set_stage_number(1);
 				if (i < 6) { // line 1
 					if (i < 5) {
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(1);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x, line1.y, (line1.z + (i % 6) * 40)));
@@ -1150,7 +1161,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i < 6) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 						m_map_monsterPool[room_number][i].set_HP(STRONGORC_HP);
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(1);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x, line1.y, (line1.z + (i % 6) * 40)));
@@ -1160,7 +1171,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				}
 				else if (i < 12) { // line 2
 					if (i < 11) {
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(2);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line2.x, line2.y, (line2.z + (i % 6) * 40)));
@@ -1170,7 +1181,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i < 12) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 						m_map_monsterPool[room_number][i].set_HP(STRONGORC_HP);
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(2);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line2.x, line2.y, (line2.z + (i % 6) * 40)));
@@ -1180,7 +1191,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				}
 				else if (i < 18) { // line 3
 					if (i < 17) {
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(3);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line3.x, line3.y, (line3.z + (i % 6) * 40)));
@@ -1190,7 +1201,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i < 18) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 						m_map_monsterPool[room_number][i].set_HP(STRONGORC_HP);
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(3);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line3.x, line3.y, (line3.z + (i % 6) * 40)));
@@ -1200,7 +1211,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				}
 				else if (i < 24) { // line 4
 					if (i < 23) {
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(4);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x, line4.y, (line4.z + (i % 6) * 40)));
@@ -1210,7 +1221,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i < 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 						m_map_monsterPool[room_number][i].set_HP(STRONGORC_HP);
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(4);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x, line4.y, (line4.z + (i % 6) * 40)));
@@ -1220,7 +1231,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				}
 				else if (i < 30) { // line 5
 					if (i < 29) {
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(5);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line5.x, line5.y, (line5.z + (i % 6) * 40)));
@@ -1230,7 +1241,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i < 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 						m_map_monsterPool[room_number][i].set_HP(STRONGORC_HP);
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(5);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line5.x, line5.y, (line5.z + (i % 6) * 40)));
@@ -1240,7 +1251,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				}
 				else if (i < 36) { // line 6
 					if (i < 35) {
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(6);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line6.x, line6.y, (line6.z + (i % 6) * 40)));
@@ -1250,7 +1261,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i < 36) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 						m_map_monsterPool[room_number][i].set_HP(STRONGORC_HP);
-						m_map_monsterPool[room_number][i].arrive_portal = false;
+						m_map_monsterPool[room_number][i].set_arrivePortal(false);
 						m_map_monsterPool[room_number][i].set_pathLine(6);
 						m_map_monsterPool[room_number][i].set_checkPoint(0);
 						m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line6.x, line6.y, (line6.z + (i % 6) * 40)));
@@ -1268,11 +1279,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 
 	cout<<"room: " << room_number<<"stage: "<< stage_number<<"wave: "<< wave <<"gen complete" << endl;;
 	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
-	add_event_to_eventTimer(ev);
+	add_event_to_queue(ev);
 	m_map_game_room[room_number]->wave_on = true;
 
 	EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
-	add_event_to_eventTimer(ev_waveCheck);
+	add_event_to_queue(ev_waveCheck);
 }
 
 
@@ -1396,7 +1407,7 @@ void Iocp_server::do_monster_thread()
 		//cout << "time: " << (end - start).count() << "ns" << endl;
 
 		EVENT ev{ -10, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
-		add_event_to_eventTimer(ev);
+		add_event_to_queue(ev);
 		++cnt;
 		m_monsterThread_run = false;
 	}

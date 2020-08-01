@@ -20,8 +20,6 @@ struct MONSTER {
 #define MAX_TRAP			50
 #define TRAP_NEEDLE_RANGE	50.f
 
-#define ORC_ATT_RANGE	70.f
-
 // user_state
 #define PLAYER_STATE_default		0
 #define PLAYER_STATE_playing_game	1
@@ -49,6 +47,12 @@ struct MONSTER {
 #define SHAMAN_ATT		10
 #define STRONGORC_ATT	10
 #define RIDER_ATT		10
+// monster att range
+#define ORC_ATT_RANGE		70.f
+#define SHAMAN_ATT_RANGE	70.f
+#define STRONGORC_ATT_RANGE	70.f
+#define RIDER_ATT_RANGE		70.f
+
 // monster animation num
 #define M_ANIM_IDLE		0
 #define	M_ANIM_WALK		1

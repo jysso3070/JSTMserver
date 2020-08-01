@@ -31,14 +31,14 @@ public:
 	void init_socket();
 
 	// thread
-	void do_accept_thread(); // 소켓 accept를 받는 스레드함수
-	void do_worker_thread(); // 주 워커 스레드
-	void do_eventTimer_thread();
-	void do_monster_move(const short room_number);
-	void do_packet_count();
+	void run_acceptThread(); // 소켓 accept를 받는 스레드함수
+	void run_mainThread(); // 주 워커 스레드
+	void run_eventQueueThread();
+	void process_monster_move(const short room_number);
+	void run_packet_countThread();
 
 	// event queue add
-	void add_event_to_eventTimer(EVENT &ev);
+	void add_event_to_queue(EVENT &ev);
 
 	void t_process_player_move(const int& id, void *buff);	// 테스트용
 	void process_player_move(const int& id, void *buff);	// 플레이어 움직임

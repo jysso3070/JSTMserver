@@ -27,6 +27,8 @@ public:
 	void set_animation_state(const short& ani_state);
 	void set_trap_cooltime(const bool& flag);
 	void set_HP(const short& HP);
+	void set_arrivePortal(const bool& flag);
+	void set_attackCooltime(const bool& flag);
 
 	short get_monster_id();
 	char get_monster_type();
@@ -43,15 +45,14 @@ public:
 	short get_checkPoint() { return m_path_checkPoint; }
 	bool get_isTrapCooltime() { return m_trap_cooltime; }
 	short get_HP() { return m_hp; }
+	bool get_arrivePortal() { return m_arrive_portal; }
+	bool get_attackCooltime() { return m_attack_coolTime; }
 
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
 
 	void process_move_path();
 
-public:
-	bool arrive_portal = false;
-	bool attack_coolTime = false;
 
 private:
 	short m_id;
@@ -65,6 +66,8 @@ private:
 	short m_path_checkPoint = 0;
 	bool m_trap_cooltime = false;
 	short m_hp;
+	bool m_arrive_portal = false;
+	bool m_attack_coolTime = false;
 
 	XMFLOAT4X4 m_4x4position;
 };

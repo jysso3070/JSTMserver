@@ -88,6 +88,16 @@ void Monster::set_HP(const short & HP)
 	m_hp = HP;
 }
 
+void Monster::set_arrivePortal(const bool & flag)
+{
+	m_arrive_portal = flag;
+}
+
+void Monster::set_attackCooltime(const bool & flag)
+{
+	m_attack_coolTime = flag;
+}
+
 short Monster::get_monster_id()
 {
 	return m_id;
@@ -161,7 +171,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line1_3);
 				if (Vector3::Distance(this->get_position(), stage1_line1_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -184,7 +194,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line2_3);
 				if (Vector3::Distance(this->get_position(), stage1_line2_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -207,7 +217,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line3_3);
 				if (Vector3::Distance(this->get_position(), stage1_line3_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -230,7 +240,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line4_3);
 				if (Vector3::Distance(this->get_position(), stage1_line4_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -253,7 +263,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line5_3);
 				if (Vector3::Distance(this->get_position(), stage1_line5_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -276,7 +286,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage1_line6_3);
 				if (Vector3::Distance(this->get_position(), stage1_line6_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -302,7 +312,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line1_3);
 				if (Vector3::Distance(this->get_position(), stage2_line1_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -325,7 +335,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line2_3);
 				if (Vector3::Distance(this->get_position(), stage2_line2_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -348,7 +358,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line3_3);
 				if (Vector3::Distance(this->get_position(), stage2_line3_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -371,7 +381,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line4_3);
 				if (Vector3::Distance(this->get_position(), stage2_line4_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -394,7 +404,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line5_3);
 				if (Vector3::Distance(this->get_position(), stage2_line5_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -417,7 +427,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line6_3);
 				if (Vector3::Distance(this->get_position(), stage2_line6_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -440,7 +450,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line7_3);
 				if (Vector3::Distance(this->get_position(), stage2_line7_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -463,7 +473,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line8_3);
 				if (Vector3::Distance(this->get_position(), stage2_line8_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -486,7 +496,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line9_3);
 				if (Vector3::Distance(this->get_position(), stage2_line9_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -509,7 +519,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line10_3);
 				if (Vector3::Distance(this->get_position(), stage2_line10_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -532,7 +542,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line11_3);
 				if (Vector3::Distance(this->get_position(), stage2_line11_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -555,7 +565,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage2_line12_3);
 				if (Vector3::Distance(this->get_position(), stage2_line12_3) <= PATH_CHECKPOINT_RANGE) {
 					//std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -587,7 +597,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line1_4);
 				if (Vector3::Distance(this->get_position(), stage3_line1_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -616,7 +626,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line2_4);
 				if (Vector3::Distance(this->get_position(), stage3_line2_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -645,7 +655,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line3_4);
 				if (Vector3::Distance(this->get_position(), stage3_line3_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -674,7 +684,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line4_4);
 				if (Vector3::Distance(this->get_position(), stage3_line4_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -703,7 +713,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line5_4);
 				if (Vector3::Distance(this->get_position(), stage3_line5_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -732,7 +742,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line6_4);
 				if (Vector3::Distance(this->get_position(), stage3_line6_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -761,7 +771,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line7_4);
 				if (Vector3::Distance(this->get_position(), stage3_line7_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -790,7 +800,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line8_4);
 				if (Vector3::Distance(this->get_position(), stage3_line8_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -819,7 +829,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line9_4);
 				if (Vector3::Distance(this->get_position(), stage3_line9_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -848,7 +858,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line10_4);
 				if (Vector3::Distance(this->get_position(), stage3_line10_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -877,7 +887,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line11_4);
 				if (Vector3::Distance(this->get_position(), stage3_line11_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
@@ -906,7 +916,7 @@ void Monster::process_move_path()
 				set_aggro_direction(stage3_line12_4);
 				if (Vector3::Distance(this->get_position(), stage3_line12_4) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
-					this->arrive_portal = true;
+					this->m_arrive_portal = true;
 				}
 			}
 			//this->move_forward(5.f);
