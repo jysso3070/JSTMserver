@@ -473,7 +473,6 @@ void Iocp_server::process_monster_move(const short room_number)
 				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_NEEDLE_RANGE) {
 					cout << "함정 피격" << endl;
-					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 					mon_pool[i].set_trap_cooltime(true);
 					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
 					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
@@ -486,6 +485,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					cout << "함정 피격" << endl;
 					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 					mon_pool[i].set_trap_cooltime(true);
+					mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
 					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
 					add_event_to_queue(trap_ev);
 				}
@@ -794,7 +794,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 			monsterArr[i].set_id(i);
 			monsterArr[i].set_isLive(false);
 			monsterArr[i].set_monster_type(TYPE_ORC);
-			monsterArr[i].set_buffType(MONSTER_BUFF_NONE);
+			monsterArr[i].set_buffType(TRAP_BUFF_NONE);
 			DirectX::XMFLOAT4X4 w_pos;
 			w_pos._41 = -200.f;
 			w_pos._42 = -50.f;

@@ -62,8 +62,8 @@ struct MONSTER {
 #define M_ANIM_ATT		3
 #define M_ANIM_DEATH	6
 // monster buff type
-#define MONSTER_BUFF_NONE		0
-#define MONSTER_BUFF_SLOW		1
+#define TRAP_BUFF_NONE		0
+#define TRAP_BUFF_SLOW		1
 
 // trap type
 #define TRAP_NEEDLE		0
