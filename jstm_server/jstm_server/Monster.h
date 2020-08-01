@@ -71,7 +71,7 @@ private:
 	short m_hp;
 	bool m_arrive_portal = false;
 	bool m_attack_coolTime = false;
-	char m_buffType = MONSTER_BUFF_NONE;
+	char m_buffType = TRAP_BUFF_NONE;
 
 	XMFLOAT4X4 m_4x4position;
 };
