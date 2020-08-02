@@ -99,6 +99,7 @@ struct MONSTER {
 #define SC_PLAYER_STAT_CHANGE	11
 #define SC_GAME_INFO_UPDATE		12
 #define SC_GAME_START			13
+#define SC_NAMELOGIN_SUC		14
 
 
 #define CS_LEFT					1
@@ -211,6 +212,12 @@ struct sc_packet_game_start {
 	short stage_number;
 	short wave;
 	short portalLife;
+};
+
+struct sc_packet_nameLogin_success {
+	unsigned short size;
+	char type;
+	int id;
 };
 
 

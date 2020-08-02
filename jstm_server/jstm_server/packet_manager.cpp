@@ -188,6 +188,16 @@ void packet_manager::send_game_start(int client_id, SOCKET client_socket, short 
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_nameLogin_success(int client_id, SOCKET client_socket)
+{
+	sc_packet_nameLogin_success packet;
+	packet.type = SC_NAMELOGIN_SUC;
+	packet.id = client_id;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 
 
 void packet_manager::error_display(const char * msg, int err_no)
