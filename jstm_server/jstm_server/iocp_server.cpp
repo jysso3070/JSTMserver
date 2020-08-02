@@ -738,6 +738,18 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 			}
 		}
 
+		bool roomEmpty = false;
+		for (short i = 0; i < 4; ++i) { // 방이 비었는지 체크
+			int p_id = m_map_game_room[room_number]->players_id[i];
+			if (p_id != -1) {
+				roomEmpty = true;
+				break;
+			}
+		}
+		if (roomEmpty == false) { // 방이 비었을때 삭제?
+
+		}
+
 	}
 }
 
