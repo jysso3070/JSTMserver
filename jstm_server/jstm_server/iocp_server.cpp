@@ -688,7 +688,9 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 
 	if (joinflag == true) {
 		m_map_player_info[id]->room_number = r_number;
+		m_map_player_info[id]->player_state = PLAYER_STATE_in_room;
 		m_Packet_manager->send_join_room_ok(id, m_map_player_info[id]->socket, r_number, m_map_game_room[r_number]);
+
 
 		// 바뀐 방정보 모든 클라이언트들에게 전송
 		for (auto client : m_map_player_info) {
@@ -711,6 +713,32 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 		cout << "join room fail \n";
 	}
 
+}
+
+void Iocp_server::process_leaveRoom(const int & id, void * buff)
+{
+	cs_packet_leaveRoom *leaveRoom_packet = reinterpret_cast<cs_packet_leaveRoom*>(buff);
+	short room_number = m_map_player_info[id]->room_number;
+	if (room_number != -1) {
+		for (short i = 0; i < 4; ++i) { // 방에있는 id 목록에서 id 제거
+			if (m_map_game_room[room_number]->players_id[i] == id) {
+				m_map_game_room[room_number]->players_id[i] = -1;
+			}
+		}
+		m_map_player_info[id]->room_number = -1;
+		m_map_player_info[id]->player_state = PLAYER_STATE_in_room;
+		// 자신에게 방나가기 성공패킷 전송
+		m_Packet_manager->send_leaveRoom_ok(id, m_map_player_info[id]->socket);
+
+		for (short i = 0; i < 4; ++i) { // 방에 남은 플레이어에게 방을나간 정보 전송
+			int p_id = m_map_game_room[room_number]->players_id[i];
+			if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_in_room 
+				&& p_id != id) {
+				m_Packet_manager->send_room_info_pakcet(p_id, m_map_player_info[p_id]->socket, m_map_game_room[room_number]);
+			}
+		}
+
+	}
 }
 
 void Iocp_server::process_client_state_change(const int& id, void * buff)
@@ -1074,6 +1102,10 @@ void Iocp_server::process_packet(const int& id, void * buff)
 		break;
 	case CS_SHOOT:
 		process_player_shoot(id, buff);
+		break;
+	case CS_LEAVE_ROOM:
+		process_leaveRoom(id, buff);
+		break;
 	default:
 		break;
 	}

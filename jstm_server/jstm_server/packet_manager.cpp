@@ -199,6 +199,16 @@ void packet_manager::send_nameLogin_result(int client_id, SOCKET client_socket, 
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_leaveRoom_ok(int client_id, SOCKET client_socket)
+{
+	sc_packet_leaveRoom_ok packet;
+	packet.type = SC_LEAVE_ROOM_OK;
+	packet.id = client_id;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 
 
 void packet_manager::error_display(const char * msg, int err_no)

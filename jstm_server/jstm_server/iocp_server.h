@@ -44,6 +44,7 @@ public:
 	void process_player_move(const int& id, void *buff);	// 플레이어 움직임
 	void process_make_room(const int& id);					// 플레이어 방 생성
 	void process_join_room(const int& id, void *buff);		// 플레이어 방 입장
+	void process_leaveRoom(const int& id, void *buff);
 	void process_client_state_change(const int& id, void *buff);	// 플레이어 상태 변경
 	void process_install_trap(const int& id, void *buff);	// 함정설치
 	void process_player_shoot(const int& id, void *buff);

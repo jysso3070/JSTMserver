@@ -100,8 +100,9 @@ struct MONSTER {
 #define SC_GAME_INFO_UPDATE		12
 #define SC_GAME_START			13
 #define SC_NAMELOGIN_RESULT		14
-#define NAMELOGIN_SUC	0
-#define NAMELOGIN_FAIL	1
+#define		NAMELOGIN_SUC	0
+#define		NAMELOGIN_FAIL	1
+#define SC_LEAVE_ROOM_OK			15
 
 
 #define CS_LEFT					1
@@ -117,6 +118,7 @@ struct MONSTER {
 #define CS_GAME_START			11
 #define CS_REQUEST_NAMELOGIN	12
 #define CS_SHOOT				13
+#define CS_LEAVE_ROOM			14
 
 #pragma pack(push ,1)
 
@@ -223,6 +225,12 @@ struct sc_packet_nameLogin_result {
 	char result;
 };
 
+struct sc_packet_leaveRoom_ok {
+	unsigned short size;
+	char type;
+	int id;
+};
+
 
 // client to server
 
@@ -309,6 +317,12 @@ struct cs_packet_shoot {
 	int id;
 	short monster_id;
 	bool headShot;
+};
+
+struct cs_packet_leaveRoom {
+	char size;
+	char type;
+	int id;
 };
 
 
