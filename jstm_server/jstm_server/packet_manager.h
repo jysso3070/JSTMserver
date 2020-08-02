@@ -26,7 +26,7 @@ public:
 	void send_stat_change(int client_id, SOCKET client_socket, short hp, short gold);
 	void send_game_info_update(int client_id, SOCKET client_socket, short wave, short portalLife);
 	void send_game_start(int client_id, SOCKET client_socket, short stage_number, short wave, short portalLife);
-	void send_nameLogin_success(int client_id, SOCKET client_socket);
+	void send_nameLogin_result(int client_id, SOCKET client_socket, char result);
 
 
 	void error_display(const char* msg, int err_no); // 에러 출력 함수

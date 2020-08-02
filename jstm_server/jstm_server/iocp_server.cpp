@@ -980,6 +980,7 @@ void Iocp_server::process_nameLogin(const int & id, void * buff)
 	if (ret > 0) {
 		cout << "login success" << endl;
 		m_map_player_info[id]->DB_key = ret;
+		m_Packet_manager->send_nameLogin_result(id, m_map_player_info[id]->socket, NAMELOGIN_SUC);
 	}
 	else {
 		cout << "login fail" << endl;
