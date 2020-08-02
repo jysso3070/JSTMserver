@@ -46,6 +46,7 @@ public:
 	void process_join_room(const int& id, void *buff);		// 플레이어 방 입장
 	void process_client_state_change(const int& id, void *buff);	// 플레이어 상태 변경
 	void process_install_trap(const int& id, void *buff);	// 함정설치
+	void process_player_shoot(const int& id, void *buff);
 
 	void process_game_start(const short& room_number, const short& stage_number);
 	void process_game_end(const short& room_number, const bool& clearFlag);

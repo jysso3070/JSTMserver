@@ -295,7 +295,7 @@ struct cs_packet_shoot {
 	char type;
 	int id;
 	short monster_id;
-	//
+	bool headShot;
 };
 
 
