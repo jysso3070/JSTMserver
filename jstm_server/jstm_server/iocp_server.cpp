@@ -783,6 +783,12 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 void Iocp_server::process_player_shoot(const int & id, void * buff)
 {
 	cs_packet_shoot *packet = reinterpret_cast<cs_packet_shoot*>(buff);
+	short player_room_number = m_map_player_info[id]->room_number;
+	if (player_room_number == -1) { return; }
+
+	if (m_map_monsterPool[player_room_number][packet->monster_id].get_isLive() == true) {
+		m_map_monsterPool[player_room_number][packet->monster_id].decrease_hp(PLAYER_ATT);
+	}
 }
 
 void Iocp_server::process_game_start(const short& room_number, const short& stage_number)

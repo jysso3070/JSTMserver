@@ -25,6 +25,9 @@ struct MONSTER {
 #define PLAYER_STATE_in_lobby		2
 #define PLAYER_STATE_in_room		3
 
+// player
+#define PLAYER_ATT	10
+
 // room state
 #define R_STATE_in_room				0
 #define R_STATE_gameStart			1
