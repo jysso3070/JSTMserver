@@ -746,7 +746,7 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 				break;
 			}
 		}
-		if (roomEmpty == false) { // 방이 비었을때 삭제?
+		if (roomEmpty == true) { // 방이 비었을때 삭제?
 
 		}
 
