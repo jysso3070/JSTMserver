@@ -37,6 +37,7 @@ struct PLAYER_INFO {
 };
 
 struct GAME_ROOM {
+	bool enable;
 	short room_number;
 	char room_state;
 	short wave_count;

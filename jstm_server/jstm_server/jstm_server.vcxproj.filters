@@ -43,6 +43,9 @@
     <Filter Include="소스 파일\Object\Trap">
       <UniqueIdentifier>{cdfa013e-f5c9-4c7d-9672-993bbe7add18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\Player">
+      <UniqueIdentifier>{827dd645-a4f8-448c-93ef-1c03ae99b889}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="iocp_server.cpp">
@@ -71,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="Trap.cpp">
       <Filter>소스 파일\Object\Trap</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>소스 파일\Object\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="monster_path.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>소스 파일\Object\Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -632,6 +632,7 @@ void Iocp_server::process_make_room(const int& id)
 	GAME_ROOM *new_room = new GAME_ROOM;
 	ZeroMemory(new_room, sizeof(new_room));
 	new_room->room_number = room_num;
+	new_room->enable = true;
 	new_room->room_state = R_STATE_in_room;
 	new_room->wave_count = 0;
 	new_room->stage_number = 1;

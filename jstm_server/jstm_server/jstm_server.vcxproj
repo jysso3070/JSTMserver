@@ -149,6 +149,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Monster.cpp" />
     <ClCompile Include="packet_manager.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="server_manager.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="Trap.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="Monster.h" />
     <ClInclude Include="monster_path.h" />
     <ClInclude Include="packet_manager.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="server_manager.h" />
     <ClInclude Include="singleTon.h" />
