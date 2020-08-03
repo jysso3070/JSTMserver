@@ -741,7 +741,6 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 				}
 			}
 		}
-		// 로비로 나간 플레이어에게 전체 방정보 전송
 
 
 		bool roomEmpty = true;
@@ -761,6 +760,11 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 			}
 
 			//m_map_game_room.unsafe_erase(room_number);
+		}
+
+		// 로비로 나간 플레이어에게 전체 방정보 전송
+		for (auto room : m_map_game_room) {
+			m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket, room.second);
 		}
 
 		for (auto room : m_map_game_room) {
