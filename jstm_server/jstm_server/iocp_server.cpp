@@ -405,7 +405,7 @@ void Iocp_server::process_monster_move(const short room_number)
 		}
 		// 포탈에 도착한 몬스터
 		if (mon_pool[i].get_arrivePortal() == true) {
-			m_map_game_room[room_number]->portalLife -= 1;
+			//m_map_game_room[room_number]->portalLife -= 1;
 			//if (m_map_game_room[room_number]->portalLife <= 0) {}
 			mon_pool[i].set_isLive(false);
 			// 포탈라이프 업데이트하는 패킷 수신
