@@ -12,10 +12,6 @@
 #include "direct_vector.h"
 #include "monster_path.h"
 
-//class packet_manager;
-//class Database_manager;
-//class Server_manager;
-
 class Iocp_server
 {
 public:

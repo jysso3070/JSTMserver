@@ -928,6 +928,11 @@ void Iocp_server::process_game_end(const short & room_number, const bool& clearF
 
 void Iocp_server::check_wave_end(const short& room_number)
 {
+	if (m_map_game_room[room_number]->enable == false) { // 방 터진상황
+		return;
+	}
+
+
 	m_map_game_room[room_number]->gameRoom_lock.lock();
 	short pLife = m_map_game_room[room_number]->portalLife;
 	m_map_game_room[room_number]->gameRoom_lock.unlock();
@@ -1012,8 +1017,8 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 	if (m_map_player_info[leaver_id]->room_number != -1) { // 플레이어가 방에 접속해 있을 때
 		check_roomNum = m_map_player_info[leaver_id]->room_number;
 		for (int i = 0; i < 4; ++i) {
-			if (m_map_game_room[m_map_player_info[leaver_id]->room_number]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
-				m_map_game_room[m_map_player_info[leaver_id]->room_number]->players_id[i] = -1;
+			if (m_map_game_room[check_roomNum]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
+				m_map_game_room[check_roomNum]->players_id[i] = -1;
 				break;
 			}
 			
@@ -1023,23 +1028,36 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 	m_map_player_info[leaver_id]->room_number = -1; // 방나가기
 
 	for (auto c : m_map_player_info) {
-		if (c.second->id == leaver_id) {
-		}
-		else {
-			if (c.second->is_connect == true) {
-				// 모든 플레이어에게 접속종료된 클라이언트의 아이디를 보내준다
-				m_Packet_manager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
-			}
+		if (c.second->id == leaver_id) { continue; }
+		if (c.second->is_connect == true) {
+			// 모든 플레이어에게 접속종료된 클라이언트의 아이디를 보내준다
+			m_Packet_manager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
 		}
 	}
 	if (check_roomNum != -1) { // 방이 비었는지 검사
-		int copy_players[4];
-		memcpy_s(copy_players, sizeof(copy_players), m_map_game_room[check_roomNum]->players_id, sizeof(m_map_game_room[check_roomNum]->players_id));
-		if (copy_players[0] == -1 && copy_players[1] == -1 && copy_players[2] == -1 && copy_players[3] == -1) {
-			for (int i = 0; i < 100; ++i) {
-				// 방에 플레이어가 없으면 몬스터 다 false로
-				if (m_map_monsterPool[check_roomNum] == nullptr) { return; }
-				m_map_monsterPool[check_roomNum][i].set_isLive(false);
+		//int copy_players[4];
+		//memcpy_s(copy_players, sizeof(copy_players), m_map_game_room[check_roomNum]->players_id, sizeof(m_map_game_room[check_roomNum]->players_id));
+		//if (copy_players[0] == -1 && copy_players[1] == -1 && copy_players[2] == -1 && copy_players[3] == -1) {
+		//	for (int i = 0; i < 100; ++i) {
+		//		// 방에 플레이어가 없으면 몬스터 다 false로
+		//		if (m_map_monsterPool[check_roomNum] == nullptr) { return; }
+		//		m_map_monsterPool[check_roomNum][i].set_isLive(false);
+		//	}
+		//}
+		bool roomEmpty = true;
+		for (short i = 0; i < 4; ++i) {
+			if (m_map_game_room[check_roomNum]->players_id[i] != -1) { // leaver의 아이디와 같으면 -1로 대체
+				roomEmpty = false;
+				break;
+			}
+		}
+		if (roomEmpty == true) {
+			m_map_game_room[check_roomNum]->enable = false;
+			m_map_game_room[check_roomNum]->wave_on = false;
+			for (auto client : m_map_player_info) {
+				if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
+					m_Packet_manager->send_room_info_pakcet(client.first, client.second->socket, m_map_game_room[check_roomNum]);
+				}
 			}
 		}
 	}
