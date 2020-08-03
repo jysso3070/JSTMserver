@@ -129,7 +129,7 @@ void Iocp_server::run_acceptThread()
 		new_player->recv_over.wsabuf[0].len = MAX_BUFFER;
 		new_player->recv_over.wsabuf[0].buf = new_player->recv_over.net_buf;
 		new_player->recv_over.event_type = EV_RECV;
-		new_player->player_state = PLAYER_STATE_default;
+		new_player->player_state = PLAYER_STATE_in_lobby;
 		new_player->is_connect = true;
 
 		m_map_player_info.insert(make_pair(user_id, new_player)); // 플레이어 map에 인서트
@@ -748,7 +748,12 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 			}
 		}
 		if (roomEmpty == true) { // 방이 비었을때 삭제?
-
+			m_map_game_room[room_number]->enable = false;
+			for (auto client : m_map_player_info) {
+				if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
+					m_Packet_manager->send_remove_room(client.first, client.second->socket, room_number);
+				}
+			}
 		}
 
 	}

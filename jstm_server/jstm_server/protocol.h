@@ -102,7 +102,8 @@ struct MONSTER {
 #define SC_NAMELOGIN_RESULT		14
 #define		NAMELOGIN_SUC	0
 #define		NAMELOGIN_FAIL	1
-#define SC_LEAVE_ROOM_OK			15
+#define SC_LEAVE_ROOM_OK		15
+#define SC_REMOVE_ROOM			16
 
 
 #define CS_LEFT					1
@@ -229,6 +230,12 @@ struct sc_packet_leaveRoom_ok {
 	unsigned short size;
 	char type;
 	int id;
+};
+
+struct sc_packet_remove_room {
+	unsigned short size;
+	char type;
+	short room_number;
 };
 
 

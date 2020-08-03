@@ -209,6 +209,16 @@ void packet_manager::send_leaveRoom_ok(int client_id, SOCKET client_socket)
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_remove_room(int client_id, SOCKET client_socket, short room_number)
+{
+	sc_packet_remove_room packet;
+	packet.type = SC_REMOVE_ROOM;
+	packet.room_number = room_number;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 
 
 void packet_manager::error_display(const char * msg, int err_no)
