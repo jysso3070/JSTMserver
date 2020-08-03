@@ -738,6 +738,8 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 				m_Packet_manager->send_room_info_pakcet(p_id, m_map_player_info[p_id]->socket, m_map_game_room[room_number]);
 			}
 		}
+		// 로비로 나간 플레이어에게 전체 방정보 전송
+
 
 		bool roomEmpty = false;
 		for (short i = 0; i < 4; ++i) { // 방이 비었는지 체크
@@ -751,9 +753,11 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 			m_map_game_room[room_number]->enable = false;
 			for (auto client : m_map_player_info) {
 				if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
-					m_Packet_manager->send_remove_room(client.first, client.second->socket, room_number);
+					m_Packet_manager->send_room_info_pakcet(client.first, client.second->socket, m_map_game_room[room_number]);
 				}
 			}
+
+			//m_map_game_room.unsafe_erase(room_number);
 		}
 
 	}
@@ -806,7 +810,8 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	trapPool[new_trapId].set_trap_type(packet->trap_type);
 	m_map_trapIdPool[room_num] += 1;*/
 	m_map_player_info[id]->roomList_lock.lock();
-	short new_trapId = m_new_trap_id++;
+	short new_trapId = m_map_trapIdPool[room_num];
+	m_map_trapIdPool[room_num] += 1;
 	m_map_player_info[id]->roomList_lock.unlock();
 	m_map_trap[room_num][new_trapId].set_trapPos(packet->trap_pos);
 	m_map_trap[room_num][new_trapId].set_enable(true);

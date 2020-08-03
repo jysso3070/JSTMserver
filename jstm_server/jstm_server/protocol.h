@@ -155,6 +155,7 @@ struct sc_packet_room_info {
 	unsigned short size;
 	char type;
 	short room_number;
+	bool room_enable;
 	char room_state;
 	short stage_number;
 	int players_id[4];

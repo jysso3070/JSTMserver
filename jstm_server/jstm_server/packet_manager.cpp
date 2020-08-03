@@ -86,6 +86,7 @@ void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, 
 	sc_packet_room_info packet;
 	packet.type = SC_SEND_ROOM_LIST;
 	packet.room_number = game_room->room_number;
+	packet.room_enable = game_room->enable;
 	packet.room_state = game_room->room_state;
 	packet.stage_number = game_room->stage_number;
 	for (short i = 0; i < 4; ++i) {
@@ -208,17 +209,6 @@ void packet_manager::send_leaveRoom_ok(int client_id, SOCKET client_socket)
 
 	send_packet(client_id, client_socket, &packet);
 }
-
-void packet_manager::send_remove_room(int client_id, SOCKET client_socket, short room_number)
-{
-	sc_packet_remove_room packet;
-	packet.type = SC_REMOVE_ROOM;
-	packet.room_number = room_number;
-	packet.size = sizeof(packet);
-
-	send_packet(client_id, client_socket, &packet);
-}
-
 
 
 void packet_manager::error_display(const char * msg, int err_no)
