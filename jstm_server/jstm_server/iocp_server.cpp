@@ -267,10 +267,17 @@ void Iocp_server::run_mainThread()
 			m_map_monsterPool[room_number][monster_id].set_isLive(false);
 			delete over_ex;
 		}
-		else if (EV_MONSTER_TRAP_COLLISION == over_ex->event_type) {
+		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == over_ex->event_type) {
 			short monster_id = (short)key;
 			short room_number = *(short *)(over_ex->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
+			delete over_ex;
+		}
+		else if (EV_MONSTER_SLOW_TRAP_COLLISION == over_ex->event_type) {
+			short monster_id = (short)key;
+			short room_number = *(short *)(over_ex->net_buf);
+			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
+			m_map_monsterPool[room_number][monster_id].set_buffType(TRAP_BUFF_NONE);
 			delete over_ex;
 		}
 		else if (EV_CHECK_WAVE_END == over_ex->event_type) {
@@ -349,9 +356,15 @@ void Iocp_server::run_eventQueueThread()
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
-		else if (EV_MONSTER_TRAP_COLLISION == p_ev.event_type) {
+		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_TRAP_COLLISION;
+			over_ex->event_type = EV_MONSTER_NEEDLE_TRAP_COLLISION;
+			*(short *)(over_ex->net_buf) = p_ev.target_obj;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
+		else if (EV_MONSTER_SLOW_TRAP_COLLISION == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_MONSTER_SLOW_TRAP_COLLISION;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
@@ -475,7 +488,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					cout << "함정 피격" << endl;
 					mon_pool[i].set_trap_cooltime(true);
 					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
+					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
 					add_event_to_queue(trap_ev);
 				}
 			}
@@ -486,7 +499,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 					mon_pool[i].set_trap_cooltime(true);
 					mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
-					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, room_number };
+					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
 					add_event_to_queue(trap_ev);
 				}
 			}
@@ -2521,7 +2534,7 @@ void Iocp_server::do_monster_thread()
 						cout << "함정 피격" << endl;
 						mon_pool.second[i].set_trap_cooltime(true);
 						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
-						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_TRAP_COLLISION, mon_pool.first };
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, mon_pool.first };
 
 					}
 				}

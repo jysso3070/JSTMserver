@@ -4,6 +4,7 @@
 
 Monster::Monster()
 {
+	m_buffType = TRAP_BUFF_NONE;
 }
 
 
@@ -132,10 +133,14 @@ void Monster::decrease_hp(const short & damage)
 void Monster::move_forward(const float& distance)
 {
 	//m_4x4position._41 += distance;
+	float temp_distance = distance;
+	if (this->m_buffType == TRAP_BUFF_SLOW) {
+		temp_distance /= 2;
+	}
 
 	XMFLOAT3 position = get_position();
 	XMFLOAT3 look = get_look();
-	position = Vector3::Add(position, look, distance);
+	position = Vector3::Add(position, look, temp_distance);
 	set_position(position);
 
 	m_4x4position._42 = -50.f;
