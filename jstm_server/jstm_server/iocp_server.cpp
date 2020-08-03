@@ -661,6 +661,7 @@ void Iocp_server::process_make_room(const int& id)
 
 	cout << "make room success \n";
 	for (auto room : m_map_game_room) {
+		if (room.second->enable == false) { continue; }
 		cout << "room info \n";
 		cout << "room number: " << room.second->room_number << "\n";
 		for (int i = 0; i < 4; ++i) {
@@ -733,19 +734,21 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 
 		for (short i = 0; i < 4; ++i) { // 방에 남은 플레이어에게 방을나간 정보 전송
 			int p_id = m_map_game_room[room_number]->players_id[i];
-			if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_in_room 
-				&& p_id != id) {
-				m_Packet_manager->send_room_info_pakcet(p_id, m_map_player_info[p_id]->socket, m_map_game_room[room_number]);
+			if (p_id != -1) {
+				if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_in_room
+					&& p_id != id) {
+					m_Packet_manager->send_room_info_pakcet(p_id, m_map_player_info[p_id]->socket, m_map_game_room[room_number]);
+				}
 			}
 		}
 		// 로비로 나간 플레이어에게 전체 방정보 전송
 
 
-		bool roomEmpty = false;
+		bool roomEmpty = true;
 		for (short i = 0; i < 4; ++i) { // 방이 비었는지 체크
 			int p_id = m_map_game_room[room_number]->players_id[i];
 			if (p_id != -1) {
-				roomEmpty = true;
+				roomEmpty = false;
 				break;
 			}
 		}
@@ -758,6 +761,15 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 			}
 
 			//m_map_game_room.unsafe_erase(room_number);
+		}
+
+		for (auto room : m_map_game_room) {
+			if (room.second->enable == false) { continue; }
+			cout << "room info \n";
+			cout << "room number: " << room.second->room_number << "\n";
+			for (int i = 0; i < 4; ++i) {
+				cout << "player " << i + 1 << " id: " << room.second->players_id[i] << "\n";
+			}
 		}
 
 	}
