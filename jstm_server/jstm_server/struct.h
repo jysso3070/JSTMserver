@@ -64,3 +64,6 @@ struct EVENT
 		return wakeup_time > left.wakeup_time;
 	}
 };
+
+
+#define MONSTER_GEN_DISTANCE	70.f
