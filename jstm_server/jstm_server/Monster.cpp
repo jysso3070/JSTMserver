@@ -186,7 +186,7 @@ void Monster::make_checkPoint()
 		}
 		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
 			m_checkPoint_1 = XMFLOAT3(430.f + stage1_check1(dre), -50.f, 3030.f + stage1_check1(dre));
-			m_checkPoint_2 = XMFLOAT3(90.f + stage1_check2(dre), -50.f, 2900.f + stage1_check2(dre));
+			m_checkPoint_2 = XMFLOAT3(0.f + stage1_check2(dre), -50.f, 2900.f + stage1_check2(dre));
 			m_checkPoint_3 = stage1_line1_3;
 		}
 	}
