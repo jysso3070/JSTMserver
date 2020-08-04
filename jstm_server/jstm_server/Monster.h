@@ -53,7 +53,7 @@ public:
 
 	void decrease_hp(const short& damage);
 	void move_forward(const float& distance);
-	void move_forward_ex(const float& distance, Monster* monsterPool);
+	void move_forward(const float& distance, Monster* monsterPool);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
 	void set_rotate(float Pitch, float Yaw, float Roll);
 	void make_checkPoint();

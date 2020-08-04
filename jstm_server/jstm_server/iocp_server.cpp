@@ -454,7 +454,7 @@ void Iocp_server::process_monster_move(const short room_number)
 			if (dis <= 200.f && dis >= ORC_ATT_RANGE) { //어그로 범위
 				mon_pool[i].set_target_id(target_id);
 				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-				mon_pool[i].move_forward(5.f);
+				mon_pool[i].move_forward(5.f, mon_pool);
 				mon_pool[i].set_animation_state(M_ANIM_RUN);
 			}
 			else if (dis < ORC_ATT_RANGE) { // 공격범위
@@ -476,7 +476,7 @@ void Iocp_server::process_monster_move(const short room_number)
 		else {
 			//mon_pool[i].process_move_path();
 			mon_pool[i].process_move_path_t();
-			mon_pool[i].move_forward(5.f);
+			mon_pool[i].move_forward(5.f, mon_pool);
 		}
 
 		// trap collision
@@ -1214,6 +1214,32 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 		{
 		case 1:		// wave1
 		{
+			//for (int i = 0; i < 30; ++i) {
+			//	m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
+			//	m_map_monsterPool[room_number][i].set_HP(ORC_HP);
+			//	m_map_monsterPool[room_number][i].set_stage_number(1);
+			//	if (i < 15) { // line 123
+			//		m_map_monsterPool[room_number][i].set_arrivePortal(false);
+			//		m_map_monsterPool[room_number][i].set_pathLine(1);
+			//		m_map_monsterPool[room_number][i].set_checkPoint(0);
+			//		m_map_monsterPool[room_number][i].make_checkPoint();
+			//		m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123(dre), line1.y, 
+			//			(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+			//		m_map_monsterPool[room_number][i].set_animation_state(2);
+			//		m_map_monsterPool[room_number][i].set_isLive(true);
+			//	}
+			//	else if (i < 30) { // line 456
+			//		m_map_monsterPool[room_number][i].set_arrivePortal(false);
+			//		m_map_monsterPool[room_number][i].set_pathLine(4);
+			//		m_map_monsterPool[room_number][i].set_checkPoint(0);
+			//		m_map_monsterPool[room_number][i].make_checkPoint();
+			//		m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123(dre), line4.y, 
+			//			(line6.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+			//		m_map_monsterPool[room_number][i].set_animation_state(2);
+			//		m_map_monsterPool[room_number][i].set_isLive(true);
+			//	}
+			//}
+			//break;
 			for (int i = 0; i < 30; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				m_map_monsterPool[room_number][i].set_HP(ORC_HP);
@@ -1223,23 +1249,60 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_pathLine(1);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].make_checkPoint();
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123(dre), line1.y, 
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					bool coli = false;
+					while (true) {
+						XMFLOAT3 tempPos = XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+							(line6.z + (float)stage1_start123_z(dre)));
+						for (short idx = 0; idx < MAX_MONSTER; ++idx) {
+							if (m_map_monsterPool[room_number][idx].get_isLive() == false) { continue; }
+							if (i == idx) { continue; }
+							if (m_map_monsterPool[room_number][i].get_pathLine() == m_map_monsterPool[room_number][idx].get_pathLine()) {
+								if (Vector3::Distance(tempPos, m_map_monsterPool[room_number][idx].get_position()) <= ORC_COLLISION_RANGE) {
+									coli = true;
+									break;
+								}
+							}
+						}
+						if (coli == false) {
+							m_map_monsterPool[room_number][i].set_position(tempPos);
+							break;
+						}
+					}
 				}
 				else if (i < 30) { // line 456
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(4);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
 					m_map_monsterPool[room_number][i].make_checkPoint();
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123(dre), line4.y, 
-						(line6.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
+					bool coli = false;
+					while (true) {
+						XMFLOAT3 tempPos = XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+							(line6.z + (float)stage1_start123_z(dre)));
+						for (short idx = 0; idx < MAX_MONSTER; ++idx) {
+							if (m_map_monsterPool[room_number][idx].get_isLive() == false) { continue; }
+							if (i == idx) { continue; }
+							if (m_map_monsterPool[room_number][i].get_pathLine() == m_map_monsterPool[room_number][idx].get_pathLine()) {
+								if (Vector3::Distance(tempPos, m_map_monsterPool[room_number][idx].get_position()) <= ORC_COLLISION_RANGE) {
+									coli = true;
+									break;
+								}
+							}
+						}
+						if (coli == false) {
+							m_map_monsterPool[room_number][i].set_position(tempPos);
+							break;
+						}
+					}
 				}
 			}
 			break;
+
 		}
 		case 2:		// wave2
 		{
