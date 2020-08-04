@@ -1,4 +1,6 @@
 #pragma once
+#include <chrono>
+#include <random>
 
 enum EVENT_TYPE {
 	EV_RECV, EV_SEND, EV_MOVE, EV_TEST, EV_MONSTER_THREAD_RUN, EV_GEN_1stWAVE_MONSTER, 
@@ -67,3 +69,7 @@ struct EVENT
 
 
 #define MONSTER_GEN_DISTANCE	70.f
+
+static default_random_engine dre;
+static uniform_int_distribution<> stage1_start123(0, 300);
+static uniform_int_distribution<> stage1_start456(0, 300);

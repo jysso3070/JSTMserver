@@ -1220,7 +1220,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(1);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x, line1.y, (line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123(dre), line1.y, 
+						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
@@ -1228,7 +1229,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(2);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line2.x, line2.y, (line2.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123(dre), line2.y, 
+						(line2.z + (i % 5) * MONSTER_GEN_DISTANCE)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
@@ -1236,7 +1238,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(3);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line3.x, line3.y, (line3.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123(dre), line3.y, 
+						(line3.z + (i % 5) * MONSTER_GEN_DISTANCE)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
@@ -1244,7 +1247,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(4);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x, line4.y, (line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123(dre), line4.y, 
+						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
@@ -1252,7 +1256,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(5);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line5.x, line5.y, (line5.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123(dre), line5.y, 
+						(line5.z + (i % 5) * MONSTER_GEN_DISTANCE)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
@@ -1260,7 +1265,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_arrivePortal(false);
 					m_map_monsterPool[room_number][i].set_pathLine(6);
 					m_map_monsterPool[room_number][i].set_checkPoint(0);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line6.x, line6.y, (line6.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123(dre), line6.y, 
+						(line6.z + (i % 5) * MONSTER_GEN_DISTANCE)));
 					m_map_monsterPool[room_number][i].set_animation_state(2);
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
