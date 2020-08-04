@@ -150,6 +150,31 @@ void Monster::move_forward(const float& distance)
 	m_4x4position._42 = -50.f;
 }
 
+void Monster::move_forward(const float & distance, Monster * monsterPool)
+{
+	float temp_distance = distance;
+	if (this->m_buffType == TRAP_BUFF_SLOW) {
+		temp_distance /= 2;
+	}
+
+	XMFLOAT3 position = get_position();
+	XMFLOAT3 look = get_look();
+	position = Vector3::Add(position, look, temp_distance);
+	bool collision = false;
+	for (short i = 0; i < MAX_MONSTER; ++i) {
+		if (monsterPool[i].get_isLive() == false) { continue; }
+		if (i == m_id) { continue; }
+		if (Vector3::Distance(position, monsterPool[i].get_position()) <= ORC_COLLISION_RANGE ) {
+			collision = true;
+			break;
+		}
+	}
+	if(collision == false){
+		set_position(position);
+		m_4x4position._42 = -50.f;
+	}
+}
+
 void Monster::set_aggro_direction(DirectX::XMFLOAT3 target_postion)
 {
 	target_postion.y = -50.f;

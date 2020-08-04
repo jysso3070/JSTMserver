@@ -69,6 +69,7 @@ struct EVENT
 
 
 #define MONSTER_GEN_DISTANCE	70.f
+#define ORC_COLLISION_RANGE		25.f
 
 static default_random_engine dre;
 static uniform_int_distribution<> stage1_start123(0, 300);
