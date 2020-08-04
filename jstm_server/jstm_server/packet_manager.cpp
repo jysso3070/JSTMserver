@@ -56,6 +56,7 @@ void packet_manager::send_put_player_packet(int client_id, SOCKET client_socket,
 	packet.type = SC_PUT_PLAYER;
 	//packet.world_pos = player_pos;
 	send_packet(client_id, client_socket, &packet);
+	cout << client_id << " put " << new_player_id << endl;
 }
 
 void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, int mover_id, DirectX::XMFLOAT4X4 player_pos, short animation_state)
