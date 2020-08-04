@@ -981,6 +981,7 @@ void Iocp_server::check_wave_end(const short& room_number)
 					m_map_player_info[temp_id]->player_state == PLAYER_STATE_playing_game) {
 					m_Packet_manager->send_game_info_update(temp_id, m_map_player_info[temp_id]->socket,
 						m_map_game_room[room_number]->wave_count, -1000);
+					m_Packet_manager->send_wave_end(temp_id, m_map_player_info[temp_id]->socket);
 				}
 			}
 		}
