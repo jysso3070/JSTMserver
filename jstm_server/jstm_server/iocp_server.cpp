@@ -796,9 +796,9 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 
 void Iocp_server::process_client_state_change(const int& id, void * buff)
 {
+	cout << "state change" << endl;
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
 	m_map_player_info[id]->player_state = packet->change_state;
-
 
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
 		m_map_player_info[id]->hp = 200;
@@ -1587,7 +1587,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 		}
 	}
 
-	cout<<"room: " << room_number<<"stage: "<< stage_number<<"wave: "<< wave <<"gen complete" << endl;;
+	cout<<"room:" << room_number<<" stage:"<< stage_number<<" wave:"<< wave <<" gen complete" << endl;;
 	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_queue(ev);
 	m_map_game_room[room_number]->wave_on = true;
