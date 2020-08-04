@@ -2,6 +2,7 @@
 #include "header.h"
 #include "direct_vector.h"
 #include "monster_path.h"
+#include "struct.h"
 #define PATH_CHECKPOINT_RANGE	50.f
 
 using namespace DirectX;
@@ -53,6 +54,10 @@ public:
 	void decrease_hp(const short& damage);
 	void move_forward(const float& distance);
 	void set_aggro_direction( XMFLOAT3 target_postion);// 어그로 대상으로 look 방향벡터 설정
+	void set_rotate(float Pitch, float Yaw, float Roll);
+	void make_checkPoint();
+
+	void process_move_path_t();
 
 	void process_move_path();
 
@@ -72,6 +77,11 @@ private:
 	bool m_arrive_portal = false;
 	bool m_attack_coolTime = false;
 	char m_buffType = TRAP_BUFF_NONE;
+
+	DirectX::XMFLOAT3 m_checkPoint_1;
+	DirectX::XMFLOAT3 m_checkPoint_2;
+	DirectX::XMFLOAT3 m_checkPoint_3;
+	DirectX::XMFLOAT3 m_checkPoint_4;
 
 	XMFLOAT4X4 m_4x4position;
 };

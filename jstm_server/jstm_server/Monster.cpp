@@ -5,6 +5,10 @@
 Monster::Monster()
 {
 	m_buffType = TRAP_BUFF_NONE;
+	m_checkPoint_1 = XMFLOAT3(0.f, 0.f, 0.f);
+	m_checkPoint_2 = XMFLOAT3(0.f, 0.f, 0.f);
+	m_checkPoint_3 = XMFLOAT3(0.f, 0.f, 0.f);
+	m_checkPoint_4 = XMFLOAT3(0.f, 0.f, 0.f);
 }
 
 
@@ -166,25 +170,80 @@ void Monster::set_aggro_direction(DirectX::XMFLOAT3 target_postion)
 	m_4x4position._13 = -right.z;
 }
 
+void Monster::set_rotate(float Pitch, float Yaw, float Roll)
+{
+	XMMATRIX Rotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(Pitch), XMConvertToRadians(Yaw), XMConvertToRadians(Roll));
+	m_4x4position = Matrix4x4::Multiply(Rotate, m_4x4position);
+}
+
+void Monster::make_checkPoint()
+{
+	if (m_stage_number == 1) {
+		if (m_pathLine == 1 || m_pathLine == 2 || m_pathLine == 3) {
+			m_checkPoint_1 = XMFLOAT3(-630.f + stage1_check1(dre), -50.f, 3010.f + stage1_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(-120.f + stage1_check2(dre), -50.f, 2800.f + stage1_check2(dre));
+			m_checkPoint_3 = stage1_line1_3;
+		}
+		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
+			m_checkPoint_1 = XMFLOAT3(430.f + stage1_check1(dre), -50.f, 3030.f + stage1_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(90.f + stage1_check2(dre), -50.f, 2900.f + stage1_check2(dre));
+			m_checkPoint_3 = stage1_line1_3;
+		}
+	}
+	else if (m_stage_number == 2) {
+	}
+
+	else if (m_stage_number == 3) {
+
+	}
+}
+
+void Monster::process_move_path_t()
+{
+	if (m_stage_number == 1) { // stage 1
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(m_checkPoint_1);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(m_checkPoint_2);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(m_checkPoint_3);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_3) <= PATH_CHECKPOINT_RANGE) {
+				std::cout << "Æ÷Å» µµÂø" << endl;
+				this->m_arrive_portal = true;
+			}
+		}
+		//this->move_forward(5.f);
+		this->set_animation_state(M_ANIM_RUN);
+	}
+}
+
 void Monster::process_move_path()
 {
 	if (m_stage_number == 1) { // stage 1
 		if (m_pathLine == 1) { // stage 1 path 1
 			if (m_path_checkPoint == 0) {
-				set_aggro_direction(stage1_line1_1);
-				if (Vector3::Distance(this->get_position(), stage1_line1_1) <= PATH_CHECKPOINT_RANGE) {
+				set_aggro_direction(m_checkPoint_1);
+				if (Vector3::Distance(this->get_position(), m_checkPoint_1) <= PATH_CHECKPOINT_RANGE) {
 					this->set_checkPoint(1);
 				}
 			}
 			else if (m_path_checkPoint == 1) {
-				set_aggro_direction(stage1_line1_2);
-				if (Vector3::Distance(this->get_position(), stage1_line1_2) <= PATH_CHECKPOINT_RANGE) {
+				set_aggro_direction(m_checkPoint_2);
+				if (Vector3::Distance(this->get_position(), m_checkPoint_2) <= PATH_CHECKPOINT_RANGE) {
 					this->set_checkPoint(2);
 				}
 			}
 			else if (m_path_checkPoint == 2) {
-				set_aggro_direction(stage1_line1_3);
-				if (Vector3::Distance(this->get_position(), stage1_line1_3) <= PATH_CHECKPOINT_RANGE) {
+				set_aggro_direction(m_checkPoint_3);
+				if (Vector3::Distance(this->get_position(), m_checkPoint_3) <= PATH_CHECKPOINT_RANGE) {
 					std::cout << "Æ÷Å» µµÂø" << endl;
 					this->m_arrive_portal = true;
 				}
