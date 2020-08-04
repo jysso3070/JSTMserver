@@ -483,6 +483,7 @@ void Iocp_server::process_monster_move(const short room_number)
 		for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
 			if (mon_pool[i].get_isTrapCooltime() == true) { break; }
 			if (m_map_trap[room_number][trap_idx].get_enable() == false) { continue; }
+
 			if (m_map_trap[room_number][trap_idx].get_type() == TRAP_NEEDLE) {
 				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_NEEDLE_RANGE) {
