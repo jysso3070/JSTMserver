@@ -4,7 +4,7 @@
 
 struct MONSTER {
 	short id;
-	bool isLive;
+	volatile bool isLive;
 	char type;
 	short animation_state;
 	short state;

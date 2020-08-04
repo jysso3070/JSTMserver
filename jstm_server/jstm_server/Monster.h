@@ -66,7 +66,7 @@ public:
 private:
 	short m_id;
 	char m_monster_type;
-	bool m_isLive = false;
+	volatile bool m_isLive = false;
 	short m_animation_state = 1;
 	short m_next_animation_state = 1;
 	short m_pathLine;

@@ -20,7 +20,7 @@ struct PLAYER_INFO {
 	SOCKET socket;
 	int id;
 	int DB_key;
-	bool is_connect;
+	volatile bool is_connect;
 	char player_state;
 	short room_number;
 	short x, y;
@@ -39,7 +39,7 @@ struct PLAYER_INFO {
 };
 
 struct GAME_ROOM {
-	bool enable;
+	volatile bool enable;
 	short room_number;
 	char room_state;
 	short wave_count;
