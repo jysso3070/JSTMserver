@@ -64,8 +64,6 @@ public:
 
 	void process_gen_monster(const short& room_number, const short& stage_number); // ∏ÛΩ∫≈Õ ∏Æ¡®
 	
-	//
-	void do_monster_thread();
 
 private:
 	// class

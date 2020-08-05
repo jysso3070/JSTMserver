@@ -499,7 +499,7 @@ void Iocp_server::process_monster_move(const short room_number)
 			if (m_map_trap[room_number][trap_idx].get_type() == TRAP_NEEDLE) {
 				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_NEEDLE_RANGE) {
-					cout << "함정 피격" << endl;
+					cout << "needle 함정 피격" << endl;
 					mon_pool[i].set_trap_cooltime(true);
 					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
 					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
@@ -509,12 +509,32 @@ void Iocp_server::process_monster_move(const short room_number)
 			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
 				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_SLOW_RANGE) {
-					cout << "함정 피격" << endl;
+					cout << "slow 함정 피격" << endl;
 					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 					mon_pool[i].set_trap_cooltime(true);
 					mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
 					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
 					add_event_to_queue(trap_ev);
+				}
+			}
+			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_FIRE) {
+				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				if (trap_dis < TRAP_FIRE_RANGE) {
+					cout << "fire 함정 피격" << endl;
+					/*mon_pool[i].set_trap_cooltime(true);
+					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+					add_event_to_queue(trap_ev);*/
+				}
+			}
+			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_ARROW) {
+				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				if (trap_dis < TRAP_ARROW_RANGE) {
+					cout << "arrow 함정 피격" << endl;
+					/*mon_pool[i].set_trap_cooltime(true);
+					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+					add_event_to_queue(trap_ev);*/
 				}
 			}
 		}
@@ -1533,6 +1553,78 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			}
 			break;
 		}
+		case 11:
+		{
+			short waveMax = 54;
+			for (int i = 0; i < waveMax; ++i) {
+				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
+				if (i < 27) { // line 123
+					if (i >= 15) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 24) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
+					}
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+				else if (i < waveMax) { // line 456
+					if (i >= 42) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 51) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line6.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+			}
+			break;
+		}
+		case 12:
+		{
+			short waveMax = 54;
+			for (int i = 0; i < waveMax; ++i) {
+				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
+				if (i < 27) { // line 123
+					if (i >= 15) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 24) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
+					}
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+				else if (i < waveMax) { // line 456
+					if (i >= 42) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 51) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					m_map_monsterPool[room_number][i].set_arrivePortal(false);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line6.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+			}
+			break;
+		}
 		default:
 			break;
 		}
@@ -1545,131 +1637,4 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 
 	EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
 	add_event_to_queue(ev_waveCheck);
-}
-
-
-void Iocp_server::do_monster_thread()
-{
-	int cnt = 0;
-	while (true) {
-		if (m_monsterThread_run == false) {
-			continue;
-		}
-		//cout << "thread run start " << endl;
-		//cout << "room cnt: " << m_map_monsterPool.size() << endl;
-		auto start = chrono::high_resolution_clock::now();
-		for (auto &mon_pool : m_map_monsterPool) {
-			MONSTER monsterPacketArr[MAX_MONSTER];
-			ZeroMemory(monsterPacketArr, sizeof(monsterPacketArr));
-			//memset(monsterPacketArr, 0x00, sizeof(monsterPacketArr));
-			for (short i = 0; i < MAX_MONSTER; ++i) {
-				monsterPacketArr[i].id = i;
-				monsterPacketArr[i].isLive = false;
-				if (mon_pool.second[i].get_isLive() == false) { // 연산할필요없는 것 제외
-					continue;
-				}
-
-				// 몬스터 체력 0 이하 사망 이벤트 추가
-				if (mon_pool.second[i].get_HP() <= 0) {
-					add_monster_dead_event(mon_pool.first, i);
-					monsterPacketArr[i].isLive = mon_pool.second[i].get_isLive();
-					monsterPacketArr[i].state = -1;
-					monsterPacketArr[i].animation_state = mon_pool.second[i].get_animation_state();
-					monsterPacketArr[i].type = mon_pool.second[i].get_monster_type();
-					monsterPacketArr[i].hp = mon_pool.second[i].get_HP();
-					monsterPacketArr[i].world_pos = mon_pool.second[i].get_4x4position();
-					continue;
-				}
-
-				// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
-				if (mon_pool.second[i].get_target_id() == -1) {
-					int near_id = -1;
-					float near_dis = 300.f;
-					for (int player_index = 0; player_index < 4; ++player_index) {
-						int player_id = m_map_game_room[mon_pool.first]->players_id[player_index];
-						if (player_id == -1) { continue; }
-						if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-							float dis = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool.second[i].get_position());
-							if (dis <= 200.f) { // 어그로 범위 내
-								if (near_dis > dis) {
-									near_id = player_id;
-									near_dis = dis;
-								}
-							}
-						}
-					}
-					mon_pool.second[i].set_target_id(near_id);
-				}
-				// 타겟이 있을때 몬스터 행동
-				if (mon_pool.second[i].get_target_id() != -1) {
-					int target_id = mon_pool.second[i].get_target_id();
-					if (m_map_player_info[target_id]->player_state != PLAYER_STATE_playing_game) {
-						mon_pool.second[i].set_target_id(-1);
-						continue;
-					}
-					float dis = Vector3::Distance(m_map_player_info[target_id]->get_pos(), mon_pool.second[i].get_position());
-					if (dis <= 200.f && dis >= 70.f) { //어그로 범위
-						mon_pool.second[i].set_target_id(target_id);
-						mon_pool.second[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-						mon_pool.second[i].move_forward(5.f);
-						mon_pool.second[i].set_animation_state(2);
-					}
-					else if (dis < 70.f) { // 공격범위
-						mon_pool.second[i].set_target_id(target_id);
-						mon_pool.second[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-						mon_pool.second[i].set_animation_state(3);
-					}
-					else {
-						mon_pool.second[i].set_target_id(-1);
-					}
-				}
-				// 타겟이 없을때 행동
-				else {
-					mon_pool.second[i].process_move_path();
-				}
-
-				// trap collision
-				for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
-					if (mon_pool.second[i].get_isTrapCooltime() == true) { break; }
-					if (m_map_trap[mon_pool.first][trap_idx].get_enable() == false) {
-						continue;
-					}
-					float trap_dis = Vector3::Distance(m_map_trap[mon_pool.first][trap_idx].get_position(), mon_pool.second[i].get_position());
-					if (trap_dis < TRAP_NEEDLE_RANGE) {
-						cout << "함정 피격" << endl;
-						mon_pool.second[i].set_trap_cooltime(true);
-						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
-						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, mon_pool.first };
-
-					}
-				}
-
-
-
-
-				// 패킷에 들어갈 몬스터배열 값 지정
-				monsterPacketArr[i].isLive = mon_pool.second[i].get_isLive();
-				monsterPacketArr[i].state = -1;
-				monsterPacketArr[i].animation_state = mon_pool.second[i].get_animation_state();
-				monsterPacketArr[i].type = mon_pool.second[i].get_monster_type();
-				monsterPacketArr[i].hp = mon_pool.second[i].get_HP();
-				monsterPacketArr[i].world_pos = mon_pool.second[i].get_4x4position();
-			}
-			for (int i = 0; i < 4; ++i) {
-				int player_id = m_map_game_room[mon_pool.first]->players_id[i];
-				if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-					//m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
-				}
-			}
-		}
-		auto end = chrono::high_resolution_clock::now();
-
-		//cout << "thread run end: " << cnt << endl;
-		//cout << "time: " << (end - start).count() << "ns" << endl;
-
-		EVENT ev{ -10, chrono::high_resolution_clock::now() + 32ms, EV_MONSTER_THREAD_RUN, 0 };
-		add_event_to_queue(ev);
-		++cnt;
-		m_monsterThread_run = false;
-	}
 }
