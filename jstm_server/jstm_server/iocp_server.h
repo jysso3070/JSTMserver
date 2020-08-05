@@ -86,7 +86,7 @@ private:
 
 	// STL container
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_map_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
-	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 타이머 큐
+	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 큐
 	mutex m_eventTimer_lock;
 
 	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> m_map_game_room;	// room정보
