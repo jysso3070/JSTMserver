@@ -25,7 +25,7 @@ public:
 	bool get_enable() { return m_enable; }
 
 private:
-	volatile bool m_enable = false;
+	volatile bool m_enable;
 	int m_id;
 	DirectX::XMFLOAT4X4 m_4x4position;
 	short m_damage;

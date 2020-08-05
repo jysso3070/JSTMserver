@@ -3,6 +3,7 @@
 
 Trap::Trap()
 {
+	m_enable = false;
 }
 
 

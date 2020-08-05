@@ -5,6 +5,7 @@
 Monster::Monster()
 {
 	m_buffType = TRAP_BUFF_NONE;
+	m_isLive = false;
 	m_checkPoint_1 = XMFLOAT3(0.f, 0.f, 0.f);
 	m_checkPoint_2 = XMFLOAT3(0.f, 0.f, 0.f);
 	m_checkPoint_3 = XMFLOAT3(0.f, 0.f, 0.f);
@@ -44,10 +45,10 @@ void Monster::set_look(const XMFLOAT3& look)
 void Monster::set_monster_type(const char& monster_type)
 {
 	m_monster_type = monster_type;
-	if (monster_type == TYPE_ORC) { m_hp = ORC_HP; }
-	else if (monster_type == TYPE_SHAMAN) { m_hp = SHAMAN_HP; }
-	else if (monster_type == TYPE_STRONGORC) { m_hp = STRONGORC_HP; }
-	else if (monster_type == TYPE_RIDER) { m_hp = RIDER_HP; }
+	if (monster_type == TYPE_ORC) { this->m_hp = ORC_HP; }
+	else if (monster_type == TYPE_SHAMAN) { this->m_hp = SHAMAN_HP; }
+	else if (monster_type == TYPE_STRONGORC) { this->m_hp = STRONGORC_HP; }
+	else if (monster_type == TYPE_RIDER) { this->m_hp = RIDER_HP; }
 }
 
 void Monster::set_isLive(const bool& flag)
@@ -260,29 +261,51 @@ void Monster::make_checkPoint()
 	}
 	else if (m_stage_number == 2) {
 		if (m_pathLine == 1 || m_pathLine == 2 || m_pathLine == 3) {
-			m_checkPoint_1 = XMFLOAT3(-630.f + stage1_check1(dre), -50.f, 1700.f + stage1_check1(dre));
-			m_checkPoint_2 = XMFLOAT3(-220.f + stage1_check2(dre), -50.f, 1520.f + stage1_check2(dre));
-			m_checkPoint_3 = stage1_line1_3;
+			m_checkPoint_1 = XMFLOAT3(-630.f + stage2_check1(dre), -50.f, 1700.f + stage2_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(-220.f + stage2_check2(dre), -50.f, 1520.f + stage2_check2(dre));
+			m_checkPoint_3 = stage2_line1_3;
 		}
 		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
-			m_checkPoint_1 = XMFLOAT3(430.f + stage1_check1(dre), -50.f, 1700.f + stage1_check1(dre));
-			m_checkPoint_2 = XMFLOAT3(0.f + stage1_check2(dre), -50.f, 1520.f + stage1_check2(dre));
-			m_checkPoint_3 = stage1_line1_3;
+			m_checkPoint_1 = XMFLOAT3(430.f + stage2_check1(dre), -50.f, 1700.f + stage2_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(0.f + stage2_check2(dre), -50.f, 1520.f + stage2_check2(dre));
+			m_checkPoint_3 = stage2_line1_3;
 		}
 		else if (m_pathLine == 7 || m_pathLine == 7 || m_pathLine == 9) {
-			m_checkPoint_1 = XMFLOAT3(-630.f + stage1_check1(dre), -50.f, -1870.f + stage1_check1(dre));
-			m_checkPoint_2 = XMFLOAT3(-220.f + stage1_check2(dre), -50.f, -1640.f + stage1_check2(dre));
-			m_checkPoint_3 = stage1_line1_3;
+			m_checkPoint_1 = XMFLOAT3(-630.f + stage2_check1(dre), -50.f, -1870.f + stage2_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(-220.f + stage2_check2(dre), -50.f, -1640.f + stage2_check2(dre));
+			m_checkPoint_3 = stage2_line1_3;
 		}
 		else if (m_pathLine == 10 || m_pathLine == 11 || m_pathLine == 12) {
-			m_checkPoint_1 = XMFLOAT3(430.f + stage1_check1(dre), -50.f, -1870.f + stage1_check1(dre));
-			m_checkPoint_2 = XMFLOAT3(0.f + stage1_check2(dre), -50.f, -1640.f + stage1_check2(dre));
-			m_checkPoint_3 = stage1_line1_3;
+			m_checkPoint_1 = XMFLOAT3(430.f + stage2_check1(dre), -50.f, -1870.f + stage2_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(0.f + stage2_check2(dre), -50.f, -1640.f + stage2_check2(dre));
+			m_checkPoint_3 = stage2_line1_3;
 		}
 	}
-
 	else if (m_stage_number == 3) {
-
+		if (m_pathLine == 1 || m_pathLine == 2 || m_pathLine == 3) {
+			m_checkPoint_1 = XMFLOAT3(-1260.f + stage3_check1(dre), -50.f, 1570.f + stage3_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(-1070.f + stage3_check2(dre), -50.f, -950.f + stage3_check2(dre));
+			m_checkPoint_3 = XMFLOAT3(-220.f + stage3_check3(dre), -50.f, -900.f + stage3_check3(dre));
+			m_checkPoint_4 = stage3_line1_4;
+		}
+		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
+			m_checkPoint_1 = XMFLOAT3(-1100.f + stage3_check1(dre), -50.f, 1570.f + stage3_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(-1070.f + stage3_check2(dre), -50.f, -950.f + stage3_check2(dre));
+			m_checkPoint_3 = XMFLOAT3(-220.f + stage3_check3(dre), -50.f, -900.f + stage3_check3(dre));
+			m_checkPoint_4 = stage3_line1_4;
+		}
+		else if (m_pathLine == 7 || m_pathLine == 7 || m_pathLine == 9) {
+			m_checkPoint_1 = XMFLOAT3(1050.f + stage3_check1(dre), -50.f, -1800.f + stage3_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(870.f + stage3_check2(dre), -50.f, 740.f + stage3_check2(dre));
+			m_checkPoint_3 = XMFLOAT3(0.f + stage3_check3(dre), -50.f, 740.f + stage3_check3(dre));
+			m_checkPoint_4 = stage3_line1_4;
+		}
+		else if (m_pathLine == 10 || m_pathLine == 11 || m_pathLine == 12) {
+			m_checkPoint_1 = XMFLOAT3(900.f + stage3_check1(dre), -50.f, -1800.f + stage3_check1(dre));
+			m_checkPoint_2 = XMFLOAT3(870.f + stage3_check2(dre), -50.f, 740.f + stage3_check2(dre));
+			m_checkPoint_3 = XMFLOAT3(0.f + stage3_check3(dre), -50.f, 740.f + stage3_check3(dre));
+			m_checkPoint_4 = stage3_line1_4;
+		}
 	}
 }
 
@@ -334,6 +357,36 @@ void Monster::process_move_path_t()
 		//this->move_forward(5.f);
 		this->set_animation_state(M_ANIM_RUN);
 	}
+	else if (m_stage_number == 3) { // stage 3
+		if (m_path_checkPoint == 0) {
+			set_aggro_direction(m_checkPoint_1);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_1) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(1);
+			}
+		}
+		else if (m_path_checkPoint == 1) {
+			set_aggro_direction(m_checkPoint_2);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_2) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(2);
+			}
+		}
+		else if (m_path_checkPoint == 2) {
+			set_aggro_direction(m_checkPoint_3);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_3) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(3);
+			}
+		}
+		else if (m_path_checkPoint == 3) {
+			set_aggro_direction(m_checkPoint_4);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_4) <= PATH_CHECKPOINT_RANGE) {
+				std::cout << "Æ÷Å» µµÂø" << endl;
+				this->m_arrive_portal = true;
+			}
+		}
+		//this->move_forward(5.f);
+		this->set_animation_state(M_ANIM_RUN);
+	}
+
 }
 
 void Monster::process_move_path()
