@@ -169,7 +169,7 @@ struct sc_packet_trap_info {
 	char type;
 	short trap_id;
 	char trap_type;
-	DirectX::XMFLOAT3 trap_pos;
+	DirectX::XMFLOAT4X4 trap_pos;
 };
 
 struct sc_packet_join_room_ok {
@@ -303,7 +303,7 @@ struct cs_packet_install_trap {
 	char type;
 	int id;
 	char trap_type;
-	DirectX::XMFLOAT3 trap_pos;
+	DirectX::XMFLOAT4X4 trap_pos;
 };
 
 struct cs_packet_client_state_change {

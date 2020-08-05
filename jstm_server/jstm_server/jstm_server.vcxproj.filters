@@ -46,6 +46,9 @@
     <Filter Include="소스 파일\Object\Player">
       <UniqueIdentifier>{827dd645-a4f8-448c-93ef-1c03ae99b889}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Monster_gen">
+      <UniqueIdentifier>{c2b8028e-bbe8-40d5-bddc-60032e88caf0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="iocp_server.cpp">
@@ -77,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>소스 파일\Object\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster_gen.cpp">
+      <Filter>소스 파일\Monster_gen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>소스 파일\Object\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster_gen.h">
+      <Filter>소스 파일\Monster_gen</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
