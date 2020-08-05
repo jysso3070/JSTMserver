@@ -1,5 +1,23 @@
-몬스터 사망처리 할때 따로 이벤트를 만들어서 처리?
+float temp_distance = distance;
+	if (this->m_buffType == TRAP_BUFF_SLOW) {
+		temp_distance /= 2;
+	}
 
-몬스터 경로 맵마다 포인트 설정 해 놓기
+	XMFLOAT3 position = get_position();
+	XMFLOAT3 look = get_look();
+	position = Vector3::Add(position, look, temp_distance);
+	bool collision = false;
+	for (short i = 0; i < MAX_MONSTER; ++i) {
+		if (monsterPool[i].get_isLive() == false) { continue; }
+		if (i == m_id) { continue; }
+		if (Vector3::Distance(position, monsterPool[i].get_position()) <= ORC_COLLISION_RANGE ) {
+			collision = true;
 
-몬스터 클래스에 경로를 설정할 변수 지정
+
+			break;
+		}
+	}
+	if(collision == false){
+		set_position(position);
+		m_4x4position._42 = -50.f;
+	}

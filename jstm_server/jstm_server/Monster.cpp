@@ -108,6 +108,16 @@ void Monster::set_buffType(const char & buffType)
 	m_buffType = buffType;
 }
 
+void Monster::add_xPos(const float & dx)
+{
+	m_4x4position._41 += dx;
+}
+
+void Monster::add_zPos(const float & dz)
+{
+	m_4x4position._43 += dz;
+}
+
 short Monster::get_monster_id()
 {
 	return m_id;
@@ -166,10 +176,31 @@ void Monster::move_forward(const float & distance, Monster * monsterPool)
 		if (i == m_id) { continue; }
 		if (Vector3::Distance(position, monsterPool[i].get_position()) <= ORC_COLLISION_RANGE ) {
 			collision = true;
+			if (position.z >= monsterPool[i].get_position().z) {
+				position.z += ORC_COLLISION_REBOUND;
+				monsterPool[i].add_zPos(-ORC_COLLISION_REBOUND);
+			}
+			else {
+				position.z -= ORC_COLLISION_REBOUND;
+				monsterPool[i].add_zPos(ORC_COLLISION_REBOUND);
+			}
+			if (position.x >= monsterPool[i].get_position().x) {
+				position.x += ORC_COLLISION_REBOUND;
+				monsterPool[i].add_xPos(-ORC_COLLISION_REBOUND);
+			}
+			else {
+				position.x -= ORC_COLLISION_REBOUND;
+				monsterPool[i].add_xPos(ORC_COLLISION_REBOUND);
+			}
+
 			break;
 		}
 	}
 	if(collision == false){
+		set_position(position);
+		m_4x4position._42 = -50.f;
+	}
+	else {
 		set_position(position);
 		m_4x4position._42 = -50.f;
 	}

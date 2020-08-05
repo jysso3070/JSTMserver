@@ -454,7 +454,7 @@ void Iocp_server::process_monster_move(const short room_number)
 			if (dis <= 200.f && dis >= ORC_ATT_RANGE) { //어그로 범위
 				mon_pool[i].set_target_id(target_id);
 				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-				mon_pool[i].move_forward(5.f);
+				mon_pool[i].move_forward(5.f, mon_pool);
 				mon_pool[i].set_animation_state(M_ANIM_RUN);
 			}
 			else if (dis < ORC_ATT_RANGE) { // 공격범위
@@ -476,7 +476,7 @@ void Iocp_server::process_monster_move(const short room_number)
 		else {
 			//mon_pool[i].process_move_path();
 			mon_pool[i].process_move_path_t();
-			mon_pool[i].move_forward(5.f);
+			mon_pool[i].move_forward(5.f, mon_pool);
 		}
 
 		// trap collision
@@ -924,7 +924,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 		}
 	}*/
 	//
-	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 50s, EV_GEN_1stWAVE_MONSTER, stage_number };
+	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
 	add_event_to_queue(g_ev);
 	
 }

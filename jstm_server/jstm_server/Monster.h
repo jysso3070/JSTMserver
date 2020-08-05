@@ -4,6 +4,8 @@
 #include "monster_path.h"
 #include "struct.h"
 #define PATH_CHECKPOINT_RANGE	50.f
+#define ORC_COLLISION_REBOUND	5.f
+#define ORC_COLLISION_RANGE		20.f
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -31,6 +33,9 @@ public:
 	void set_arrivePortal(const bool& flag);
 	void set_attackCooltime(const bool& flag);
 	void set_buffType(const char& buffType);
+
+	void add_xPos(const float& dx);
+	void add_zPos(const float& dz);
 
 	short get_monster_id();
 	char get_monster_type();
