@@ -56,6 +56,7 @@ public:
 	bool get_attackCooltime() { return m_attack_coolTime; }
 	char get_buffType() { return m_buffType; }
 
+	void gen_sequence(const short& stage_number, const short& pathLine);
 	void decrease_hp(const short& damage);
 	void move_forward(const float& distance);
 	void move_forward(const float& distance, Monster* monsterPool);

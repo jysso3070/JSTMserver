@@ -79,3 +79,5 @@ static uniform_int_distribution<> stage1_check1(0, 200);
 static uniform_int_distribution<> stage1_check2(0, 200);
 static uniform_int_distribution<> stage1_check2_y(0, 300);
 static uniform_int_distribution<> stage1_check3(0, 300);
+
+static uniform_int_distribution<> stage2_check1(0, 200);

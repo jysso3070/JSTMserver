@@ -74,6 +74,8 @@ struct MONSTER {
 #define TRAP_SLOW		2
 #define TRAP_ARROW		3
 
+#define TRAP_COST		50
+
 // trap ATT
 #define TRAP_NEEDLE_ATT		10
 #define TRAP_FIRE_ATT		10
