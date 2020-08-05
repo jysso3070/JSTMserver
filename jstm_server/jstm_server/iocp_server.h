@@ -5,12 +5,14 @@
 #include "server_manager.h"
 #include "Trap.h"
 #include "Monster.h"
+#include "Monster_gen.h"
 #include "Collision.h"
 #include "timer.h"
-
 #include "struct.h"
 #include "direct_vector.h"
 #include "monster_path.h"
+
+#define TESTMODE
 
 class Iocp_server
 {
@@ -52,6 +54,7 @@ public:
 	void add_monster_dead_event(const short& room_number, const short& monster_id);
 
 	void send_all_room_list(const int& id);		// 모든 방정보 전송
+	void send_protalLife_update(const short& room_number);
 	void get_player_db(); // database_manager에 있는 DBlist 가져오기
 	void process_disconnect_client(const int& leaver_id);
 	void process_nameLogin(const int& id, void *buff);

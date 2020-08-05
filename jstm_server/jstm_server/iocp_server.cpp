@@ -156,7 +156,7 @@ void Iocp_server::run_acceptThread()
 		//	}
 		//}
 
-		//send_all_room_list(user_id); // 모든 방 정보 전송
+		send_all_room_list(user_id); // 모든 방 정보 전송
 
 		///////
 		m_map_player_info[user_id]->x = 300;
@@ -303,6 +303,10 @@ void Iocp_server::run_mainThread()
 			m_map_player_info[key]->damageCooltime = false;
 			delete over_ex;
 		}
+		else if (EV_PROTALLIFE_UPDATE == over_ex->event_type) {
+			send_protalLife_update(key);
+			delete over_ex;
+		}
 	}
 }
 
@@ -389,6 +393,11 @@ void Iocp_server::run_eventQueueThread()
 			over_ex->event_type = EV_PLAYER_DAMAGE_COOLTIME;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
+		else if (EV_PROTALLIFE_UPDATE == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = EV_PROTALLIFE_UPDATE;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
 	}
 }
 
@@ -418,10 +427,13 @@ void Iocp_server::process_monster_move(const short room_number)
 		}
 		// 포탈에 도착한 몬스터
 		if (mon_pool[i].get_arrivePortal() == true) {
-			//m_map_game_room[room_number]->portalLife -= 1;
-			//if (m_map_game_room[room_number]->portalLife <= 0) {}
 			mon_pool[i].set_isLive(false);
+#ifndef TESTMODE
+			m_map_game_room[room_number]->portalLife -= 1;
+#endif
 			// 포탈라이프 업데이트하는 패킷 수신
+			EVENT ev_portalLifeUpdate{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_PROTALLIFE_UPDATE, 0 };
+			add_event_to_queue(ev_portalLifeUpdate);
 		}
 
 		// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
@@ -1012,10 +1024,22 @@ void Iocp_server::add_monster_dead_event(const short & room_number, const short 
 
 void Iocp_server::send_all_room_list(const int& id)
 {
-	auto copyRoom = m_map_game_room;
-	for (auto room_info : copyRoom) {
+	for (auto room : m_map_game_room) {
+		if (room.second->enable == false) { continue; }
 		m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket,
-			room_info.second);
+			room.second);
+	}
+}
+
+void Iocp_server::send_protalLife_update(const short & room_number)
+{
+	for (short i = 0; i < 4; ++i) {
+		int p_id = m_map_game_room[room_number]->players_id[i];
+		if (p_id == -1) { continue; }
+		if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_playing_game) {
+			m_Packet_manager->send_game_info_update(p_id, m_map_player_info[p_id]->socket,
+				-1000, m_map_game_room[room_number]->portalLife);
+		}
 	}
 }
 
