@@ -352,7 +352,7 @@ void Monster::process_move_path_t()
 		//this->move_forward(5.f);
 		this->set_animation_state(M_ANIM_RUN);
 	}
-	else if (m_stage_number == 1) { // stage 2
+	else if (m_stage_number == 2) { // stage 2
 		if (m_path_checkPoint == 0) {
 			set_aggro_direction(m_checkPoint_1);
 			if (Vector3::Distance(this->get_position(), m_checkPoint_1) <= PATH_CHECKPOINT_RANGE) {

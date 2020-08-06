@@ -436,12 +436,20 @@ void Iocp_server::process_monster_move(const short room_number)
 		// 포탈에 도착한 몬스터
 		if (mon_pool[i].get_arrivePortal() == true) {
 			mon_pool[i].set_isLive(false);
+			/*m_map_game_room[room_number]->monsterThread_lock.lock();
+			monsterPacketArr[i].isLive = false;
+			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
+			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
+			monsterPacketArr[i].hp = mon_pool[i].get_HP();
+			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+			m_map_game_room[room_number]->monsterThread_lock.unlock();*/
 #ifndef TESTMODE
 			m_map_game_room[room_number]->portalLife -= 1;
 #endif
 			// 포탈라이프 업데이트하는 패킷 수신
 			EVENT ev_portalLifeUpdate{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_PROTALLIFE_UPDATE, 0 };
 			add_event_to_queue(ev_portalLifeUpdate);
+			//continue;
 		}
 
 		// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
@@ -603,6 +611,7 @@ void Iocp_server::process_monster_move(const short room_number)
 		monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
 		m_map_game_room[room_number]->monsterThread_lock.unlock();
 	}
+
 	for (int i = 0; i < 4; ++i) {
 		int player_id = m_map_game_room[room_number]->players_id[i];
 		if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
@@ -887,7 +896,7 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 {
 	cout << "state change" << endl;
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
-	//packet->stage_number = 3;
+	//packet->stage_number = 2;
 
 
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
@@ -1663,11 +1672,52 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 		}
 	}
 	else if (m_map_game_room[room_number]->stage_number == 2) { // stage2
-	XMFLOAT3 line1 = stage3_line1_start;
-	XMFLOAT3 line4 = stage3_line4_start;
-	XMFLOAT3 line9 = stage3_line9_start;
-	XMFLOAT3 line12 = stage3_line12_start;
-}
+		XMFLOAT3 line1 = stage2_line1_start;
+		XMFLOAT3 line4 = stage2_line4_start;
+		XMFLOAT3 line7 = stage2_line7_start;
+		XMFLOAT3 line10 = stage2_line10_start;
+		switch (wave) {
+		case 1:
+		{
+			short waveMax = 28;
+			for (int i = 0; i < waveMax; ++i) {
+				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
+				if (i < 7) { // line 123
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+				else if (i < 14) { // line 456
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+				else if (i < 21) { // line 789
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+				else if (i < waveMax) { // line 10 11 12
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
+					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
+					m_map_monsterPool[room_number][i].set_animation_state(2);
+					m_map_monsterPool[room_number][i].set_isLive(true);
+				}
+			}
+			cout << "stage2 gen" << endl;
+			break;
+		}
+		default:
+			break;
+		}
+	}
 	else if (m_map_game_room[room_number]->stage_number == 3) { // stage3
 		XMFLOAT3 line1 = stage3_line1_start;
 		XMFLOAT3 line4 = stage3_line4_start;

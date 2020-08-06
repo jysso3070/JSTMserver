@@ -79,19 +79,19 @@ static const DirectX::XMFLOAT3 stage2_line9_1 = DirectX::XMFLOAT3(-430.f, -50.f,
 static const DirectX::XMFLOAT3 stage2_line9_2 = DirectX::XMFLOAT3(-70.f, -50.f, -1640.f);
 static const DirectX::XMFLOAT3 stage2_line9_3 = DirectX::XMFLOAT3(0.f, -50.f, 0.f);
 
-static const DirectX::XMFLOAT3 stage2_line10_start = DirectX::XMFLOAT3(430.f, -50.f, 2850.f);
-static const DirectX::XMFLOAT3 stage2_line10_1 = DirectX::XMFLOAT3(430.f, -50.f, 1870.f);
-static const DirectX::XMFLOAT3 stage2_line10_2 = DirectX::XMFLOAT3(70.f, -50.f, 1640.f);
+static const DirectX::XMFLOAT3 stage2_line10_start = DirectX::XMFLOAT3(430.f, -50.f, -2850.f);
+static const DirectX::XMFLOAT3 stage2_line10_1 = DirectX::XMFLOAT3(430.f, -50.f, -1870.f);
+static const DirectX::XMFLOAT3 stage2_line10_2 = DirectX::XMFLOAT3(70.f, -50.f, -1640.f);
 static const DirectX::XMFLOAT3 stage2_line10_3 = DirectX::XMFLOAT3(0.f, -50.f, 0.f);
 
-static const DirectX::XMFLOAT3 stage2_line11_start = DirectX::XMFLOAT3(570.f, -50.f, 2850.f);
-static const DirectX::XMFLOAT3 stage2_line11_1 = DirectX::XMFLOAT3(510.f, -50.f, 1780.f);
-static const DirectX::XMFLOAT3 stage2_line11_2 = DirectX::XMFLOAT3(180.f, -50.f, 1580.f);
+static const DirectX::XMFLOAT3 stage2_line11_start = DirectX::XMFLOAT3(570.f, -50.f, -2850.f);
+static const DirectX::XMFLOAT3 stage2_line11_1 = DirectX::XMFLOAT3(510.f, -50.f, -1780.f);
+static const DirectX::XMFLOAT3 stage2_line11_2 = DirectX::XMFLOAT3(180.f, -50.f, -1580.f);
 static const DirectX::XMFLOAT3 stage2_line11_3 = DirectX::XMFLOAT3(0.f, -50.f, 0.f);
 
-static const DirectX::XMFLOAT3 stage2_line12_start = DirectX::XMFLOAT3(720.f, -50.f, 2850.f);
-static const DirectX::XMFLOAT3 stage2_line12_1 = DirectX::XMFLOAT3(630.f, -50.f, 1720.f);
-static const DirectX::XMFLOAT3 stage2_line12_2 = DirectX::XMFLOAT3(220.f, -50.f, 1520.f);
+static const DirectX::XMFLOAT3 stage2_line12_start = DirectX::XMFLOAT3(720.f, -50.f, -2850.f);
+static const DirectX::XMFLOAT3 stage2_line12_1 = DirectX::XMFLOAT3(630.f, -50.f, -1720.f);
+static const DirectX::XMFLOAT3 stage2_line12_2 = DirectX::XMFLOAT3(220.f, -50.f, -1520.f);
 static const DirectX::XMFLOAT3 stage2_line12_3 = DirectX::XMFLOAT3(0.f, -50.f, 0.f);
 
 
