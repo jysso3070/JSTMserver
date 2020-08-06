@@ -146,6 +146,7 @@ DirectX::XMFLOAT4X4 Monster::get_4x4position()
 
 void Monster::gen_sequence(const short & stage_number, const short & pathLine)
 {
+	m_arrive_portal = false;
 	m_stage_number = stage_number;
 	m_pathLine = pathLine;
 	m_path_checkPoint = 0;

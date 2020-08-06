@@ -12,6 +12,7 @@ struct MONSTER {
 	DirectX::XMFLOAT4X4 world_pos;
 };
 
+constexpr short lastWAVE = 10;
 
 #define MAX_BUFFER			16384
 #define SERVER_PORT			3500
@@ -83,10 +84,10 @@ struct MONSTER {
 #define TRAP_ARROW_ATT		10
 
 // trap range
-#define TRAP_NEEDLE_RANGE	100.f
-#define TRAP_FIRE_RANGE		100.f
-#define TRAP_SLOW_RANGE		100.f
-#define TRAP_ARROW_RANGE	100.f
+#define TRAP_NEEDLE_RANGE	50.f
+#define TRAP_FIRE_RANGE		70.f
+#define TRAP_SLOW_RANGE		60.f
+#define TRAP_ARROW_RANGE	70.f
 
 #define SC_SEND_ID			1
 #define SC_POS				2
