@@ -889,7 +889,7 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 {
 	cout << "state change" << endl;
 	cs_packet_client_state_change *packet = reinterpret_cast<cs_packet_client_state_change*>(buff);
-	packet->stage_number = 3;
+	//packet->stage_number = 3;
 
 
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
