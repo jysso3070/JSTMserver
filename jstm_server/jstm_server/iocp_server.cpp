@@ -720,7 +720,8 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 	}
 
 	for (int other_id : m_map_game_room[m_map_player_info[id]->room_number]->players_id) {
-		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true && 
+		if (other_id == -1) { continue; }
+		if (m_map_player_info[other_id]->is_connect == true && 
 			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
 			//m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id);
 			m_Packet_manager->send_pos_packet(other_id, m_map_player_info[other_id]->socket, id,

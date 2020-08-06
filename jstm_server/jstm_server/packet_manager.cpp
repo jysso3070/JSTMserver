@@ -62,6 +62,7 @@ void packet_manager::send_put_player_packet(int client_id, SOCKET client_socket,
 void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, int mover_id, DirectX::XMFLOAT4X4 player_pos, short animation_state)
 {
 	sc_packet_pos packet;
+	ZeroMemory(&packet, sizeof(packet));
 	packet.mover_id = mover_id;
 	packet.size = sizeof(packet);
 	packet.type = SC_POS;
