@@ -27,6 +27,7 @@ public:
 
 	void init_DB();
 	void init_socket();
+	void init_wPos();
 
 	// thread
 	void run_acceptThread(); // 소켓 accept를 받는 스레드함수
@@ -96,6 +97,8 @@ private:
 	volatile bool m_monsterThread_run = true;
 
 	short pakcetCount = 0;
+
+	DirectX::XMFLOAT4X4 default_wPos;
 
 };
 

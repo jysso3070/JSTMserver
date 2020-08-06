@@ -35,6 +35,7 @@ constexpr short lastWAVE = 10;
 #define R_STATE_wave_end			3
 
 // monster_type
+#define TYPE_DEFAULT	0
 #define TYPE_ORC		1
 #define TYPE_SHAMAN		2
 #define TYPE_STRONGORC	3
@@ -137,6 +138,8 @@ struct sc_packet_put_player {
 	unsigned short size;
 	char type;
 	int new_player_id;
+	short animation_state;
+	DirectX::XMFLOAT4X4 world_pos;
 };
 
 struct sc_packet_pos {
