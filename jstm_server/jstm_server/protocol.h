@@ -7,7 +7,6 @@ struct MONSTER {
 	volatile bool isLive;
 	char type;
 	short animation_state;
-	short state;
 	short hp;
 	DirectX::XMFLOAT4X4 world_pos;
 };

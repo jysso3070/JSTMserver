@@ -426,7 +426,6 @@ void Iocp_server::process_monster_move(const short room_number)
 			add_monster_dead_event(room_number, i);
 			m_map_game_room[room_number]->monsterThread_lock.lock();
 			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
-			monsterPacketArr[i].state = -1;
 			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
 			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
 			monsterPacketArr[i].hp = mon_pool[i].get_HP();
@@ -598,7 +597,6 @@ void Iocp_server::process_monster_move(const short room_number)
 		// 패킷에 들어갈 몬스터배열 값 지정
 		m_map_game_room[room_number]->monsterThread_lock.lock();
 		monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
-		monsterPacketArr[i].state = -1;
 		monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
 		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
 		monsterPacketArr[i].hp = mon_pool[i].get_HP();
@@ -1664,6 +1662,12 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			break;
 		}
 	}
+	else if (m_map_game_room[room_number]->stage_number == 2) { // stage2
+	XMFLOAT3 line1 = stage3_line1_start;
+	XMFLOAT3 line4 = stage3_line4_start;
+	XMFLOAT3 line9 = stage3_line9_start;
+	XMFLOAT3 line12 = stage3_line12_start;
+}
 	else if (m_map_game_room[room_number]->stage_number == 3) { // stage3
 		XMFLOAT3 line1 = stage3_line1_start;
 		XMFLOAT3 line4 = stage3_line4_start;
