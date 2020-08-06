@@ -10,6 +10,7 @@ Monster::Monster()
 	m_checkPoint_2 = XMFLOAT3(0.f, 0.f, 0.f);
 	m_checkPoint_3 = XMFLOAT3(0.f, 0.f, 0.f);
 	m_checkPoint_4 = XMFLOAT3(0.f, 0.f, 0.f);
+	m_checkPoint_5 = XMFLOAT3(0.f, 0.f, 0.f);
 }
 
 
@@ -252,34 +253,40 @@ void Monster::make_checkPoint()
 		if (m_pathLine == 1 || m_pathLine == 2 || m_pathLine == 3) {
 			m_checkPoint_1 = XMFLOAT3(-630.f + stage1_check1(dre), -50.f, 3010.f + stage1_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(-120.f + stage1_check2(dre), -50.f, 2800.f + stage1_check2(dre));
-			m_checkPoint_3 = stage1_line1_3;
+			m_checkPoint_3 = XMFLOAT3(-120.f + stage1_check3(dre), -50.f, 50.f + stage1_check3_z(dre));
+			m_checkPoint_4 = stage1_line1_3;
 		}
 		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
 			m_checkPoint_1 = XMFLOAT3(430.f + stage1_check1(dre), -50.f, 3030.f + stage1_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(0.f + stage1_check2(dre), -50.f, 2900.f + stage1_check2(dre));
-			m_checkPoint_3 = stage1_line1_3;
+			m_checkPoint_3 = XMFLOAT3(0.f + stage1_check3(dre), -50.f, 50.f + stage1_check3_z(dre));
+			m_checkPoint_4 = stage1_line1_3;
 		}
 	}
 	else if (m_stage_number == 2) {
 		if (m_pathLine == 1 || m_pathLine == 2 || m_pathLine == 3) {
 			m_checkPoint_1 = XMFLOAT3(-630.f + stage2_check1(dre), -50.f, 1700.f + stage2_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(-220.f + stage2_check2(dre), -50.f, 1520.f + stage2_check2(dre));
-			m_checkPoint_3 = stage2_line1_3;
+			m_checkPoint_3 = XMFLOAT3(-220.f + stage2_check3(dre), -50.f, 70.f + stage2_check3(dre));
+			m_checkPoint_4 = stage2_4;
 		}
 		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
 			m_checkPoint_1 = XMFLOAT3(430.f + stage2_check1(dre), -50.f, 1700.f + stage2_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(0.f + stage2_check2(dre), -50.f, 1520.f + stage2_check2(dre));
-			m_checkPoint_3 = stage2_line1_3;
+			m_checkPoint_3 = XMFLOAT3(-220.f + stage2_check3(dre), -50.f, 70.f + stage2_check3(dre));
+			m_checkPoint_4 = stage2_4;
 		}
 		else if (m_pathLine == 7 || m_pathLine == 7 || m_pathLine == 9) {
 			m_checkPoint_1 = XMFLOAT3(-630.f + stage2_check1(dre), -50.f, -1870.f + stage2_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(-220.f + stage2_check2(dre), -50.f, -1640.f + stage2_check2(dre));
-			m_checkPoint_3 = stage2_line1_3;
+			m_checkPoint_3 = XMFLOAT3(-220.f + stage2_check3(dre), -50.f, 70.f - stage2_check3(dre));
+			m_checkPoint_4 = stage2_4;
 		}
 		else if (m_pathLine == 10 || m_pathLine == 11 || m_pathLine == 12) {
 			m_checkPoint_1 = XMFLOAT3(430.f + stage2_check1(dre), -50.f, -1870.f + stage2_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(0.f + stage2_check2(dre), -50.f, -1640.f + stage2_check2(dre));
-			m_checkPoint_3 = stage2_line1_3;
+			m_checkPoint_3 = XMFLOAT3(-220.f + stage2_check3(dre), -50.f, 70.f - stage2_check3(dre));
+			m_checkPoint_4 = stage2_4;
 		}
 	}
 	else if (m_stage_number == 3) {
@@ -287,25 +294,29 @@ void Monster::make_checkPoint()
 			m_checkPoint_1 = XMFLOAT3(-1260.f + stage3_check1(dre), -50.f, 1570.f + stage3_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(-1070.f + stage3_check2(dre), -50.f, -950.f + stage3_check2(dre));
 			m_checkPoint_3 = XMFLOAT3(-220.f + stage3_check3(dre), -50.f, -900.f + stage3_check3(dre));
-			m_checkPoint_4 = stage3_line1_4;
+			m_checkPoint_4 = XMFLOAT3(-250.f + stage3_check4(dre), -50.f, 0.f - stage3_check4(dre));
+			m_checkPoint_5 = stage3_5;
 		}
 		else if (m_pathLine == 4 || m_pathLine == 5 || m_pathLine == 6) {
 			m_checkPoint_1 = XMFLOAT3(-1100.f + stage3_check1(dre), -50.f, 1570.f + stage3_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(-1070.f + stage3_check2(dre), -50.f, -950.f + stage3_check2(dre));
 			m_checkPoint_3 = XMFLOAT3(-220.f + stage3_check3(dre), -50.f, -900.f + stage3_check3(dre));
-			m_checkPoint_4 = stage3_line1_4;
+			m_checkPoint_4 = XMFLOAT3(-250.f + stage3_check4(dre), -50.f, 0.f - stage3_check4(dre));
+			m_checkPoint_5 = stage3_5;
 		}
 		else if (m_pathLine == 7 || m_pathLine == 7 || m_pathLine == 9) {
 			m_checkPoint_1 = XMFLOAT3(1050.f + stage3_check1(dre), -50.f, -1800.f + stage3_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(870.f + stage3_check2(dre), -50.f, 740.f + stage3_check2(dre));
 			m_checkPoint_3 = XMFLOAT3(0.f + stage3_check3(dre), -50.f, 740.f + stage3_check3(dre));
-			m_checkPoint_4 = stage3_line1_4;
+			m_checkPoint_4 = XMFLOAT3(-250.f + stage3_check4(dre), -50.f, 0.f + stage3_check4(dre));
+			m_checkPoint_5 = stage3_5;
 		}
 		else if (m_pathLine == 10 || m_pathLine == 11 || m_pathLine == 12) {
 			m_checkPoint_1 = XMFLOAT3(900.f + stage3_check1(dre), -50.f, -1800.f + stage3_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(870.f + stage3_check2(dre), -50.f, 740.f + stage3_check2(dre));
 			m_checkPoint_3 = XMFLOAT3(0.f + stage3_check3(dre), -50.f, 740.f + stage3_check3(dre));
-			m_checkPoint_4 = stage3_line1_4;
+			m_checkPoint_4 = XMFLOAT3(-250.f + stage3_check4(dre), -50.f, 0.f + stage3_check4(dre));
+			m_checkPoint_5 = stage3_5;
 		}
 	}
 }
@@ -328,6 +339,12 @@ void Monster::process_move_path_t()
 		else if (m_path_checkPoint == 2) {
 			set_aggro_direction(m_checkPoint_3);
 			if (Vector3::Distance(this->get_position(), m_checkPoint_3) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(3);
+			}
+		}
+		else if (m_path_checkPoint == 3) {
+			set_aggro_direction(m_checkPoint_4);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_4) <= PATH_CHECKPOINT_RANGE) {
 				std::cout << "Æ÷Å» µµÂø" << endl;
 				this->m_arrive_portal = true;
 			}
@@ -351,6 +368,12 @@ void Monster::process_move_path_t()
 		else if (m_path_checkPoint == 2) {
 			set_aggro_direction(m_checkPoint_3);
 			if (Vector3::Distance(this->get_position(), m_checkPoint_3) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(3);
+			}
+		}
+		else if (m_path_checkPoint == 3) {
+			set_aggro_direction(m_checkPoint_4);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_4) <= PATH_CHECKPOINT_RANGE) {
 				std::cout << "Æ÷Å» µµÂø" << endl;
 				this->m_arrive_portal = true;
 			}
@@ -380,6 +403,12 @@ void Monster::process_move_path_t()
 		else if (m_path_checkPoint == 3) {
 			set_aggro_direction(m_checkPoint_4);
 			if (Vector3::Distance(this->get_position(), m_checkPoint_4) <= PATH_CHECKPOINT_RANGE) {
+				this->set_checkPoint(4);
+			}
+		}
+		else if (m_path_checkPoint == 4) {
+			set_aggro_direction(m_checkPoint_5);
+			if (Vector3::Distance(this->get_position(), m_checkPoint_5) <= PATH_CHECKPOINT_RANGE) {
 				std::cout << "Æ÷Å» µµÂø" << endl;
 				this->m_arrive_portal = true;
 			}

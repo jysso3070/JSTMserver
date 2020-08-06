@@ -49,6 +49,7 @@ struct GAME_ROOM {
 	int players_id[4];
 	bool wave_on;
 	mutex gameRoom_lock;
+	mutex monsterThread_lock;
 };
 
 struct PLAYER_DB {
@@ -78,12 +79,13 @@ static uniform_int_distribution<> stage1_start456(0, 300);
 
 static uniform_int_distribution<> stage1_check1(0, 200);
 static uniform_int_distribution<> stage1_check2(0, 200);
-static uniform_int_distribution<> stage1_check2_y(0, 300);
-static uniform_int_distribution<> stage1_check3(0, 300);
+static uniform_int_distribution<> stage1_check3(0, 200);
+static uniform_int_distribution<> stage1_check3_z(0, 100);
 
 static uniform_int_distribution<> stage2_check1(0, 200);
 static uniform_int_distribution<> stage2_check2(0, 200);
-
+static uniform_int_distribution<> stage2_check3(0, 150);
+static uniform_int_distribution<> stage2_check3_z(0, 100);
 
 static uniform_int_distribution<> stage3_start1_x(0, 200);
 static uniform_int_distribution<> stage3_start1_z(0, 200);
@@ -91,3 +93,4 @@ static uniform_int_distribution<> stage3_start1_z(0, 200);
 static uniform_int_distribution<> stage3_check1(0, 200);
 static uniform_int_distribution<> stage3_check2(0, 200);
 static uniform_int_distribution<> stage3_check3(0, 200);
+static uniform_int_distribution<> stage3_check4(0, 150);

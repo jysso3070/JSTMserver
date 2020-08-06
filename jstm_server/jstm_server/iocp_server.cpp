@@ -412,8 +412,10 @@ void Iocp_server::process_monster_move(const short room_number)
 	MONSTER monsterPacketArr[MAX_MONSTER];
 	ZeroMemory(monsterPacketArr, sizeof(monsterPacketArr));
 	for (short i = 0; i < MAX_MONSTER; ++i) {
+		m_map_game_room[room_number]->monsterThread_lock.lock();
 		monsterPacketArr[i].id = i;
 		monsterPacketArr[i].isLive = false;
+		m_map_game_room[room_number]->monsterThread_lock.unlock();
 		if (mon_pool[i].get_isLive() == false) { // 연산할필요없는 것 제외
 			continue;
 		}
@@ -422,12 +424,14 @@ void Iocp_server::process_monster_move(const short room_number)
 		if (mon_pool[i].get_HP() <= 0) {
 			mon_pool[i].set_animation_state(M_ANIM_DEATH);
 			add_monster_dead_event(room_number, i);
+			m_map_game_room[room_number]->monsterThread_lock.lock();
 			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
 			monsterPacketArr[i].state = -1;
 			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
 			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
 			monsterPacketArr[i].hp = mon_pool[i].get_HP();
 			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+			m_map_game_room[room_number]->monsterThread_lock.unlock();
 			continue;
 		}
 		// 포탈에 도착한 몬스터
@@ -497,12 +501,13 @@ void Iocp_server::process_monster_move(const short room_number)
 		}
 
 		// trap collision
+		auto coopyTrapPool = m_map_trap[room_number];
 		for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
 			if (mon_pool[i].get_isTrapCooltime() == true) { break; }
-			if (m_map_trap[room_number][trap_idx].get_enable() == false) { continue; }
+			if (coopyTrapPool[trap_idx].get_enable() == false) { continue; }
 
-			if (m_map_trap[room_number][trap_idx].get_type() == TRAP_NEEDLE) {
-				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			if (coopyTrapPool[trap_idx].get_type() == TRAP_NEEDLE) {
+				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_NEEDLE_RANGE) {
 					cout << "needle 함정 피격" << endl;
 					mon_pool[i].set_trap_cooltime(true);
@@ -511,8 +516,8 @@ void Iocp_server::process_monster_move(const short room_number)
 					add_event_to_queue(trap_ev);
 				}
 			}
-			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
-				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			else if (coopyTrapPool[trap_idx].get_type() == TRAP_SLOW) {
+				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_SLOW_RANGE) {
 					cout << "slow 함정 피격" << endl;
 					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
@@ -522,8 +527,8 @@ void Iocp_server::process_monster_move(const short room_number)
 					add_event_to_queue(trap_ev);
 				}
 			}
-			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_FIRE) {
-				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			else if (coopyTrapPool[trap_idx].get_type() == TRAP_FIRE) {
+				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_FIRE_RANGE) {
 					cout << "fire 함정 피격" << endl;
 					/*mon_pool[i].set_trap_cooltime(true);
@@ -532,8 +537,8 @@ void Iocp_server::process_monster_move(const short room_number)
 					add_event_to_queue(trap_ev);*/
 				}
 			}
-			else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_ARROW) {
-				float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			else if (coopyTrapPool[trap_idx].get_type() == TRAP_ARROW) {
+				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
 				if (trap_dis < TRAP_ARROW_RANGE) {
 					cout << "arrow 함정 피격" << endl;
 					/*mon_pool[i].set_trap_cooltime(true);
@@ -542,16 +547,63 @@ void Iocp_server::process_monster_move(const short room_number)
 					add_event_to_queue(trap_ev);*/
 				}
 			}
+
+			//if (mon_pool[i].get_isTrapCooltime() == true) { break; }
+			//if (m_map_trap[room_number][trap_idx].get_enable() == false) { continue; }
+
+			//if (m_map_trap[room_number][trap_idx].get_type() == TRAP_NEEDLE) {
+			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			//	if (trap_dis < TRAP_NEEDLE_RANGE) {
+			//		cout << "needle 함정 피격" << endl;
+			//		mon_pool[i].set_trap_cooltime(true);
+			//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+			//		add_event_to_queue(trap_ev);
+			//	}
+			//}
+			//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
+			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			//	if (trap_dis < TRAP_SLOW_RANGE) {
+			//		cout << "slow 함정 피격" << endl;
+			//		// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+			//		mon_pool[i].set_trap_cooltime(true);
+			//		mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
+			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
+			//		add_event_to_queue(trap_ev);
+			//	}
+			//}
+			//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_FIRE) {
+			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			//	if (trap_dis < TRAP_FIRE_RANGE) {
+			//		cout << "fire 함정 피격" << endl;
+			//		/*mon_pool[i].set_trap_cooltime(true);
+			//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+			//		add_event_to_queue(trap_ev);*/
+			//	}
+			//}
+			//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_ARROW) {
+			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+			//	if (trap_dis < TRAP_ARROW_RANGE) {
+			//		cout << "arrow 함정 피격" << endl;
+			//		/*mon_pool[i].set_trap_cooltime(true);
+			//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+			//		add_event_to_queue(trap_ev);*/
+			//	}
+			//}
 		}
 
 
 		// 패킷에 들어갈 몬스터배열 값 지정
+		m_map_game_room[room_number]->monsterThread_lock.lock();
 		monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
 		monsterPacketArr[i].state = -1;
 		monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
 		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
 		monsterPacketArr[i].hp = mon_pool[i].get_HP();
 		monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+		m_map_game_room[room_number]->monsterThread_lock.unlock();
 	}
 	for (int i = 0; i < 4; ++i) {
 		int player_id = m_map_game_room[room_number]->players_id[i];

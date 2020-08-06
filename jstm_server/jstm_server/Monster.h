@@ -89,6 +89,7 @@ private:
 	DirectX::XMFLOAT3 m_checkPoint_2;
 	DirectX::XMFLOAT3 m_checkPoint_3;
 	DirectX::XMFLOAT3 m_checkPoint_4;
+	DirectX::XMFLOAT3 m_checkPoint_5;
 
 	XMFLOAT4X4 m_4x4position;
 };
