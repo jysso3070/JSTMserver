@@ -452,19 +452,6 @@ void Iocp_server::process_monster_move(const short room_number)
 			continue;
 		}
 
-		// 몬스터 체력 0 이하 사망 이벤트 추가
-		if (mon_pool[i].get_HP() <= 0) {
-			mon_pool[i].set_animation_state(M_ANIM_DEATH);
-			add_monster_dead_event(room_number, i);
-			m_map_game_room[room_number]->monsterThread_lock.lock();
-			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
-			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
-			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
-			monsterPacketArr[i].hp = mon_pool[i].get_HP();
-			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
-			m_map_game_room[room_number]->monsterThread_lock.unlock();
-			continue;
-		}
 		// 포탈에 도착한 몬스터
 		if (mon_pool[i].get_arrivePortal() == true) {
 			mon_pool[i].set_isLive(false);
@@ -484,6 +471,20 @@ void Iocp_server::process_monster_move(const short room_number)
 			//continue;
 		}
 
+		// 몬스터 체력 0 이하 사망 이벤트 추가
+		if (mon_pool[i].get_HP() <= 0) {
+			mon_pool[i].set_animation_state(M_ANIM_DEATH);
+			add_monster_dead_event(room_number, i);
+			m_map_game_room[room_number]->monsterThread_lock.lock();
+			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
+			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
+			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
+			monsterPacketArr[i].hp = mon_pool[i].get_HP();
+			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+			m_map_game_room[room_number]->monsterThread_lock.unlock();
+			continue;
+		}
+		
 		if (mon_pool[i].get_isLive() == true)
 		{
 			// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
