@@ -11,6 +11,8 @@ struct MONSTER {
 	DirectX::XMFLOAT4X4 world_pos;
 };
 
+#define TYPE_DEFAULT	0
+
 constexpr short lastWAVE = 10;
 #define	WM_SOCKET			WM_USER + 1
 #define MAX_BUFFER			16384
@@ -35,7 +37,6 @@ constexpr short lastWAVE = 10;
 #define R_STATE_wave_end			3
 
 // monster_type
-#define TYPE_DEFAULT	0
 #define TYPE_ORC		1
 #define TYPE_SHAMAN		2
 #define TYPE_STRONGORC	3

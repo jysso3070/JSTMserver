@@ -10,6 +10,7 @@ Iocp_server::Iocp_server()
 
 	cout << "monstersize: " << sizeof(Monster) << endl;
 	serverInitialize();
+	init_wPos();
 
 	make_thread();
 
@@ -105,7 +106,7 @@ void Iocp_server::init_wPos()
 	default_wPos._11 = 1; default_wPos._12 = 0; default_wPos._13 = 0; default_wPos._14 = 0;
 	default_wPos._21 = 0; default_wPos._22 = 1; default_wPos._23 = 0; default_wPos._24 = 0;
 	default_wPos._31 = 0; default_wPos._32 = 0; default_wPos._33 = 1; default_wPos._34 = 0;
-	default_wPos._41 = 0; default_wPos._42 = -50.f; default_wPos._43 = 0; default_wPos._44 = 0;
+	default_wPos._41 = 0.f; default_wPos._42 = -50.f; default_wPos._43 = 0; default_wPos._44 = 0;
 }
 
 void Iocp_server::run_acceptThread()
@@ -278,21 +279,27 @@ void Iocp_server::run_mainThread()
 		else if (EV_MONSTER_DEAD == over_ex->event_type) {
 			short monster_id = *(short *)(over_ex->net_buf);
 			short room_number = (short)key;
+			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_isLive(false);
+			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			//cout << monster_id << "번 false \n";
 			delete over_ex;
 		}
 		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == over_ex->event_type) {
 			short monster_id = (short)key;
 			short room_number = *(short *)(over_ex->net_buf);
+			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
+			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			delete over_ex;
 		}
 		else if (EV_MONSTER_SLOW_TRAP_COLLISION == over_ex->event_type) {
 			short monster_id = (short)key;
 			short room_number = *(short *)(over_ex->net_buf);
+			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			m_map_monsterPool[room_number][monster_id].set_buffType(TRAP_BUFF_NONE);
+			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			delete over_ex;
 		}
 		else if (EV_CHECK_WAVE_END == over_ex->event_type) {
@@ -419,7 +426,7 @@ void Iocp_server::run_eventQueueThread()
 void Iocp_server::process_monster_move(const short room_number)
 {
 	//auto start = chrono::high_resolution_clock::now();
-	auto &mon_pool = m_map_monsterPool[room_number];
+	auto mon_pool = m_map_monsterPool[room_number];
 	MONSTER monsterPacketArr[MAX_MONSTER];
 	ZeroMemory(monsterPacketArr, sizeof(monsterPacketArr));
 	for (short i = 0; i < MAX_MONSTER; ++i) {
@@ -427,6 +434,9 @@ void Iocp_server::process_monster_move(const short room_number)
 		monsterPacketArr[i].id = i;
 		monsterPacketArr[i].isLive = false;
 		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
+		monsterPacketArr[i].hp = 0;
+		monsterPacketArr[i].animation_state = 0;
+		monsterPacketArr[i].world_pos = default_wPos;
 		m_map_game_room[room_number]->monsterThread_lock.unlock();
 		if (mon_pool[i].get_isLive() == false) { // 연산할필요없는 것 제외
 			//monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
@@ -460,164 +470,176 @@ void Iocp_server::process_monster_move(const short room_number)
 			m_map_game_room[room_number]->portalLife -= 1;
 #endif
 			// 포탈라이프 업데이트하는 패킷 수신
-			EVENT ev_portalLifeUpdate{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_PROTALLIFE_UPDATE, 0 };
-			add_event_to_queue(ev_portalLifeUpdate);
+			//EVENT ev_portalLifeUpdate{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_PROTALLIFE_UPDATE, 0 };
+			//add_event_to_queue(ev_portalLifeUpdate);
 			//continue;
 		}
 
-		// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
-		if (mon_pool[i].get_target_id() == -1) {
-			int near_id = -1;
-			float near_dis = 300.f;
-			for (int player_index = 0; player_index < 4; ++player_index) {
-				int player_id = m_map_game_room[room_number]->players_id[player_index];
-				if (player_id == -1) { continue; }
-				if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-					float dis = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool[i].get_position());
-					if (dis <= 200.f) { // 어그로 범위 내
-						if (near_dis > dis) {
-							near_id = player_id;
-							near_dis = dis;
+		if (mon_pool[i].get_isLive() == true)
+		{
+			// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
+			if (mon_pool[i].get_target_id() == -1) {
+				int near_id = -1;
+				float near_dis = 300.f;
+				for (int player_index = 0; player_index < 4; ++player_index) {
+					int player_id = m_map_game_room[room_number]->players_id[player_index];
+					if (player_id == -1) { continue; }
+					if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+						float dis = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool[i].get_position());
+						if (dis <= 200.f) { // 어그로 범위 내
+							if (near_dis > dis) {
+								near_id = player_id;
+								near_dis = dis;
+							}
 						}
 					}
 				}
+				mon_pool[i].set_target_id(near_id);
 			}
-			mon_pool[i].set_target_id(near_id);
-		}
-		// 타겟이 있을때 몬스터 행동
-		if (mon_pool[i].get_target_id() != -1) {
-			int target_id = mon_pool[i].get_target_id();
-			if (m_map_player_info[target_id]->player_state != PLAYER_STATE_playing_game) {
-				mon_pool[i].set_target_id(-1);
-				continue;
-			}
-			float dis = Vector3::Distance(m_map_player_info[target_id]->get_pos(), mon_pool[i].get_position());
-			if (dis <= 200.f && dis >= ORC_ATT_RANGE) { //어그로 범위
-				mon_pool[i].set_target_id(target_id);
-				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-				mon_pool[i].move_forward(MONSTER_MOVE_DISTANCE, mon_pool);
-				mon_pool[i].set_animation_state(M_ANIM_RUN);
-			}
-			else if (dis < ORC_ATT_RANGE) { // 공격범위
-				mon_pool[i].set_target_id(target_id);
-				mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-				mon_pool[i].set_animation_state(M_ANIM_ATT);
-				if (mon_pool[i].get_attackCooltime() == false && 
-					m_map_player_info[mon_pool[i].get_target_id()]->damageCooltime == false) {
-					EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
-					add_event_to_queue(ev_monAttck);
-					mon_pool[i].set_attackCooltime(true);
+			// 타겟이 있을때 몬스터 행동
+			if (mon_pool[i].get_target_id() != -1) {
+				int target_id = mon_pool[i].get_target_id();
+				if (m_map_player_info[target_id]->player_state != PLAYER_STATE_playing_game) {
+					mon_pool[i].set_target_id(-1);
+					continue;
+				}
+				float dis = Vector3::Distance(m_map_player_info[target_id]->get_pos(), mon_pool[i].get_position());
+				if (dis <= 200.f && dis >= ORC_ATT_RANGE) { //어그로 범위
+					mon_pool[i].set_target_id(target_id);
+					mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
+					mon_pool[i].move_forward(MONSTER_MOVE_DISTANCE, mon_pool);
+					mon_pool[i].set_animation_state(M_ANIM_RUN);
+				}
+				else if (dis < ORC_ATT_RANGE) { // 공격범위
+					mon_pool[i].set_target_id(target_id);
+					mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
+					mon_pool[i].set_animation_state(M_ANIM_ATT);
+					if (mon_pool[i].get_attackCooltime() == false &&
+						m_map_player_info[mon_pool[i].get_target_id()]->damageCooltime == false) {
+						EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
+						add_event_to_queue(ev_monAttck);
+						mon_pool[i].set_attackCooltime(true);
+					}
+				}
+				else {
+					mon_pool[i].set_target_id(-1);
 				}
 			}
+			// 타겟이 없을때 행동
 			else {
-				mon_pool[i].set_target_id(-1);
-			}
-		}
-		// 타겟이 없을때 행동
-		else {
-			//mon_pool[i].process_move_path();
-			mon_pool[i].process_move_path_t();
-			mon_pool[i].move_forward(MONSTER_MOVE_DISTANCE, mon_pool);
-		}
-
-		// trap collision
-		auto coopyTrapPool = m_map_trap[room_number];
-		for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
-			if (mon_pool[i].get_isTrapCooltime() == true) { break; }
-			if (coopyTrapPool[trap_idx].get_enable() == false) { continue; }
-
-			if (coopyTrapPool[trap_idx].get_type() == TRAP_NEEDLE) {
-				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
-				if (trap_dis < TRAP_NEEDLE_RANGE) {
-					cout << "needle 함정 피격" << endl;
-					mon_pool[i].set_trap_cooltime(true);
-					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
-					add_event_to_queue(trap_ev);
-				}
-			}
-			else if (coopyTrapPool[trap_idx].get_type() == TRAP_SLOW) {
-				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
-				if (trap_dis < TRAP_SLOW_RANGE) {
-					cout << "slow 함정 피격" << endl;
-					// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
-					mon_pool[i].set_trap_cooltime(true);
-					mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
-					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
-					add_event_to_queue(trap_ev);
-				}
-			}
-			else if (coopyTrapPool[trap_idx].get_type() == TRAP_FIRE) {
-				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
-				if (trap_dis < TRAP_FIRE_RANGE) {
-					cout << "fire 함정 피격" << endl;
-					/*mon_pool[i].set_trap_cooltime(true);
-					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
-					add_event_to_queue(trap_ev);*/
-				}
-			}
-			else if (coopyTrapPool[trap_idx].get_type() == TRAP_ARROW) {
-				float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
-				if (trap_dis < TRAP_ARROW_RANGE) {
-					cout << "arrow 함정 피격" << endl;
-					/*mon_pool[i].set_trap_cooltime(true);
-					mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-					EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
-					add_event_to_queue(trap_ev);*/
-				}
+				//mon_pool[i].process_move_path();
+				mon_pool[i].process_move_path_t();
+				mon_pool[i].move_forward(MONSTER_MOVE_DISTANCE, mon_pool);
 			}
 
-			//if (mon_pool[i].get_isTrapCooltime() == true) { break; }
-			//if (m_map_trap[room_number][trap_idx].get_enable() == false) { continue; }
+			// trap collision
+			auto coopyTrapPool = m_map_trap[room_number];
+			for (int trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
+				if (mon_pool[i].get_isTrapCooltime() == true) { break; }
+				if (coopyTrapPool[trap_idx].get_enable() == false) { continue; }
 
-			//if (m_map_trap[room_number][trap_idx].get_type() == TRAP_NEEDLE) {
-			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
-			//	if (trap_dis < TRAP_NEEDLE_RANGE) {
-			//		cout << "needle 함정 피격" << endl;
-			//		mon_pool[i].set_trap_cooltime(true);
-			//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
-			//		add_event_to_queue(trap_ev);
-			//	}
-			//}
-			//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
-			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
-			//	if (trap_dis < TRAP_SLOW_RANGE) {
-			//		cout << "slow 함정 피격" << endl;
-			//		// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
-			//		mon_pool[i].set_trap_cooltime(true);
-			//		mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
-			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
-			//		add_event_to_queue(trap_ev);
-			//	}
-			//}
-			//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_FIRE) {
-			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
-			//	if (trap_dis < TRAP_FIRE_RANGE) {
-			//		cout << "fire 함정 피격" << endl;
-			//		/*mon_pool[i].set_trap_cooltime(true);
-			//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
-			//		add_event_to_queue(trap_ev);*/
-			//	}
-			//}
-			//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_ARROW) {
-			//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
-			//	if (trap_dis < TRAP_ARROW_RANGE) {
-			//		cout << "arrow 함정 피격" << endl;
-			//		/*mon_pool[i].set_trap_cooltime(true);
-			//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
-			//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
-			//		add_event_to_queue(trap_ev);*/
-			//	}
-			//}
+				if (coopyTrapPool[trap_idx].get_type() == TRAP_NEEDLE) {
+					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
+					if (trap_dis < TRAP_NEEDLE_RANGE) {
+						cout << "needle 함정 피격" << endl;
+						//mon_pool[i].get_monsterLock().lock();
+						mon_pool[i].set_trap_cooltime(true);
+						mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+						//mon_pool[i].get_monsterLock().unlock();
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+						add_event_to_queue(trap_ev);
+					}
+				}
+				else if (coopyTrapPool[trap_idx].get_type() == TRAP_SLOW) {
+					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
+					if (trap_dis < TRAP_SLOW_RANGE) {
+						cout << "slow 함정 피격" << endl;
+						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+						//mon_pool[i].get_monsterLock().lock();
+						mon_pool[i].set_trap_cooltime(true);
+						mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
+						//mon_pool[i].get_monsterLock().unlock();
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
+						add_event_to_queue(trap_ev);
+					}
+				}
+				else if (coopyTrapPool[trap_idx].get_type() == TRAP_FIRE) {
+					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
+					if (trap_dis < TRAP_FIRE_RANGE) {
+						cout << "fire 함정 피격" << endl;
+						/*mon_pool[i].set_trap_cooltime(true);
+						mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+						add_event_to_queue(trap_ev);*/
+					}
+				}
+				else if (coopyTrapPool[trap_idx].get_type() == TRAP_ARROW) {
+					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
+					if (trap_dis < TRAP_ARROW_RANGE) {
+						cout << "arrow 함정 피격" << endl;
+						/*mon_pool[i].set_trap_cooltime(true);
+						mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+						add_event_to_queue(trap_ev);*/
+					}
+				}
+
+				//if (mon_pool[i].get_isTrapCooltime() == true) { break; }
+				//if (m_map_trap[room_number][trap_idx].get_enable() == false) { continue; }
+
+				//if (m_map_trap[room_number][trap_idx].get_type() == TRAP_NEEDLE) {
+				//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				//	if (trap_dis < TRAP_NEEDLE_RANGE) {
+				//		cout << "needle 함정 피격" << endl;
+				//		mon_pool[i].set_trap_cooltime(true);
+				//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+				//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+				//		add_event_to_queue(trap_ev);
+				//	}
+				//}
+				//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_SLOW) {
+				//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				//	if (trap_dis < TRAP_SLOW_RANGE) {
+				//		cout << "slow 함정 피격" << endl;
+				//		// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
+				//		mon_pool[i].set_trap_cooltime(true);
+				//		mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
+				//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
+				//		add_event_to_queue(trap_ev);
+				//	}
+				//}
+				//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_FIRE) {
+				//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				//	if (trap_dis < TRAP_FIRE_RANGE) {
+				//		cout << "fire 함정 피격" << endl;
+				//		/*mon_pool[i].set_trap_cooltime(true);
+				//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+				//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+				//		add_event_to_queue(trap_ev);*/
+				//	}
+				//}
+				//else if (m_map_trap[room_number][trap_idx].get_type() == TRAP_ARROW) {
+				//	float trap_dis = Vector3::Distance(m_map_trap[room_number][trap_idx].get_position(), mon_pool[i].get_position());
+				//	if (trap_dis < TRAP_ARROW_RANGE) {
+				//		cout << "arrow 함정 피격" << endl;
+				//		/*mon_pool[i].set_trap_cooltime(true);
+				//		mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+				//		EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+				//		add_event_to_queue(trap_ev);*/
+				//	}
+				//}
+			}
 		}
 
 
 		// 패킷에 들어갈 몬스터배열 값 지정
 		m_map_game_room[room_number]->monsterThread_lock.lock();
-		monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
+		if (mon_pool[i].get_isLive() == true) {
+			monsterPacketArr[i].isLive = true;
+		}
+		else {
+			monsterPacketArr[i].isLive = false;
+		}
 		monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
 		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
 		monsterPacketArr[i].hp = mon_pool[i].get_HP();
@@ -633,7 +655,7 @@ void Iocp_server::process_monster_move(const short room_number)
 	}
 
 	if (m_map_game_room[room_number]->wave_on == true) {
-		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 60ms, EV_MONSTER_THREAD_RUN, 0 };
+		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_queue(ev);
 	}
 	//cout << "mon run \n";
@@ -1012,16 +1034,20 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 			monsterArr[i].set_isLive(false);
 			monsterArr[i].set_monster_type(TYPE_DEFAULT);
 			monsterArr[i].set_buffType(TRAP_BUFF_NONE);
-			DirectX::XMFLOAT4X4 w_pos;
-			w_pos._41 = -200.f;
+			monsterArr[i].set_4x4position(default_wPos);
+			monsterArr[i].set_HP(0);
+			//DirectX::XMFLOAT4X4 w_pos;
+			/*w_pos._41 = -200.f;
 			w_pos._42 = -50.f;
 			w_pos._43 = 150.f;
-			monsterArr[i].set_4x4position(w_pos);
+			monsterArr[i].set_4x4position(w_pos);*/
 		}
 		Trap *trapArr = new Trap[MAX_TRAP];
 		ZeroMemory(trapArr, sizeof(trapArr));
 		for (int i = 0; i < MAX_TRAP; ++i) {
 			trapArr[i].set_enable(false);
+			trapArr[i].set_4x4position(default_wPos);
+			trapArr[i].set_trap_type(TRAP_NEEDLE);
 		}
 
 		m_map_game_room[room_number]->gameRoom_lock.lock();
@@ -1038,7 +1064,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 		}
 	}*/
 	//
-	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 20s, EV_GEN_1stWAVE_MONSTER, stage_number };
+	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
 	add_event_to_queue(g_ev);
 	
 }
@@ -1080,8 +1106,9 @@ void Iocp_server::check_wave_end(const short& room_number)
 
 	cout <<"roomnum:"<<room_number<< " check wave end \n";
 	bool end_flag = true;
+	auto copyMonsterPool = m_map_monsterPool[room_number];
 	for (int i = 0; i < MAX_MONSTER; ++i) {
-		if (m_map_monsterPool[room_number][i].get_isLive() == true) {
+		if (copyMonsterPool[i].get_isLive() == true) {
 			end_flag = false;
 			break;
 		}

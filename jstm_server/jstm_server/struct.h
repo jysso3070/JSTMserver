@@ -71,7 +71,7 @@ struct EVENT
 
 
 #define MONSTER_GEN_DISTANCE	70.f
-#define MONSTER_MOVE_DISTANCE	10.f
+#define MONSTER_MOVE_DISTANCE	8.f
 
 static default_random_engine dre;
 static uniform_int_distribution<> stage1_start123_x(0, 300);

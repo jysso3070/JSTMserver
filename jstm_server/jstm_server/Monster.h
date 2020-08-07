@@ -55,6 +55,7 @@ public:
 	bool get_arrivePortal() { return m_arrive_portal; }
 	bool get_attackCooltime() { return m_attack_coolTime; }
 	char get_buffType() { return m_buffType; }
+	mutex& get_monsterLock() { return m_monsterLock; }
 
 	void gen_sequence(const short& stage_number, const short& pathLine);
 	void decrease_hp(const short& damage);
@@ -84,6 +85,7 @@ private:
 	bool m_arrive_portal = false;
 	bool m_attack_coolTime = false;
 	char m_buffType = TRAP_BUFF_NONE;
+	mutex m_monsterLock;
 
 	DirectX::XMFLOAT3 m_checkPoint_1;
 	DirectX::XMFLOAT3 m_checkPoint_2;
