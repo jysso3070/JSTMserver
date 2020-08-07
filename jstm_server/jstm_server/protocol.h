@@ -12,8 +12,8 @@ struct MONSTER {
 };
 
 constexpr short lastWAVE = 10;
-
-#define MAX_BUFFER			32768
+#define	WM_SOCKET			WM_USER + 1
+#define MAX_BUFFER			16384
 #define SERVER_PORT			3500
 #define MONSTER_ID_START	100
 #define MAX_MONSTER			100

@@ -279,7 +279,7 @@ void Iocp_server::run_mainThread()
 			short monster_id = *(short *)(over_ex->net_buf);
 			short room_number = (short)key;
 			m_map_monsterPool[room_number][monster_id].set_isLive(false);
-			cout << monster_id << "¹ø false \n";
+			//cout << monster_id << "¹ø false \n";
 			delete over_ex;
 		}
 		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == over_ex->event_type) {
