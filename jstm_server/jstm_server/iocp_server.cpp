@@ -631,6 +631,10 @@ void Iocp_server::process_monster_move(const short room_number)
 			}
 		}
 
+		if (mon_pool[i].get_arrivePortal() != false) {
+			mon_pool[i].set_isLive(false);
+		}
+
 
 		// 패킷에 들어갈 몬스터배열 값 지정
 		m_map_game_room[room_number]->monsterThread_lock.lock();
@@ -647,9 +651,10 @@ void Iocp_server::process_monster_move(const short room_number)
 		m_map_game_room[room_number]->monsterThread_lock.unlock();
 	}
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 2; ++i) {
 		int player_id = m_map_game_room[room_number]->players_id[i];
-		if (player_id != -1 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+		if (player_id == -1) { continue; }
+		if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
 			m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
 		}
 	}
@@ -740,17 +745,6 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 	m_map_player_info[id]->animation_state = pos_packet->animation_state;
 	//m_map_player_info[id]->player_state = PLAYER_STATE_playing_game;
 
-	//for (auto c : m_map_player_info) {
-	//	if (c.second->id == id) {
-	//	}
-	//	else {
-	//		if (c.second->is_connect == true && c.second->player_state == PLAYER_STATE_playing_game) {
-	//			m_Packet_manager->send_pos_packet(c.second->id, c.second->socket, id, 
-	//				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
-	//			//cout << "내위치 다른플레이어에게 보내기" << endl;
-	//		}
-	//	}
-	//}
 	if (m_map_game_room[m_map_player_info[id]->room_number]->players_id == NULL) {
 		return;
 	}

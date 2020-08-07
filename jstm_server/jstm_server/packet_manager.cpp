@@ -143,7 +143,15 @@ void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONST
 	sc_packet_monster_pos packet;
 	ZeroMemory(&packet, sizeof(packet));
 	packet.type = SC_MONSTER_POS;
-	memcpy_s(packet.monsterArr, sizeof(packet.monsterArr), mon_arr, sizeof(packet.monsterArr));
+	//memcpy_s(packet.monsterArr, sizeof(packet.monsterArr), mon_arr, sizeof(packet.monsterArr));
+	for (short i = 0; i < MAX_MONSTER; ++i) {
+		packet.monsterArr[i].id = i;
+		packet.monsterArr[i].isLive = mon_arr[i].isLive;
+		packet.monsterArr[i].animation_state = mon_arr[i].animation_state;
+		packet.monsterArr[i].hp = mon_arr[i].hp;
+		packet.monsterArr[i].type = mon_arr[i].type;
+		packet.monsterArr[i].world_pos = mon_arr[i].world_pos;
+	}
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, &packet);
@@ -173,6 +181,7 @@ void packet_manager::send_stat_change(int client_id, SOCKET client_socket, short
 void packet_manager::send_game_info_update(int client_id, SOCKET client_socket, short wave, short portalLife)
 {
 	sc_packet_game_info_update packet;
+	ZeroMemory(&packet, sizeof(packet));
 	packet.type = SC_GAME_INFO_UPDATE;
 	packet.id = client_id;
 	packet.wave = wave;
