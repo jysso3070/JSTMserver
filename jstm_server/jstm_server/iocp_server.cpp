@@ -5,8 +5,8 @@ Iocp_server::Iocp_server()
 	Database_manager *db_manager = new Database_manager;
 	m_Database_manager = db_manager;
 
-	m_Timer = new Timer;
-	m_Timer->Reset();
+	//m_Timer = new Timer;
+	//m_Timer->Reset();
 
 	cout << "monstersize: " << sizeof(Monster) << endl;
 	serverInitialize();
@@ -18,8 +18,8 @@ Iocp_server::Iocp_server()
 
 Iocp_server::~Iocp_server()
 {
-	delete m_Timer;
-	m_Timer = nullptr;
+	//delete m_Timer;
+	//m_Timer = nullptr;
 
 	WSACleanup();
 }
