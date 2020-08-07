@@ -15,7 +15,7 @@ struct MONSTER {
 
 constexpr short lastWAVE = 10;
 #define	WM_SOCKET			WM_USER + 1
-#define MAX_BUFFER			16384
+#define MAX_BUFFER			65536	//16384
 #define SERVER_PORT			3500
 #define MONSTER_ID_START	100
 #define MAX_MONSTER			100
@@ -109,6 +109,7 @@ constexpr short lastWAVE = 10;
 #define SC_LEAVE_ROOM_OK		15
 #define SC_REMOVE_ROOM			16
 #define SC_WAVE_END				17
+#define SC_MONSTER_POS_TEST		18
 
 
 #define CS_LEFT					1
@@ -250,6 +251,15 @@ struct sc_packet_wave_end {
 	unsigned short size;
 	char type;
 	int id;
+};
+
+struct sc_packet_monster_pos_test {
+	unsigned short size;
+	char type;
+	unsigned short monster_id;
+	char monster_type;
+	unsigned short animation_state;
+	DirectX::XMFLOAT4X4 world_pos;
 };
 
 

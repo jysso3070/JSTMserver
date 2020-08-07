@@ -234,6 +234,19 @@ void packet_manager::send_wave_end(int client_id, SOCKET client_socket)
 	send_packet(client_id, client_socket, &packet);
 }
 
+void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, unsigned short monster_id, char monster_type, unsigned short animation_state, DirectX::XMFLOAT4X4 world_pos)
+{
+	sc_packet_monster_pos_test packet;
+	packet.type = SC_MONSTER_POS_TEST;
+	packet.monster_id = monster_id;
+	packet.monster_type = monster_type;
+	packet.animation_state = animation_state;
+	packet.world_pos = world_pos;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, &packet);
+}
+
 
 void packet_manager::error_display(const char * msg, int err_no)
 {

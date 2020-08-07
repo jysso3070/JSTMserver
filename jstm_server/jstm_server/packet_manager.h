@@ -29,6 +29,8 @@ public:
 	void send_nameLogin_result(int client_id, SOCKET client_socket, char result);
 	void send_leaveRoom_ok(int client_id, SOCKET client_socket);
 	void send_wave_end(int client_id, SOCKET client_socket);
+	void send_monster_pos(int client_id, SOCKET client_socket, unsigned short monster_id, char monster_type, unsigned short animation_state,
+		DirectX::XMFLOAT4X4 world_pos);
 
 
 	void error_display(const char* msg, int err_no); // 에러 출력 함수

@@ -106,7 +106,7 @@ void Iocp_server::init_wPos()
 	default_wPos._11 = 1; default_wPos._12 = 0; default_wPos._13 = 0; default_wPos._14 = 0;
 	default_wPos._21 = 0; default_wPos._22 = 1; default_wPos._23 = 0; default_wPos._24 = 0;
 	default_wPos._31 = 0; default_wPos._32 = 0; default_wPos._33 = 1; default_wPos._34 = 0;
-	default_wPos._41 = 0.f; default_wPos._42 = -50.f; default_wPos._43 = 0; default_wPos._44 = 0;
+	default_wPos._41 = -3000.f; default_wPos._42 = -50.f; default_wPos._43 = 0.f; default_wPos._44 = 0;
 }
 
 void Iocp_server::run_acceptThread()
@@ -329,6 +329,10 @@ void Iocp_server::run_mainThread()
 			send_protalLife_update(key);
 			delete over_ex;
 		}
+		else if (PLAYER_GAME_START == over_ex->event_type) {
+			m_map_player_info[key]->player_state = PLAYER_STATE_playing_game;
+			delete over_ex;
+		}
 	}
 }
 
@@ -418,6 +422,11 @@ void Iocp_server::run_eventQueueThread()
 		else if (EV_PROTALLIFE_UPDATE == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
 			over_ex->event_type = EV_PROTALLIFE_UPDATE;
+			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+		}
+		else if (PLAYER_GAME_START == p_ev.event_type) {
+			OVER_EX *over_ex = new OVER_EX;
+			over_ex->event_type = PLAYER_GAME_START;
 			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
@@ -749,7 +758,9 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 		return;
 	}
 
-	for (int other_id : m_map_game_room[m_map_player_info[id]->room_number]->players_id) {
+	short room_number = m_map_player_info[id]->room_number;
+	for (short i = 0; i < 2; ++i) {
+		int other_id = m_map_game_room[room_number]->players_id[i];
 		if (other_id == -1) { continue; }
 		if (m_map_player_info[other_id]->is_connect == true && 
 			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
@@ -759,15 +770,6 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 		}
 	}
 
-	/*for (int i = 0; i < 4; ++i) {
-		int other_id = m_map_game_room[m_map_player_info[id]->room_number]->players_id[i];
-		if (other_id != -1 && m_map_player_info[other_id]->is_connect == true &&
-			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
-			m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id);
-			m_Packet_manager->send_pos_packet(other_id, m_map_player_info[other_id]->socket, id,
-				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
-		}
-	}*/
 }
 
 void Iocp_server::process_make_room(const int& id)
@@ -944,14 +946,17 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 			m_map_player_info[id]->roomList_lock.unlock();
 			process_game_start(m_map_player_info[id]->room_number, packet->stage_number);
 		}
+
+		EVENT ev_playerStart{ id, chrono::high_resolution_clock::now() + 3s, PLAYER_GAME_START, 0 };
+		add_event_to_queue(ev_playerStart);
 		
-		m_map_player_info[id]->player_state = packet->change_state;
+		//m_map_player_info[id]->player_state = packet->change_state;
 
 		for (short i = 0; i < 4; ++i) {	// 같은 방의 클라이언트에게 put player 상호 전송
 			int other_id = m_map_game_room[myroom_num]->players_id[i];
 			if (other_id == -1) { continue; }
 			if (m_map_player_info[other_id]->is_connect == true &&
-				m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
+				/*m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game &&*/ other_id != id) {
 				//cout << id << " put "<< other_id << endl;
 				m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id, 
 					m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
@@ -987,7 +992,8 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1000, m_map_player_info[id]->gold);
 
 	// 설치한 트랩 정보 전송
-	for (int other_id : m_map_game_room[room_num]->players_id) {
+	for (short i = 0; i < 2; ++i) {
+		int other_id = m_map_game_room[room_num]->players_id[i];
 		if (other_id == -1) { continue; }
 		if (m_map_player_info[other_id]->is_connect == true &&
 			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game /*&& other_id != id*/) {
