@@ -250,6 +250,16 @@ void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, unsig
 	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
+void packet_manager::send_wallTrapOn(int client_id, SOCKET client_socket, unsigned short trap_index)
+{
+	sc_packet_wallTrapOn packet;
+	packet.type = SC_WALLTRAP_ON;
+	packet.trap_index = trap_index;
+	packet.size = sizeof(packet);
+
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
+}
+
 
 void packet_manager::error_display(const char * msg, int err_no)
 {

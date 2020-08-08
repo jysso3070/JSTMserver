@@ -17,18 +17,25 @@ public:
 		m_4x4position._42 = pos.y;
 		m_4x4position._43 = pos.z;
 	}
+	void set_wallDir(unsigned char wallDir);
+	void set_wallTrapOn(const bool& flag);
 
 	unsigned short get_trap_id();
 	DirectX::XMFLOAT4X4 get_4x4position();
 	DirectX::XMFLOAT3 get_position();
 	char get_type();
 	bool get_enable() { return m_enable; }
+	unsigned char get_wallDir() { return m_wallDir; }
+	bool get_wallTrapOn() { return m_wallTrapOn; }
 
 private:
 	volatile bool m_enable;
+	volatile bool m_wallTrapOn;
 	unsigned short m_id;
 	DirectX::XMFLOAT4X4 m_4x4position;
 	short m_damage;
 	char m_trap_type;
+	unsigned char m_wallDir;
+
 };
 

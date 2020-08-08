@@ -110,6 +110,7 @@ constexpr short lastWAVE = 10;
 #define SC_REMOVE_ROOM			16
 #define SC_WAVE_END				17
 #define SC_MONSTER_POS_TEST		18
+#define SC_WALLTRAP_ON			19
 
 
 #define CS_LEFT					1
@@ -261,6 +262,12 @@ struct sc_packet_monster_pos_test {
 	char monster_type;
 	unsigned short animation_state;
 	DirectX::XMFLOAT4X4 world_pos;
+};
+
+struct sc_packet_wallTrapOn {
+	unsigned short size;
+	char type;
+	unsigned short trap_index;
 };
 
 

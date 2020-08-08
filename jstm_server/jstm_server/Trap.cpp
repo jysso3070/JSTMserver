@@ -32,6 +32,16 @@ void Trap::set_enable(const bool & enable_flag)
 	m_enable = enable_flag;
 }
 
+void Trap::set_wallDir(unsigned char wallDir)
+{
+	m_wallDir = wallDir;
+}
+
+void Trap::set_wallTrapOn(const bool & flag)
+{
+	m_wallTrapOn = flag;
+}
+
 unsigned short Trap::get_trap_id()
 {
 	return m_id;
