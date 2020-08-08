@@ -18,8 +18,8 @@ constexpr short lastWAVE = 10;
 #define MAX_BUFFER			65536	//16384
 #define SERVER_PORT			3500
 #define MONSTER_ID_START	100
-#define MAX_MONSTER			100
-#define MAX_TRAP			50
+#define MAX_MONSTER			70
+#define MAX_TRAP			100
 
 // user_state
 #define PLAYER_STATE_default		0
