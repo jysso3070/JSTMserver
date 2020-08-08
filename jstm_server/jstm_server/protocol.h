@@ -11,7 +11,7 @@ struct MONSTER {
 	DirectX::XMFLOAT4X4 world_pos;
 };
 
-#define TYPE_DEFAULT	0
+#define TYPE_DEFAULT	5
 
 constexpr short lastWAVE = 10;
 #define	WM_SOCKET			WM_USER + 1

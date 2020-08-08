@@ -153,6 +153,7 @@ void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONST
 		packet.monsterArr[i].animation_state = mon_arr[i].animation_state;
 		packet.monsterArr[i].hp = mon_arr[i].hp;
 		packet.monsterArr[i].type = mon_arr[i].type;
+		if (packet.monsterArr[i].type == TYPE_RIDER) { cout << "라이더울프 전송 \n"; }
 		packet.monsterArr[i].world_pos = mon_arr[i].world_pos;
 	}
 	packet.size = sizeof(packet);

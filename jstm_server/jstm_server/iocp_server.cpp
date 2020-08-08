@@ -791,7 +791,7 @@ void Iocp_server::process_monster_move(const short room_number)
 			}
 		}
 
-		if (mon_pool[i].get_arrivePortal() != false) {
+		if (mon_pool[i].get_arrivePortal() == true) {
 			mon_pool[i].set_isLive(false);
 		}
 
@@ -1584,6 +1584,9 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < 30; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 15) { // line 123
+					if (i >= 14) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y, 
 						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
@@ -1660,8 +1663,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 21) { // line 123
-					if (i >= 18) {
+					if (i >= 15 && i < 18) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 18) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1670,8 +1676,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 39) {
+					if (i >= 36 && i < 39) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 39) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1688,8 +1697,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 21) { // line 123
-					if (i >= 15) {
+					if (i >= 15 && i < 18) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 18) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1698,8 +1710,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 36) {
+					if (i >= 36 && i < 39) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 39) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1716,8 +1731,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 24) { // line 123
-					if (i >= 18) {
+					if (i >= 15 && i < 21) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 21) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1726,8 +1744,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 42) {
+					if (i >= 39 && i < 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 45) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1744,8 +1765,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 24) { // line 123
-					if (i >= 15) {
+					if (i >= 15 && i < 21) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 21) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1754,8 +1778,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 39) {
+					if (i >= 39 && i < 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 45) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1772,8 +1799,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 27) { // line 123
-					if (i >= 18) {
+					if (i >= 15 && i < 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 24) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1782,8 +1812,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 45) {
+					if (i >= 42 && i < 51) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 51) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1800,8 +1833,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 27) { // line 123
-					if (i >= 18) {
+					if (i >= 15 && i < 21) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 21) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1810,8 +1846,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 45) {
+					if (i >= 42 && i < 48) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 48) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1828,8 +1867,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 27) { // line 123
-					if (i >= 15) {
+					if (i >= 11 && i < 19) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 19) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
@@ -1838,8 +1880,11 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 42) {
+					if (i >= 38 && i < 46) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+					}
+					else if (i >= 46) {
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
@@ -1856,7 +1901,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 27) { // line 123
-					if (i >= 15) {
+					if (i >= 15 && i < 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 24) {
@@ -1869,7 +1914,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 42) {
+					if (i >= 42 && i < 51) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 51) {
@@ -1890,7 +1935,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 27) { // line 123
-					if (i >= 15) {
+					if (i >= 15 && i < 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 24) {
@@ -1903,7 +1948,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 456
-					if (i >= 42) {
+					if (i >= 42 && i < 51) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 51) {
@@ -2197,7 +2242,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 13) { // line 123
-					if (i >= 8) {
+					if (i >= 8 && i < 11) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 11) {
@@ -2210,10 +2255,10 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 26) { // line 456
-					if (i >= 19) {
+					if (i >= 19 && i < 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					else if (i >= 11) {
+					else if (i >= 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
@@ -2223,10 +2268,10 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 39) { // line 789
-					if (i >= 30) {
+					if (i >= 30 && i < 37) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					else if (i >= 11) {
+					else if (i >= 37) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
@@ -2236,10 +2281,10 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					if (i >= 41) {
+					if (i >= 41 && i < 50) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					else if (i >= 11) {
+					else if (i >= 50) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
@@ -2257,7 +2302,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 15) { // line 123
-					if (i >= 8) {
+					if (i >= 8 && i < 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 13) {
@@ -2270,7 +2315,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 30) { // line 456
-					if (i >= 23) {
+					if (i >= 23 && i < 28) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 28) {
@@ -2283,7 +2328,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 45) { // line 789
-					if (i >= 38) {
+					if (i >= 38 && i < 43) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 43) {
@@ -2296,7 +2341,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					if (i >= 53) {
+					if (i >= 53 && i < 58) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 58) {
@@ -2317,7 +2362,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 16) { // line 123
-					if (i >= 8) {
+					if (i >= 8 && i < 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 13) {
@@ -2330,7 +2375,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 32) { // line 456
-					if (i >= 24) {
+					if (i >= 24 && i < 29) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 29) {
@@ -2343,7 +2388,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 48) { // line 789
-					if (i >= 40) {
+					if (i >= 40 && i < 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 45) {
@@ -2356,7 +2401,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					if (i >= 56) {
+					if (i >= 56 && i < 61) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 61) {
@@ -2377,7 +2422,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 17) { // line 123
-					if (i >= 8) {
+					if (i >= 8 && i < 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 13) {
@@ -2390,7 +2435,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 34) { // line 456
-					if (i >= 25) {
+					if (i >= 25 && i < 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 30) {
@@ -2403,7 +2448,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 51) { // line 789
-					if (i >= 42) {
+					if (i >= 42 && i < 47) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 47) {
@@ -2416,7 +2461,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					if (i >= 59) {
+					if (i >= 59 && i < 64) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 64) {
@@ -2437,7 +2482,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 17) { // line 123
-					if (i >= 7) {
+					if (i >= 7 && i < 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 13) {
@@ -2450,7 +2495,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 34) { // line 456
-					if (i >= 24) {
+					if (i >= 24 && i < 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 30) {
@@ -2463,7 +2508,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 51) { // line 789
-					if (i >= 41) {
+					if (i >= 41 && i < 47) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 47) {
@@ -2476,7 +2521,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					if (i >= 53) {
+					if (i >= 53 && i < 59) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
 					else if (i >= 59) {
