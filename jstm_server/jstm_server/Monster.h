@@ -66,6 +66,7 @@ public:
 	void make_checkPoint();
 
 	void process_move_path_t();
+	void aggro_release();
 
 	void process_move_path();
 

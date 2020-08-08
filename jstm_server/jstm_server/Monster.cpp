@@ -163,6 +163,9 @@ void Monster::move_forward(const float& distance)
 {
 	//m_4x4position._41 += distance;
 	float temp_distance = distance;
+	if (this->m_monster_type == TYPE_RIDER) {
+		temp_distance * 2;
+	}
 	if (this->m_buffType == TRAP_BUFF_SLOW) {
 		temp_distance /= 2;
 	}
@@ -417,6 +420,77 @@ void Monster::process_move_path_t()
 		this->set_animation_state(M_ANIM_RUN);
 	}
 
+}
+
+void Monster::aggro_release()
+{
+	if (this->m_stage_number == 1) {
+		if (this->get_position().x > -750.f && this->get_position().z < 4200.f &&
+			this->get_position().x <= -330.f && this->get_position().z >= 3340.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x < 750.f && this->get_position().z < 4200.f &&
+			this->get_position().x >= 330.f && this->get_position().z >= 3340.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x > -750.f && this->get_position().z < 3340.f &&
+			this->get_position().x <= -330.f && this->get_position().z > 2830.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x < 750.f && this->get_position().z < 3340.f &&
+			this->get_position().x >= 330.f && this->get_position().z > 2830.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x > -330.f && this->get_position().z < 3340.f &&
+			this->get_position().x < 330.f && this->get_position().z > 150.f) {
+			this->set_checkPoint(2);
+		}
+		return;
+	}
+	else if (this->m_stage_number == 2) {
+		if (this->get_position().x > -760.f && this->get_position().z < 2850.f &&
+			this->get_position().x <= -330.f && this->get_position().z >= 1990.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x < 760.f && this->get_position().z < 2850.f &&
+			this->get_position().x >= 330.f && this->get_position().z >= 1990.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x > -760.f && this->get_position().z < 1990.f &&
+			this->get_position().x <= -330.f && this->get_position().z > 1470.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x < 760.f && this->get_position().z < 1990.f &&
+			this->get_position().x >= 330.f && this->get_position().z > 1470.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x > -330.f && this->get_position().z < 1990.f &&
+			this->get_position().x < 330.f && this->get_position().z > 150.f) {
+			this->set_checkPoint(2);
+		} // ---------------------------------------------------------------------------
+		else if (this->get_position().x > -760.f && this->get_position().z < 2850.f &&
+			this->get_position().x <= -330.f && this->get_position().z >= 1990.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x < 760.f && this->get_position().z < 2850.f &&
+			this->get_position().x >= 330.f && this->get_position().z >= 1990.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x > -760.f && this->get_position().z < 1990.f &&
+			this->get_position().x <= -330.f && this->get_position().z > 1470.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x < 760.f && this->get_position().z < 1990.f &&
+			this->get_position().x >= 330.f && this->get_position().z > 1470.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x > -330.f && this->get_position().z < 1990.f &&
+			this->get_position().x < 330.f && this->get_position().z > 150.f) {
+			this->set_checkPoint(2);
+		}
+
+		return;
+	}
 }
 
 void Monster::process_move_path()

@@ -569,6 +569,8 @@ void Iocp_server::process_monster_move(const short room_number)
 				}
 				else {
 					mon_pool[i].set_target_id(-1);
+					// 여기일거같음
+					mon_pool[i].aggro_release();
 				}
 			}
 			// 타겟이 없을때 행동
@@ -661,6 +663,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					}
 					if (trapColli == true) {
 						cout << "벽 불함정 피격 \n";
+						mon_pool[i].decrease_hp(TRAP_FIRE_ATT);
 						if (coopyTrapPool[trap_idx].get_wallTrapOn() == false) {
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
 							EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
@@ -728,6 +731,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					}
 					if (trapColli == true) {
 						cout << "벽 화살함정 피격 \n";
+						mon_pool[i].decrease_hp(TRAP_ARROW_ATT);
 						if (coopyTrapPool[trap_idx].get_wallTrapOn() == false) {
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
 							EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
@@ -993,7 +997,7 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 
 		// 바뀐 방정보 모든 클라이언트들에게 전송
 		for (auto client : m_map_player_info) {
-			if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
+			if (client.second->is_connect == true && client.second->player_state != PLAYER_STATE_playing_game) {
 				m_Packet_manager->send_room_info_pakcet(id, client.second->socket, m_map_game_room[r_number]);
 			}
 		}
@@ -1083,6 +1087,7 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 	//packet->stage_number = 2;
 
 
+
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
 		m_map_player_info[id]->hp = 200;
 		m_map_player_info[id]->gold = 500;
@@ -1143,7 +1148,10 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	m_map_trap[room_num][new_trapId].set_enable(true);
 
 	cout << "trap install" << endl;
-	//m_map_player_info[id]->gold -= TRAP_COST;
+	m_map_player_info[id]->gold -= TRAP_COST;
+	if (m_map_player_info[id]->gold < 0) {
+		m_map_player_info[id]->gold = 0;
+	}
 	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1000, m_map_player_info[id]->gold);
 
 	// 설치한 트랩 정보 전송
@@ -1301,11 +1309,14 @@ void Iocp_server::check_wave_end(const short& room_number)
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
 		m_map_game_room[room_number]->wave_count += 1;
-		for (short p_idx = 0; p_idx < 4; ++p_idx) {
+		for (short p_idx = 0; p_idx < 2; ++p_idx) {
 			int temp_id = m_map_game_room[room_number]->players_id[p_idx];
 			if (temp_id != -1) {
 				if (m_map_player_info[temp_id]->is_connect == true &&
 					m_map_player_info[temp_id]->player_state == PLAYER_STATE_playing_game) {
+					m_map_player_info[temp_id]->gold += 200;
+					m_map_player_info[temp_id]->hp = 200;
+					m_Packet_manager->send_stat_change(temp_id, m_map_player_info[temp_id]->socket, m_map_player_info[temp_id]->hp, m_map_player_info[temp_id]->gold);
 					m_Packet_manager->send_game_info_update(temp_id, m_map_player_info[temp_id]->socket,
 						m_map_game_room[room_number]->wave_count, -1000);
 					m_Packet_manager->send_wave_end(temp_id, m_map_player_info[temp_id]->socket);

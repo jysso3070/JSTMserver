@@ -46,7 +46,7 @@ constexpr short lastWAVE = 10;
 #define ORC_HP			200
 #define SHAMAN_HP		150
 #define STRONGORC_HP	500
-#define RIDER_HP		10000
+#define RIDER_HP		400
 
 // monster_att
 #define ORC_ATT			10
@@ -76,13 +76,13 @@ constexpr short lastWAVE = 10;
 #define TRAP_SLOW		2
 #define TRAP_ARROW		3
 
-#define TRAP_COST		50
+#define TRAP_COST		30
 
 // trap ATT
 #define TRAP_NEEDLE_ATT		100
-#define TRAP_FIRE_ATT		10
+#define TRAP_FIRE_ATT		50
 #define TRAP_SLOW_ATT		10
-#define TRAP_ARROW_ATT		10
+#define TRAP_ARROW_ATT		50
 
 // trap range
 #define TRAP_NEEDLE_RANGE	50.f
