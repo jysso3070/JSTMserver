@@ -10,7 +10,7 @@ public:
 	~packet_manager();
 
 public:
-	void send_packet(int client_id, SOCKET client_socket, void* buf);
+	void send_packet(int client_id, SOCKET client_socket, char* buf);
 
 	void send_id_packet(int client_id, SOCKET client_socket);
 	void t_send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y);

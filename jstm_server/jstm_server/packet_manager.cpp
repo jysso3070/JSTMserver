@@ -1,4 +1,4 @@
-#include "packet_manager.h"
+     #include "packet_manager.h"
 
 
 packet_manager::packet_manager()
@@ -10,10 +10,12 @@ packet_manager::~packet_manager()
 {
 }
 
-void packet_manager::send_packet(int client_id, SOCKET client_socket, void * buf)
+void packet_manager::send_packet(int client_id, SOCKET client_socket, char * buf)
 {
 	unsigned short* packet = reinterpret_cast<unsigned short*>(buf);
-	unsigned short packet_size = packet[0];
+	//unsigned short packet_size = packet[0];
+	unsigned short packet_size = 0;
+	memcpy(&packet_size, buf, sizeof(unsigned short));
 	OVER_EX *send_over = new OVER_EX;
 	memset(send_over, 0x00, sizeof(OVER_EX));
 	send_over->event_type = EV_SEND;
@@ -35,7 +37,7 @@ void packet_manager::send_id_packet(int client_id, SOCKET client_socket)
 	packet.id = client_id;
 	packet.size = sizeof(packet);
 	packet.type = SC_SEND_ID;
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::t_send_pos_packet(int client_id, SOCKET client_socket, short p_x, short p_y)
@@ -45,7 +47,7 @@ void packet_manager::t_send_pos_packet(int client_id, SOCKET client_socket, shor
 	packet.type = SC_POS;
 	packet.x = p_x;
 	packet.y = p_y;
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_put_player_packet(int client_id, SOCKET client_socket, int new_player_id, DirectX::XMFLOAT4X4 player_pos, short animation_state)
@@ -56,7 +58,7 @@ void packet_manager::send_put_player_packet(int client_id, SOCKET client_socket,
 	packet.type = SC_PUT_PLAYER;
 	packet.world_pos = player_pos;
 	packet.animation_state = animation_state;
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 	cout << client_id << " put " << new_player_id << endl;
 }
 
@@ -71,7 +73,7 @@ void packet_manager::send_pos_packet(int client_id, SOCKET client_socket, int mo
 	packet.animation_state = animation_state;
 	packet.x = 0;
 	packet.y = 0;
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_remove_player_packet(int client_id, SOCKET client_socket, int leave_player_id)
@@ -81,7 +83,7 @@ void packet_manager::send_remove_player_packet(int client_id, SOCKET client_sock
 	packet.size = sizeof(packet);
 	packet.type = SC_REMOVE_PLAYER;
 	//packet.world_pos = player_pos;
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, GAME_ROOM* game_room)
@@ -97,7 +99,7 @@ void packet_manager::send_room_info_pakcet(int client_id, SOCKET client_socket, 
 	}
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_make_room_ok(int client_id, SOCKET client_socket, short room_number)
@@ -108,7 +110,7 @@ void packet_manager::send_make_room_ok(int client_id, SOCKET client_socket, shor
 	packet.room_number = room_number;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, short room_number, GAME_ROOM* game_room)
@@ -122,7 +124,7 @@ void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, shor
 	}
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, short trap_id, DirectX::XMFLOAT4X4 trap_pos, char trap_type)
@@ -135,7 +137,7 @@ void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, 
 	packet.trap_pos = trap_pos;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONSTER mon_arr[])
@@ -154,7 +156,7 @@ void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONST
 	}
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 	//packet.monsterArr = mon_arr;
 }
 
@@ -164,7 +166,7 @@ void packet_manager::send_game_end(int client_id, SOCKET client_socket, bool cle
 	packet.type = SC_GAME_END;
 	packet.clear = clearFlag;
 	packet.size = sizeof(packet);
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_stat_change(int client_id, SOCKET client_socket, short hp, short gold)
@@ -175,7 +177,7 @@ void packet_manager::send_stat_change(int client_id, SOCKET client_socket, short
 	packet.hp = hp;
 	packet.gold = gold;
 	packet.size = sizeof(packet);
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_game_info_update(int client_id, SOCKET client_socket, short wave, short portalLife)
@@ -188,7 +190,7 @@ void packet_manager::send_game_info_update(int client_id, SOCKET client_socket, 
 	packet.portalLife = portalLife;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_game_start(int client_id, SOCKET client_socket, short stage_number, short wave, short portalLife)
@@ -200,7 +202,7 @@ void packet_manager::send_game_start(int client_id, SOCKET client_socket, short 
 	packet.portalLife = portalLife;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_nameLogin_result(int client_id, SOCKET client_socket, char result)
@@ -211,7 +213,7 @@ void packet_manager::send_nameLogin_result(int client_id, SOCKET client_socket, 
 	packet.result = result;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_leaveRoom_ok(int client_id, SOCKET client_socket)
@@ -221,7 +223,7 @@ void packet_manager::send_leaveRoom_ok(int client_id, SOCKET client_socket)
 	packet.id = client_id;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_wave_end(int client_id, SOCKET client_socket)
@@ -231,7 +233,7 @@ void packet_manager::send_wave_end(int client_id, SOCKET client_socket)
 	packet.id = client_id;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, unsigned short monster_id, char monster_type, unsigned short animation_state, DirectX::XMFLOAT4X4 world_pos)
@@ -244,7 +246,7 @@ void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, unsig
 	packet.world_pos = world_pos;
 	packet.size = sizeof(packet);
 
-	send_packet(client_id, client_socket, &packet);
+	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
 

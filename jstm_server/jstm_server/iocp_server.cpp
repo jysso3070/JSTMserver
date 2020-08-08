@@ -56,7 +56,7 @@ void Iocp_server::make_thread()
 	thread mainThread_7{ &Iocp_server::run_mainThread, this };
 	thread eventQueueThread{ &Iocp_server::run_eventQueueThread, this};
 
-	thread packet_count_thread{ &Iocp_server::run_packet_countThread, this };
+	//thread packet_count_thread{ &Iocp_server::run_packet_countThread, this };
 	//thread collision_thread{}
 
 	accept_thread.join();
@@ -69,7 +69,7 @@ void Iocp_server::make_thread()
 	mainThread_7.join();
 	eventQueueThread.join();
 
-	packet_count_thread.join();
+	//packet_count_thread.join();
 
 }
 
