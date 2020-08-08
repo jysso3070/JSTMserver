@@ -8,7 +8,7 @@ public:
 	~Trap();
 
 
-	void set_trap_id(const int& id);
+	void set_trap_id(const unsigned short& id);
 	void set_4x4position(const DirectX::XMFLOAT4X4& pos);
 	void set_trap_type(const char& trap_type);
 	void set_enable(const bool& enable_flag);
@@ -18,7 +18,7 @@ public:
 		m_4x4position._43 = pos.z;
 	}
 
-	int get_trap_id();
+	unsigned short get_trap_id();
 	DirectX::XMFLOAT4X4 get_4x4position();
 	DirectX::XMFLOAT3 get_position();
 	char get_type();
@@ -26,7 +26,7 @@ public:
 
 private:
 	volatile bool m_enable;
-	int m_id;
+	unsigned short m_id;
 	DirectX::XMFLOAT4X4 m_4x4position;
 	short m_damage;
 	char m_trap_type;

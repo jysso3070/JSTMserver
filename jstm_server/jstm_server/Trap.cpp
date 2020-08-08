@@ -12,7 +12,7 @@ Trap::~Trap()
 	delete this;
 }
 
-void Trap::set_trap_id(const int& id)
+void Trap::set_trap_id(const unsigned short& id)
 {
 	m_id = id;
 }
@@ -32,7 +32,7 @@ void Trap::set_enable(const bool & enable_flag)
 	m_enable = enable_flag;
 }
 
-int Trap::get_trap_id()
+unsigned short Trap::get_trap_id()
 {
 	return m_id;
 }

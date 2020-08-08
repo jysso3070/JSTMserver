@@ -127,13 +127,14 @@ void packet_manager::send_join_room_ok(int client_id, SOCKET client_socket, shor
 	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
-void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, short trap_id, DirectX::XMFLOAT4X4 trap_pos, char trap_type)
+void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, unsigned short trap_index, unsigned short trap_local_id, DirectX::XMFLOAT4X4 trap_pos, char trap_type)
 {
 	sc_packet_trap_info packet;
 	ZeroMemory(&packet, sizeof(packet));
 	packet.type = SC_TRAP_INFO;
 	packet.trap_type = trap_type;
-	packet.trap_id = trap_id;
+	packet.trap_index = trap_index;
+	packet.trap_local_id = trap_local_id;
 	packet.trap_pos = trap_pos;
 	packet.size = sizeof(packet);
 

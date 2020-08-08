@@ -984,6 +984,7 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	short new_trapId = m_map_trapIdPool[room_num];
 	m_map_trapIdPool[room_num] += 1;
 	m_map_player_info[id]->roomList_lock.unlock();
+	m_map_trap[room_num][new_trapId].set_trap_id(packet->trap_local_id);
 	m_map_trap[room_num][new_trapId].set_4x4position(packet->trap_pos);
 	m_map_trap[room_num][new_trapId].set_enable(true);
 	m_map_trap[room_num][new_trapId].set_trap_type(packet->trap_type);
@@ -998,7 +999,7 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 		if (other_id == -1) { continue; }
 		if (m_map_player_info[other_id]->is_connect == true &&
 			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game /*&& other_id != id*/) {
-			m_Packet_manager->send_trap_info_packet(other_id, m_map_player_info[other_id]->socket, new_trapId, packet->trap_pos,
+			m_Packet_manager->send_trap_info_packet(other_id, m_map_player_info[other_id]->socket, new_trapId, packet->trap_local_id, packet->trap_pos,
 				packet->trap_type);
 		}
 	}
