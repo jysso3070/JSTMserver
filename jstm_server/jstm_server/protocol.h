@@ -87,9 +87,9 @@ constexpr short lastWAVE = 10;
 
 // trap range
 #define TRAP_NEEDLE_RANGE	50.f
-#define TRAP_FIRE_RANGE		70.f
+#define TRAP_FIRE_RANGE		300.f
 #define TRAP_SLOW_RANGE		60.f
-#define TRAP_ARROW_RANGE	70.f
+#define TRAP_ARROW_RANGE	350.f
 
 #define SC_SEND_ID			1
 #define SC_POS				2

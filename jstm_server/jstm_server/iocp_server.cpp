@@ -633,7 +633,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					volatile bool trapColli = false;
 					if(coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MX) {
 						if (mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 200 &&
+							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_RANGE &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -645,7 +645,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PX) {
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 200 &&
+							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_RANGE &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -659,7 +659,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
 							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 200) {
+							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
@@ -671,7 +671,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
 							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 200) {
+							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
@@ -701,7 +701,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					volatile bool trapColli = false;
 					if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MX) {
 						if (mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 200 &&
+							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_RANGE &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -713,7 +713,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PX) {
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 200 &&
+							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_RANGE &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -727,7 +727,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
 							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 200) {
+							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
@@ -739,7 +739,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
 							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 200) {
+							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
