@@ -184,7 +184,7 @@ void Monster::move_forward(const float & distance, Monster * monsterPool)
 {
 	float temp_distance = distance;
 	if (this->m_monster_type == TYPE_RIDER) {
-		temp_distance *= 2;
+		temp_distance *= 1.2;
 	}
 	if (this->m_buffType == TRAP_BUFF_SLOW) {
 		temp_distance /= 2;
