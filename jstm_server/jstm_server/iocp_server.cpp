@@ -1348,7 +1348,7 @@ void Iocp_server::add_monster_dead_event(const short & room_number, const short 
 {
 	int room_num = room_number;
 	int mon_id = monster_id;
-	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_DEAD, mon_id };
+	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 1500ms, EV_MONSTER_DEAD, mon_id };
 	add_event_to_queue(ev);
 }
 
