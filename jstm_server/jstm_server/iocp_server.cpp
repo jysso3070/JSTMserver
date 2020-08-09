@@ -500,7 +500,7 @@ void Iocp_server::process_monster_move(const short room_number)
 			continue;
 		}
 
-		// 포탈에 도착한 몬스터
+		
 		if (mon_pool[i].get_arrivePortal() == true) {
 			mon_pool[i].set_isLive(false);
 			/*m_map_game_room[room_number]->monsterThread_lock.lock();
@@ -510,9 +510,7 @@ void Iocp_server::process_monster_move(const short room_number)
 			monsterPacketArr[i].hp = mon_pool[i].get_HP();
 			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
 			m_map_game_room[room_number]->monsterThread_lock.unlock();*/
-#ifndef TESTMODE
-			m_map_game_room[room_number]->portalLife -= 1;
-#endif
+
 			// 포탈라이프 업데이트하는 패킷 수신
 			//EVENT ev_portalLifeUpdate{ room_number, chrono::high_resolution_clock::now() + 32ms, EV_PROTALLIFE_UPDATE, 0 };
 			//add_event_to_queue(ev_portalLifeUpdate);
@@ -770,8 +768,12 @@ void Iocp_server::process_monster_move(const short room_number)
 			}
 		}
 
+		// 포탈에 도착한 몬스터
 		if (mon_pool[i].get_arrivePortal() == true) {
 			mon_pool[i].set_isLive(false);
+#ifndef TESTMODE
+			m_map_game_room[room_number]->portalLife -= 1;
+#endif
 		}
 
 
@@ -1275,6 +1277,7 @@ void Iocp_server::check_wave_end(const short& room_number)
 	send_protalLife_update(room_number);
 	m_map_game_room[room_number]->gameRoom_lock.unlock();
 	if (pLife <= 0) { // 포탈라이프 0이하
+		cout << "plife: " << pLife << endl;
 		m_map_game_room[room_number]->wave_on = false;
 		process_game_end(room_number, false);
 		return;
@@ -1289,11 +1292,26 @@ void Iocp_server::check_wave_end(const short& room_number)
 			break;
 		}
 	}
+	bool playerdead = false;
+	for (short idx = 0; idx < 2; ++idx) {
+		int player_id = m_map_game_room[room_number]->players_id[idx];
+		if (player_id == -1) { continue; }
+		if (m_map_player_info[player_id]->hp < 0 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+			playerdead = true;
+		}
+	}
+	if (playerdead == true) { // 플레이어 사망 end
+		process_game_end(room_number, false);
+		cout << "room" << room_number << "fail \n";
+		return;
+	}
+
 
 	if (end_flag == true) { // wave가 종료되면
 		m_map_game_room[room_number]->wave_on = false;
 		if (m_map_game_room[room_number]->wave_count == lastWAVE) { // 마지막 웨이브 종료시 게임종료 시킴
 			process_game_end(room_number, true);
+			cout << "room" << room_number << "claer \n";
 			return;
 		}
 		// 웨이브 카운트 올리고
@@ -1446,11 +1464,13 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				// 공격
 				// hp감소하고 패킷전송
 				if (m_map_player_info[target_id]->damageCooltime == false) {
-					//cout << "공격성공\n";
+					cout << "공격성공\n";
 					m_map_player_info[target_id]->hp -= ORC_ATT;
-					if (m_map_player_info[target_id]->hp < 0) {
-						m_map_player_info[target_id]->hp = 0;
+#ifdef TESTMODE
+					if (m_map_player_info[target_id]->hp < 10) {
+						m_map_player_info[target_id]->hp = 10;
 					}
+#endif
 					m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
 				}
 
@@ -1470,9 +1490,11 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				if (m_map_player_info[target_id]->damageCooltime == false) {
 					//cout << "공격성공\n";
 					m_map_player_info[target_id]->hp -= STRONGORC_ATT;
-					if (m_map_player_info[target_id]->hp < 0) {
-						m_map_player_info[target_id]->hp = 0;
+#ifdef TESTMODE
+					if (m_map_player_info[target_id]->hp < 10) {
+						m_map_player_info[target_id]->hp = 10;
 					}
+#endif
 					m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
 				}
 
@@ -1489,9 +1511,11 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				if (m_map_player_info[target_id]->damageCooltime == false) {
 					//cout << "공격성공\n";
 					m_map_player_info[target_id]->hp -= RIDER_ATT;
-					if (m_map_player_info[target_id]->hp < 0) {
-						m_map_player_info[target_id]->hp = 0;
+#ifdef TESTMODE
+					if (m_map_player_info[target_id]->hp < 10) {
+						m_map_player_info[target_id]->hp = 10;
 					}
+#endif
 					m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
 				}
 
