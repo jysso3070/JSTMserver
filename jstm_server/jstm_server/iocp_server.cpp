@@ -955,7 +955,7 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 
 	bool joinflag = false;
 	m_map_player_info[id]->roomList_lock.lock();
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 2; ++i) {
 		if (m_map_game_room[r_number]->players_id[i] == -1) {
 			m_map_game_room[r_number]->players_id[i] = id;
 			joinflag = true;
