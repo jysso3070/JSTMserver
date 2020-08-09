@@ -1126,9 +1126,11 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 
 	cout << "trap install" << endl;
 	m_map_player_info[id]->gold -= TRAP_COST;
+#ifdef TESTMODE
 	if (m_map_player_info[id]->gold < 0) {
 		m_map_player_info[id]->gold = 0;
 	}
+#endif
 	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1000, m_map_player_info[id]->gold);
 
 	// 설치한 트랩 정보 전송
