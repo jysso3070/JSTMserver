@@ -1241,9 +1241,16 @@ void Iocp_server::process_game_end(const short & room_number, const bool& clearF
 {
 	for (short i = 0; i < MAX_MONSTER; ++i) {
 		m_map_monsterPool[room_number][i].set_isLive(false);
+		m_map_monsterPool[room_number][i].set_monster_type(TYPE_DEFAULT);
+		m_map_monsterPool[room_number][i].set_buffType(TRAP_BUFF_NONE);
+		m_map_monsterPool[room_number][i].set_4x4position(default_wPos);
 	}
 	for (short i = 0; i < MAX_TRAP; ++i) {
 		m_map_trap[room_number][i].set_enable(false);
+		m_map_trap[room_number][i].set_4x4position(default_wPos);
+		m_map_trap[room_number][i].set_trap_type(TRAP_NEEDLE);
+		m_map_trap[room_number][i].set_wallDir(TRAP_DEFAULT);
+		m_map_trap[room_number][i].set_wallTrapOn(false);
 	}
 	for (int p_id : m_map_game_room[room_number]->players_id) {
 		if (p_id != -1 && m_map_player_info[p_id]->is_connect == true &&
