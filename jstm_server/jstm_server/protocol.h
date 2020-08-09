@@ -65,6 +65,7 @@ constexpr short lastWAVE = 10;
 #define	M_ANIM_WALK		1
 #define M_ANIM_RUN		2
 #define M_ANIM_ATT		3
+#define M_ANIM_DAMAGE	5
 #define M_ANIM_DEATH	6
 // monster buff type
 #define TRAP_BUFF_NONE		0

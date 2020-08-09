@@ -33,6 +33,7 @@ public:
 	void set_arrivePortal(const bool& flag);
 	void set_attackCooltime(const bool& flag);
 	void set_buffType(const char& buffType);
+	void set_bulletAnim(const bool& flag);
 
 	void add_xPos(const float& dx);
 	void add_zPos(const float& dz);
@@ -55,6 +56,7 @@ public:
 	bool get_arrivePortal() { return m_arrive_portal; }
 	bool get_attackCooltime() { return m_attack_coolTime; }
 	char get_buffType() { return m_buffType; }
+	bool get_bulletAnim() { return m_bulletAnimation; }
 	mutex& get_monsterLock() { return m_monsterLock; }
 
 	void gen_sequence(const short& stage_number, const short& pathLine);
@@ -76,7 +78,6 @@ private:
 	char m_monster_type;
 	volatile bool m_isLive = false;
 	short m_animation_state = 1;
-	short m_next_animation_state = 1;
 	short m_pathLine;
 	short m_stage_number;
 	int m_target_id = -1;
@@ -87,6 +88,7 @@ private:
 	bool m_attack_coolTime = false;
 	char m_buffType = TRAP_BUFF_NONE;
 	mutex m_monsterLock;
+	bool m_bulletAnimation = false;
 
 	DirectX::XMFLOAT3 m_checkPoint_1;
 	DirectX::XMFLOAT3 m_checkPoint_2;

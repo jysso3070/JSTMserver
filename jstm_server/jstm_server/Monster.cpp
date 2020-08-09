@@ -114,6 +114,11 @@ void Monster::set_buffType(const char & buffType)
 	m_buffType = buffType;
 }
 
+void Monster::set_bulletAnim(const bool & flag)
+{
+	m_bulletAnimation = flag;
+}
+
 void Monster::add_xPos(const float & dx)
 {
 	m_4x4position._41 += dx;
@@ -425,19 +430,19 @@ void Monster::process_move_path_t()
 void Monster::aggro_release()
 {
 	if (this->m_stage_number == 1) {
-		if (this->get_position().x > -750.f && this->get_position().z < 4200.f &&
+		if (this->get_position().x > -770.f && this->get_position().z < 4300.f &&
 			this->get_position().x <= -330.f && this->get_position().z >= 3340.f) {
 			this->set_checkPoint(0);
 		}
-		else if (this->get_position().x < 750.f && this->get_position().z < 4200.f &&
+		else if (this->get_position().x < 770.f && this->get_position().z < 4300.f &&
 			this->get_position().x >= 330.f && this->get_position().z >= 3340.f) {
 			this->set_checkPoint(0);
 		}
-		else if (this->get_position().x > -750.f && this->get_position().z < 3340.f &&
+		else if (this->get_position().x > -770.f && this->get_position().z < 3340.f &&
 			this->get_position().x <= -330.f && this->get_position().z > 2830.f) {
 			this->set_checkPoint(1);
 		}
-		else if (this->get_position().x < 750.f && this->get_position().z < 3340.f &&
+		else if (this->get_position().x < 770.f && this->get_position().z < 3340.f &&
 			this->get_position().x >= 330.f && this->get_position().z > 2830.f) {
 			this->set_checkPoint(1);
 		}
@@ -448,19 +453,19 @@ void Monster::aggro_release()
 		return;
 	}
 	else if (this->m_stage_number == 2) {
-		if (this->get_position().x > -760.f && this->get_position().z < 2850.f &&
+		if (this->get_position().x > -780.f && this->get_position().z < 2890.f &&
 			this->get_position().x <= -330.f && this->get_position().z >= 1990.f) {
 			this->set_checkPoint(0);
 		}
-		else if (this->get_position().x < 760.f && this->get_position().z < 2850.f &&
+		else if (this->get_position().x < 780.f && this->get_position().z < 2890.f &&
 			this->get_position().x >= 330.f && this->get_position().z >= 1990.f) {
 			this->set_checkPoint(0);
 		}
-		else if (this->get_position().x > -760.f && this->get_position().z < 1990.f &&
+		else if (this->get_position().x > -780.f && this->get_position().z < 1990.f &&
 			this->get_position().x <= -330.f && this->get_position().z > 1470.f) {
 			this->set_checkPoint(1);
 		}
-		else if (this->get_position().x < 760.f && this->get_position().z < 1990.f &&
+		else if (this->get_position().x < 780.f && this->get_position().z < 1990.f &&
 			this->get_position().x >= 330.f && this->get_position().z > 1470.f) {
 			this->set_checkPoint(1);
 		}
@@ -472,19 +477,19 @@ void Monster::aggro_release()
 			this->get_position().x < 330.f && this->get_position().z >= 0.f) {
 			this->set_checkPoint(3);
 		} // ---------------------------------------------------------------------------여까지 위
-		else if (this->get_position().x > -760.f && this->get_position().z > -2850.f &&
+		else if (this->get_position().x > -780.f && this->get_position().z > -2890.f &&
 			this->get_position().x <= -330.f && this->get_position().z <= -1990.f) {
 			this->set_checkPoint(0);
 		}
-		else if (this->get_position().x < 760.f && this->get_position().z > -2850.f &&
+		else if (this->get_position().x < 780.f && this->get_position().z > -2890.f &&
 			this->get_position().x >= 330.f && this->get_position().z <= -1990.f) {
 			this->set_checkPoint(0);
 		}
-		else if (this->get_position().x > -760.f && this->get_position().z > -1990.f &&
+		else if (this->get_position().x > -780.f && this->get_position().z > -1990.f &&
 			this->get_position().x <= -330.f && this->get_position().z < -1470.f) {
 			this->set_checkPoint(1);
 		}
-		else if (this->get_position().x < 760.f && this->get_position().z > -1990.f &&
+		else if (this->get_position().x < 780.f && this->get_position().z > -1990.f &&
 			this->get_position().x >= 330.f && this->get_position().z < -1470.f) {
 			this->set_checkPoint(1);
 		}
@@ -497,6 +502,57 @@ void Monster::aggro_release()
 			this->set_checkPoint(3);
 		} //-----------------------------------------------------------------------
 
+		return;
+	}
+	else if (this->m_stage_number == 3) {
+		if (this->get_position().x > -1950.f && this->get_position().z < 1950.f &&
+			this->get_position().x <= -1330.f && this->get_position().z >= 1500.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x < 640.f && this->get_position().z < 1950.f &&
+			this->get_position().x >= -810.f && this->get_position().z >= 1500.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x > -1330.f && this->get_position().z < 1950.f &&
+			this->get_position().x < -810.f && this->get_position().z >= -670.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x > -1360.f && this->get_position().z < -670.f &&
+			this->get_position().x <= -330.f && this->get_position().z >= -1080.f) {
+			this->set_checkPoint(2);
+		}
+		else if (this->get_position().x > -330.f && this->get_position().z < -150.f &&
+			this->get_position().x <= 350.f && this->get_position().z >= -1080.f) {
+			this->set_checkPoint(3);
+		}
+		else if (this->get_position().x > -330.f && this->get_position().z <= 0.f &&
+			this->get_position().x <= 350.f && this->get_position().z >= -150.f) {
+			this->set_checkPoint(4);
+		} // ------------------------------------------------------------------------- 여기까지 위
+		else if (this->get_position().x < 1950.f && this->get_position().z > -1950.f &&
+			this->get_position().x >= 1330.f && this->get_position().z <= -1500.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x <= 810.f && this->get_position().z > -1950.f &&
+			this->get_position().x > -640.f && this->get_position().z <= -1500.f) {
+			this->set_checkPoint(0);
+		}
+		else if (this->get_position().x > 810.f && this->get_position().z > -1950.f &&
+			this->get_position().x < 1330.f && this->get_position().z <= 670.f) {
+			this->set_checkPoint(1);
+		}
+		else if (this->get_position().x < 1360.f && this->get_position().z > 670.f &&
+			this->get_position().x >= 330.f && this->get_position().z < 1080.f) {
+			this->set_checkPoint(2);
+		}
+		else if (this->get_position().x < 330.f && this->get_position().z > 150.f &&
+			this->get_position().x > -350.f && this->get_position().z < 1080.f) {
+			this->set_checkPoint(3);
+		}
+		else if (this->get_position().x < 330.f && this->get_position().z >= 0.f &&
+			this->get_position().x > -350.f && this->get_position().z <= 150.f) {
+			this->set_checkPoint(3);
+		}
 		return;
 	}
 }
