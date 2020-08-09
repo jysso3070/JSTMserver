@@ -28,7 +28,7 @@ constexpr short lastWAVE = 10;
 #define PLAYER_STATE_in_room		3
 
 // player
-#define PLAYER_ATT	30
+#define PLAYER_ATT	70
 
 // room state
 #define R_STATE_in_room				0
