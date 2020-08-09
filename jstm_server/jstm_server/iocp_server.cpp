@@ -612,7 +612,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						mon_pool[i].set_trap_cooltime(true);
 						mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
 						//mon_pool[i].get_monsterLock().unlock();
-						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
 						add_event_to_queue(trap_ev);
 					}
 				}
@@ -638,7 +638,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
 							trapColli = true;
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							//cout << "MX벽 불함정 피격 \n";
 						}
@@ -649,7 +649,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PX벽 불함정 피격 \n";
@@ -661,7 +661,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MZ벽 불함정 피격 \n";
@@ -673,7 +673,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PZ벽 불함정 피격 \n";
@@ -705,7 +705,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MX벽 불함정 피격 \n";
@@ -717,7 +717,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PX벽 불함정 피격 \n";
@@ -729,7 +729,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MZ벽 불함정 피격 \n";
@@ -741,7 +741,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PZ벽 불함정 피격 \n";
