@@ -1586,7 +1586,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 15) { // line 123
 					if (i >= 14) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
+						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
 					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
 					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y, 
