@@ -4,10 +4,10 @@
 
 int main() {
 
-	cout << sizeof(Monster) << endl;;
+	/*cout << sizeof(Monster) << endl;;
 	cout << sizeof(DirectX::XMFLOAT4X4) << endl;;
 	cout << sizeof(unsigned short) << endl;;
-	cout << sizeof(sc_packet_monster_pos) << endl;;
+	cout << sizeof(sc_packet_monster_pos) << endl;;*/
 
 	Iocp_server *g_iocp_server = new Iocp_server;
 
