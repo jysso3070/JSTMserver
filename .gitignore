@@ -2,6 +2,8 @@
 /jstm_server/x64
 /test_client/.vs
 /test_client/x64
+*x64
+*Release
 *.exe
 *.ilk
 *.pdb
