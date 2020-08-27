@@ -30,7 +30,8 @@ void Iocp_server::serverInitialize()
 	//WSADATA WSAData;
 	//WSAStartup(MAKEWORD(2, 2), &WSAData);
 
-	m_iocp_Handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 0);
+	DWORD maxThread = 0;
+	m_iocp_Handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, maxThread);
 
 	m_new_user_id = 0;
 	m_new_room_num = 1;
@@ -46,29 +47,21 @@ void Iocp_server::serverInitialize()
 
 void Iocp_server::make_thread()
 {
-	thread accept_thread{ &Iocp_server::run_acceptThread, this};
-	thread mainThread_1{ &Iocp_server::run_mainThread, this};
-	thread mainThread_2{ &Iocp_server::run_mainThread, this};
-	thread mainThread_3{ &Iocp_server::run_mainThread, this};
-	thread mainThread_4{ &Iocp_server::run_mainThread, this };
-	thread mainThread_5{ &Iocp_server::run_mainThread, this };
-	thread mainThread_6{ &Iocp_server::run_mainThread, this };
-	thread mainThread_7{ &Iocp_server::run_mainThread, this };
-	thread eventQueueThread{ &Iocp_server::run_eventQueueThread, this};
+	m_threadsPool.emplace_back([this]() {run_acceptThread(); });
+
+	for (int i = 0; i < maxWorkerThread; ++i) {
+		m_threadsPool.emplace_back([this]() {run_mainThread(); });
+	}
+
+	m_threadsPool.emplace_back([this]() {run_timerThread(); });
+
+	for (auto& th : m_threadsPool) {
+		if (th.joinable()) {
+			th.join();
+		}
+	}
 
 	//thread packet_count_thread{ &Iocp_server::run_packet_countThread, this };
-	//thread collision_thread{}
-
-	accept_thread.join();
-	mainThread_1.join();
-	mainThread_2.join();
-	mainThread_3.join();
-	mainThread_4.join();
-	mainThread_5.join();
-	mainThread_6.join();
-	mainThread_7.join();
-	eventQueueThread.join();
-
 	//packet_count_thread.join();
 
 }
@@ -202,15 +195,15 @@ void Iocp_server::run_acceptThread()
 void Iocp_server::run_mainThread()
 {
 	while (true) {
-		DWORD num_byte;
+		DWORD ioByte;
 		ULONG key;
 		PULONG p_key = &key;
 		WSAOVERLAPPED* p_over;
 
-		GetQueuedCompletionStatus(m_iocp_Handle, &num_byte, (PULONG_PTR)p_key, &p_over, INFINITE);
+		GetQueuedCompletionStatus(m_iocp_Handle, &ioByte, (PULONG_PTR)p_key, &p_over, INFINITE);
 
 		// 클라이언트가 종료했을 경우
-		if (0 == num_byte) {
+		if (0 == ioByte) {
 			SOCKET client_s = m_map_player_info[key]->socket;
 			closesocket(client_s);
 			m_map_player_info[key]->is_connect = false;
@@ -223,12 +216,12 @@ void Iocp_server::run_mainThread()
 
 		if (EV_RECV == over_ex->event_type) {
 			SOCKET client_s = m_map_player_info[key]->socket;
-			over_ex->net_buf[num_byte] = 0;
+			over_ex->net_buf[ioByte] = 0;
 			//process_packet(key, over_ex->net_buf);
 
 			unsigned int cur_packet_size = 0;
 			unsigned int saved_packet_size = 0;
-			DWORD buf_byte = num_byte;
+			DWORD buf_byte = ioByte;
 
 			char * temp = reinterpret_cast<char*>(over_ex->net_buf);
 			char tempBuf[MAX_BUFFER];
@@ -360,24 +353,24 @@ void Iocp_server::run_mainThread()
 	}
 }
 
-void Iocp_server::run_eventQueueThread()
+void Iocp_server::run_timerThread()
 {
 	while (true) {
 		m_eventTimer_lock.lock();
-		while (true == m_eventTimer_queue.empty()) {	// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
+		while (true == m_gameLogic_queue.empty()) {	// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
 			m_eventTimer_lock.unlock();
 			this_thread::sleep_for(10ms);
 			m_eventTimer_lock.lock();
 		}
-		const EVENT &ev = m_eventTimer_queue.top();
+		const GAME_EVENT &ev = m_gameLogic_queue.top();
 		if (ev.wakeup_time > chrono::high_resolution_clock::now()) {
 			m_eventTimer_lock.unlock();
 			this_thread::sleep_for(10ms);
 			continue;
 		}
 
-		EVENT p_ev = ev;
-		m_eventTimer_queue.pop();
+		GAME_EVENT p_ev = ev;
+		m_gameLogic_queue.pop();
 		m_eventTimer_lock.unlock();
 
 		// 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
@@ -480,7 +473,7 @@ void Iocp_server::run_eventQueueThread()
 	}
 }
 
-void Iocp_server::process_monster_move(const short room_number)
+void Iocp_server::process_monster_move(const short& room_number)
 {
 	//auto start = chrono::high_resolution_clock::now();
 	auto mon_pool = m_map_monsterPool[room_number];
@@ -580,7 +573,7 @@ void Iocp_server::process_monster_move(const short room_number)
 					mon_pool[i].set_animation_state(M_ANIM_ATT);
 					if (mon_pool[i].get_attackCooltime() == false &&
 						m_map_player_info[mon_pool[i].get_target_id()]->damageCooltime == false) {
-						EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
+						GAME_EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
 						add_event_to_queue(ev_monAttck);
 						mon_pool[i].set_attackCooltime(true);
 					}
@@ -612,7 +605,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						mon_pool[i].set_trap_cooltime(true);
 						mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
 						//mon_pool[i].get_monsterLock().unlock();
-						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+						GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
 						add_event_to_queue(trap_ev);
 					}
 				}
@@ -625,7 +618,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						mon_pool[i].set_trap_cooltime(true);
 						mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
 						//mon_pool[i].get_monsterLock().unlock();
-						EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
+						GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
 						add_event_to_queue(trap_ev);
 					}
 				}
@@ -638,7 +631,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
 							trapColli = true;
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							//cout << "MX벽 불함정 피격 \n";
 						}
@@ -649,7 +642,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PX벽 불함정 피격 \n";
@@ -661,7 +654,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MZ벽 불함정 피격 \n";
@@ -673,7 +666,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PZ벽 불함정 피격 \n";
@@ -684,7 +677,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						mon_pool[i].decrease_hp(TRAP_FIRE_ATT);
 						if (coopyTrapPool[trap_idx].get_wallTrapOn() == false) {
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
-							EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
+							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
 							add_event_to_queue(wallTrapCool);
 							for (int i = 0; i < 2; ++i) {
 								int player_id = m_map_game_room[room_number]->players_id[i];
@@ -705,7 +698,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MX벽 불함정 피격 \n";
@@ -717,7 +710,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PX벽 불함정 피격 \n";
@@ -729,7 +722,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MZ벽 불함정 피격 \n";
@@ -741,7 +734,7 @@ void Iocp_server::process_monster_move(const short room_number)
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
-							EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PZ벽 불함정 피격 \n";
@@ -752,7 +745,7 @@ void Iocp_server::process_monster_move(const short room_number)
 						mon_pool[i].decrease_hp(TRAP_ARROW_ATT);
 						if (coopyTrapPool[trap_idx].get_wallTrapOn() == false) {
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
-							EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
+							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
 							add_event_to_queue(wallTrapCool);
 							for (int i = 0; i < 2; ++i) {
 								int player_id = m_map_game_room[room_number]->players_id[i];
@@ -792,16 +785,16 @@ void Iocp_server::process_monster_move(const short room_number)
 		m_map_game_room[room_number]->monsterThread_lock.unlock();
 	}
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
 		int player_id = m_map_game_room[room_number]->players_id[i];
-		if (player_id == -1) { continue; }
+		if (player_id == PLAYER_NONE) { continue; }
 		if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
 			m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
 		}
 	}
 
 	if (m_map_game_room[room_number]->wave_on == true) {
-		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
+		GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_queue(ev);
 	}
 	//cout << "mon run \n";
@@ -822,10 +815,10 @@ void Iocp_server::run_packet_countThread()
 	}
 }
 
-void Iocp_server::add_event_to_queue(EVENT & ev)
+void Iocp_server::add_event_to_queue(GAME_EVENT & ev)
 {
 	m_eventTimer_lock.lock();
-	m_eventTimer_queue.push(ev);
+	m_gameLogic_queue.push(ev);
 	m_eventTimer_lock.unlock();
 }
 
@@ -891,7 +884,7 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 	}
 
 	short room_number = m_map_player_info[id]->room_number;
-	for (short i = 0; i < 2; ++i) {
+	for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
 		int other_id = m_map_game_room[room_number]->players_id[i];
 		if (other_id == -1) { continue; }
 		if (m_map_player_info[other_id]->is_connect == true && 
@@ -957,7 +950,7 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 
 	bool joinflag = false;
 	m_map_player_info[id]->roomList_lock.lock();
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
 		if (m_map_game_room[r_number]->players_id[i] == -1) {
 			m_map_game_room[r_number]->players_id[i] = id;
 			joinflag = true;
@@ -1000,7 +993,7 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 	cs_packet_leaveRoom *leaveRoom_packet = reinterpret_cast<cs_packet_leaveRoom*>(buff);
 	short room_number = m_map_player_info[id]->room_number;
 	if (room_number != -1) {
-		for (short i = 0; i < 4; ++i) { // 방에있는 id 목록에서 id 제거
+		for (short i = 0; i < MAX_ROOMPLAYER; ++i) { // 방에있는 id 목록에서 id 제거
 			if (m_map_game_room[room_number]->players_id[i] == id) {
 				m_map_game_room[room_number]->players_id[i] = -1;
 			}
@@ -1010,7 +1003,7 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 		// 자신에게 방나가기 성공패킷 전송
 		m_Packet_manager->send_leaveRoom_ok(id, m_map_player_info[id]->socket);
 
-		for (short i = 0; i < 4; ++i) { // 방에 남은 플레이어에게 방을나간 정보 전송
+		for (short i = 0; i < MAX_ROOMPLAYER; ++i) { // 방에 남은 플레이어에게 방을나간 정보 전송
 			int p_id = m_map_game_room[room_number]->players_id[i];
 			if (p_id != -1) {
 				if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_in_room
@@ -1022,7 +1015,7 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 
 
 		bool roomEmpty = true;
-		for (short i = 0; i < 4; ++i) { // 방이 비었는지 체크
+		for (short i = 0; i < MAX_ROOMPLAYER; ++i) { // 방이 비었는지 체크
 			int p_id = m_map_game_room[room_number]->players_id[i];
 			if (p_id != -1) {
 				roomEmpty = false;
@@ -1080,12 +1073,12 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 			process_game_start(m_map_player_info[id]->room_number, packet->stage_number);
 		}
 
-		EVENT ev_playerStart{ id, chrono::high_resolution_clock::now() + 3s, PLAYER_GAME_START, 0 };
+		GAME_EVENT ev_playerStart{ id, chrono::high_resolution_clock::now() + 3s, PLAYER_GAME_START, 0 };
 		add_event_to_queue(ev_playerStart);
 		
 		//m_map_player_info[id]->player_state = packet->change_state;
 
-		for (short i = 0; i < 4; ++i) {	// 같은 방의 클라이언트에게 put player 상호 전송
+		for (short i = 0; i < MAX_ROOMPLAYER; ++i) {	// 같은 방의 클라이언트에게 put player 상호 전송
 			int other_id = m_map_game_room[myroom_num]->players_id[i];
 			if (other_id == -1) { continue; }
 			if (m_map_player_info[other_id]->is_connect == true &&
@@ -1134,7 +1127,7 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1000, m_map_player_info[id]->gold);
 
 	// 설치한 트랩 정보 전송
-	for (short i = 0; i < 2; ++i) {
+	for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
 		int other_id = m_map_game_room[room_num]->players_id[i];
 		if (other_id == -1) { continue; }
 		if (m_map_player_info[other_id]->is_connect == true &&
@@ -1176,14 +1169,14 @@ void Iocp_server::process_player_shoot(const int & id, void * buff)
 			m_map_monsterPool[player_room_number][packet->monster_id].decrease_hp(PLAYER_ATT*2);
 			m_map_monsterPool[player_room_number][packet->monster_id].set_animation_state(M_ANIM_DAMAGE);
 			m_map_monsterPool[player_room_number][packet->monster_id].set_bulletAnim(true);
-			EVENT ev_monsterBullet{ packet->monster_id, chrono::high_resolution_clock::now() + 500ms, EV_MONSTER_BULLET, player_room_number };
+			GAME_EVENT ev_monsterBullet{ packet->monster_id, chrono::high_resolution_clock::now() + 500ms, EV_MONSTER_BULLET, player_room_number };
 			add_event_to_queue(ev_monsterBullet);
 		}
 		else {
 			m_map_monsterPool[player_room_number][packet->monster_id].decrease_hp(PLAYER_ATT);
 			m_map_monsterPool[player_room_number][packet->monster_id].set_animation_state(M_ANIM_DAMAGE);
 			m_map_monsterPool[player_room_number][packet->monster_id].set_bulletAnim(true);
-			EVENT ev_monsterBullet{ packet->monster_id, chrono::high_resolution_clock::now() + 500ms, EV_MONSTER_BULLET, player_room_number };
+			GAME_EVENT ev_monsterBullet{ packet->monster_id, chrono::high_resolution_clock::now() + 500ms, EV_MONSTER_BULLET, player_room_number };
 			add_event_to_queue(ev_monsterBullet);
 		}
 	}
@@ -1236,7 +1229,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 		}
 	}*/
 	//
-	EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
+	GAME_EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
 	add_event_to_queue(g_ev);
 	
 }
@@ -1295,7 +1288,7 @@ void Iocp_server::check_wave_end(const short& room_number)
 		}
 	}
 	bool playerdead = false;
-	for (short idx = 0; idx < 2; ++idx) {
+	for (short idx = 0; idx < MAX_ROOMPLAYER; ++idx) {
 		int player_id = m_map_game_room[room_number]->players_id[idx];
 		if (player_id == -1) { continue; }
 		if (m_map_player_info[player_id]->hp < 0 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
@@ -1319,7 +1312,7 @@ void Iocp_server::check_wave_end(const short& room_number)
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
 		m_map_game_room[room_number]->wave_count += 1;
-		for (short p_idx = 0; p_idx < 2; ++p_idx) {
+		for (short p_idx = 0; p_idx < MAX_ROOMPLAYER; ++p_idx) {
 			int temp_id = m_map_game_room[room_number]->players_id[p_idx];
 			if (temp_id != -1) {
 				if (m_map_player_info[temp_id]->is_connect == true &&
@@ -1334,12 +1327,12 @@ void Iocp_server::check_wave_end(const short& room_number)
 			}
 		}
 
-		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };
+		GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 5s, EV_GEN_MONSTER, 0 };
 		add_event_to_queue(ev);
 	}
 	else if (end_flag == false) { // 종료안됨
 		// n초후에 다시 체크하는 이벤트 생성
-		EVENT ev{ room_number, chrono::high_resolution_clock::now() + 3s, EV_CHECK_WAVE_END, 0 };
+		GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 3s, EV_CHECK_WAVE_END, 0 };
 		add_event_to_queue(ev);
 	}
 }
@@ -1348,7 +1341,7 @@ void Iocp_server::add_monster_dead_event(const short & room_number, const short 
 {
 	int room_num = room_number;
 	int mon_id = monster_id;
-	EVENT ev{ room_num, chrono::high_resolution_clock::now() + 1500ms, EV_MONSTER_DEAD, mon_id };
+	GAME_EVENT ev{ room_num, chrono::high_resolution_clock::now() + 1500ms, EV_MONSTER_DEAD, mon_id };
 	add_event_to_queue(ev);
 }
 
@@ -1363,7 +1356,7 @@ void Iocp_server::send_all_room_list(const int& id)
 
 void Iocp_server::send_protalLife_update(const short & room_number)
 {
-	for (short i = 0; i < 2; ++i) {
+	for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
 		int p_id = m_map_game_room[room_number]->players_id[i];
 		if (p_id == -1) { continue; }
 		if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_playing_game) {
@@ -1391,7 +1384,7 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 	short check_roomNum = -1; 
 	if (m_map_player_info[leaver_id]->room_number != -1) { // 플레이어가 방에 접속해 있을 때
 		check_roomNum = m_map_player_info[leaver_id]->room_number;
-		for (int i = 0; i < 4; ++i) {
+		for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
 			if (m_map_game_room[check_roomNum]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
 				m_map_game_room[check_roomNum]->players_id[i] = -1;
 				break;
@@ -1420,7 +1413,7 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 		//	}
 		//}
 		bool roomEmpty = true;
-		for (short i = 0; i < 4; ++i) {
+		for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
 			if (m_map_game_room[check_roomNum]->players_id[i] != -1) { // leaver의 아이디와 같으면 -1로 대체
 				roomEmpty = false;
 				break;
@@ -1477,7 +1470,7 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				}
 
 				m_map_player_info[target_id]->damageCooltime = true;
-				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
+				GAME_EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
 				add_event_to_queue(ev);
 			}
 		}
@@ -1501,7 +1494,7 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				}
 
 				m_map_player_info[target_id]->damageCooltime = true;
-				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
+				GAME_EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
 				add_event_to_queue(ev);
 			}
 		}
@@ -1522,7 +1515,7 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 				}
 
 				m_map_player_info[target_id]->damageCooltime = true;
-				EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
+				GAME_EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
 				add_event_to_queue(ev);
 			}
 		}
@@ -3038,10 +3031,10 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 	}
 
 	cout<<"room:" << room_number<<" stage:"<< stage_number<<" wave:"<< wave <<" gen complete" << endl;;
-	EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
+	GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_queue(ev);
 	m_map_game_room[room_number]->wave_on = true;
 
-	EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
+	GAME_EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
 	add_event_to_queue(ev_waveCheck);
 }

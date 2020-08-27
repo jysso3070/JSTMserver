@@ -32,12 +32,12 @@ public:
 	// thread
 	void run_acceptThread(); // 소켓 accept를 받는 스레드함수
 	void run_mainThread(); // 주 워커 스레드
-	void run_eventQueueThread();
-	void process_monster_move(const short room_number);
+	void run_timerThread();
+	void process_monster_move(const short& room_number);
 	void run_packet_countThread();
 
 	// event queue add
-	void add_event_to_queue(EVENT &ev);
+	void add_event_to_queue(GAME_EVENT &ev);
 
 	void t_process_player_move(const int& id, void *buff);	// 테스트용
 	void process_player_move(const int& id, void *buff);	// 플레이어 움직임
@@ -77,6 +77,8 @@ private:
 	
 	// iocp id
 	HANDLE m_iocp_Handle; // iocp 핸들
+	std::vector<std::thread> m_threadsPool;
+	unsigned int maxWorkerThread = 7;
 	int m_new_user_id;
 	short m_new_room_num;
 	short m_new_trap_id;
@@ -86,7 +88,7 @@ private:
 
 	// STL container
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_map_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
-	priority_queue <EVENT> m_eventTimer_queue; // 우선순위 큐
+	priority_queue <GAME_EVENT> m_gameLogic_queue; // 우선순위 큐
 	mutex m_eventTimer_lock;
 
 	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> m_map_game_room;	// room정보

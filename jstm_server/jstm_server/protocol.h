@@ -17,6 +17,10 @@ constexpr short lastWAVE = 10;
 #define	WM_SOCKET			WM_USER + 1
 #define MAX_BUFFER			65536	//16384
 #define SERVER_PORT			3500
+
+#define MAX_ROOMPLAYER		2
+constexpr int PLAYER_NONE = -1;
+
 #define MONSTER_ID_START	100
 #define MAX_MONSTER			70
 #define MAX_TRAP			100

@@ -59,13 +59,13 @@ struct PLAYER_DB {
 	short level;
 };
 
-struct EVENT
+struct GAME_EVENT
 {
 	int obj_id;
 	chrono::high_resolution_clock::time_point wakeup_time;
 	int event_type;
 	int target_obj;
-	constexpr bool operator < (const EVENT& left) const {
+	constexpr bool operator < (const GAME_EVENT& left) const {
 		return wakeup_time > left.wakeup_time;
 	}
 };
