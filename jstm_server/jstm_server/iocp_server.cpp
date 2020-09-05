@@ -211,10 +211,12 @@ void Iocp_server::run_mainThread()
 			process_disconnect_client(key);
 			continue;
 		}
-
 		OVER_EX *over_ex = reinterpret_cast<OVER_EX *> (p_over);
 
-		if (EV_RECV == over_ex->event_type) {
+		switch (over_ex->event_type)
+		{
+		case EV_RECV:
+		{
 			SOCKET client_s = m_map_player_info[key]->socket;
 			over_ex->net_buf[ioByte] = 0;
 			//process_packet(key, over_ex->net_buf);
@@ -223,7 +225,7 @@ void Iocp_server::run_mainThread()
 			unsigned int saved_packet_size = 0;
 			DWORD buf_byte = ioByte;
 
-			char * temp = reinterpret_cast<char*>(over_ex->net_buf);
+			char* temp = reinterpret_cast<char*>(over_ex->net_buf);
 			char tempBuf[MAX_BUFFER];
 
 			while (buf_byte != 0)
@@ -251,8 +253,10 @@ void Iocp_server::run_mainThread()
 			DWORD flags = 0;
 			memset(&over_ex->over, 0x00, sizeof(WSAOVERLAPPED));
 			WSARecv(client_s, over_ex->wsabuf, 1, 0, &flags, &over_ex->over, 0);
+			break;
 		}
-		if (EV_TEST == over_ex->event_type) {
+		case EV_TEST:
+		{
 			cout << "test event ! \n";
 			char tname[11] = "jys";
 			m_Database_manager->check_nameLogin(tname);
@@ -263,92 +267,126 @@ void Iocp_server::run_mainThread()
 				cout << "name: " << d.name <<"."<< endl;
 			}*/
 			delete over_ex;
+			break;
 		}
-		else if (EV_GEN_1stWAVE_MONSTER == over_ex->event_type) {
-			short stage_number = *(short *)(over_ex->net_buf);
+		case EV_GEN_1stWAVE_MONSTER:
+		{
+			short stage_number = *(short*)(over_ex->net_buf);
 			process_gen_monster(key, stage_number);
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_DEAD == over_ex->event_type) {
-			short monster_id = *(short *)(over_ex->net_buf);
+		case EV_MONSTER_DEAD:
+		{
+			short monster_id = *(short*)(over_ex->net_buf);
 			short room_number = (short)key;
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_isLive(false);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			//cout << monster_id << "¹ø false \n";
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == over_ex->event_type) {
+		case EV_MONSTER_NEEDLE_TRAP_COLLISION:
+		{
 			short monster_id = (short)key;
-			short room_number = *(short *)(over_ex->net_buf);
+			short room_number = *(short*)(over_ex->net_buf);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_FIRE_TRAP_COLLISION == over_ex->event_type) {
+		case EV_MONSTER_FIRE_TRAP_COLLISION:
+		{
 			short monster_id = (short)key;
-			short room_number = *(short *)(over_ex->net_buf);
+			short room_number = *(short*)(over_ex->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_ARROW_TRAP_COLLISION == over_ex->event_type) {
+		case EV_MONSTER_ARROW_TRAP_COLLISION:
+		{
 			short monster_id = (short)key;
-			short room_number = *(short *)(over_ex->net_buf);
+			short room_number = *(short*)(over_ex->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_SLOW_TRAP_COLLISION == over_ex->event_type) {
+		case EV_MONSTER_SLOW_TRAP_COLLISION:
+		{
 			short monster_id = (short)key;
-			short room_number = *(short *)(over_ex->net_buf);
+			short room_number = *(short*)(over_ex->net_buf);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			m_map_monsterPool[room_number][monster_id].set_buffType(TRAP_BUFF_NONE);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			delete over_ex;
+			break;
 		}
-		else if (EV_WALLTRAP_COLLTIME == over_ex->event_type) {
+		case EV_WALLTRAP_COLLTIME:
+		{
 			short trap_index = (short)key;
-			short room_number = *(short *)(over_ex->net_buf);
+			short room_number = *(short*)(over_ex->net_buf);
 			m_map_trap[room_number][trap_index].set_wallTrapOn(false);
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_BULLET == over_ex->event_type) {
+		case EV_MONSTER_BULLET:
+		{
 			short monster_id = (short)key;
-			short room_number = *(short *)(over_ex->net_buf);
+			short room_number = *(short*)(over_ex->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_bulletAnim(false);
 			delete over_ex;
+			break;
 		}
-		else if (EV_CHECK_WAVE_END == over_ex->event_type) {
+		case EV_CHECK_WAVE_END:
+		{
 			check_wave_end(key);
 			delete over_ex;
+			break;
 		}
-		else if (EV_GEN_MONSTER == over_ex->event_type) {
+		case EV_GEN_MONSTER:
+		{
 			short stage_number = m_map_game_room[key]->stage_number;
 			process_gen_monster(key, stage_number);
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_THREAD_RUN == over_ex->event_type) {
+		case EV_MONSTER_THREAD_RUN:
+		{
 			process_monster_move(key);
 			delete over_ex;
+			break;
 		}
-		else if (EV_MONSTER_ATTACK == over_ex->event_type) {
+		case EV_MONSTER_ATTACK:
+		{
 			short room_number = (short)key;
-			short monster_id = *(short *)(over_ex->net_buf);
+			short monster_id = *(short*)(over_ex->net_buf);
 			check_monster_attack(room_number, monster_id);
 			delete over_ex;
+			break;
 		}
-		else if (EV_PLAYER_DAMAGE_COOLTIME == over_ex->event_type) {
+		case EV_PLAYER_DAMAGE_COOLTIME:
+		{
 			m_map_player_info[key]->damageCooltime = false;
 			delete over_ex;
+			break;
 		}
-		else if (EV_PROTALLIFE_UPDATE == over_ex->event_type) {
+		case EV_PROTALLIFE_UPDATE:
+		{
 			send_protalLife_update(key);
 			delete over_ex;
+			break;
 		}
-		else if (PLAYER_GAME_START == over_ex->event_type) {
+		case PLAYER_GAME_START:
+		{
 			m_map_player_info[key]->player_state = PLAYER_STATE_playing_game;
 			delete over_ex;
+			break;
+		}
+		default:
+			break;
 		}
 	}
 }
