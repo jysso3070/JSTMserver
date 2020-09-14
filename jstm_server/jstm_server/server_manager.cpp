@@ -21,8 +21,8 @@ void Server_manager::get_server_ipAddress()
 	}
 
 	PHOSTENT	hostinfo;
-	char				hostname[50];
-	char				ipaddr[50];
+	char		hostname[50];
+	char		ipaddr[50];
 	memset(hostname, 0, sizeof(hostname));
 	memset(ipaddr, 0, sizeof(ipaddr));
 

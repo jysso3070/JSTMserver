@@ -73,6 +73,7 @@ struct GAME_EVENT
 
 #define MONSTER_GEN_DISTANCE	70.f
 #define MONSTER_MOVE_DISTANCE	8.f
+constexpr short SPAWN_DIS = 7;
 #define WALL_TRAP_MX	1
 #define WALL_TRAP_PX	2
 #define WALL_TRAP_MZ	3

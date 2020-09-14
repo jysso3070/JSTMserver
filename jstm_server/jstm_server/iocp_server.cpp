@@ -5,10 +5,6 @@ Iocp_server::Iocp_server()
 	Database_manager *db_manager = new Database_manager;
 	m_Database_manager = db_manager;
 
-	//m_Timer = new Timer;
-	//m_Timer->Reset();
-
-	//cout << "monstersize: " << sizeof(Monster) << endl;
 	serverInitialize();
 	init_wPos();
 
@@ -19,16 +15,12 @@ Iocp_server::Iocp_server()
 
 Iocp_server::~Iocp_server()
 {
-	//delete m_Timer;
-	//m_Timer = nullptr;
 
 	WSACleanup();
 }
 
 void Iocp_server::serverInitialize()
 {
-	//WSADATA WSAData;
-	//WSAStartup(MAKEWORD(2, 2), &WSAData);
 
 	DWORD maxThread = 0;
 	m_iocp_Handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, maxThread);
@@ -665,8 +657,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 					if(coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MX) {
 						if (mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
 							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
+							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_WIDTHRANGE &&
+							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_WIDTHRANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							trapColli = true;
 							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
@@ -677,8 +669,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PX) {
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
 							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
+							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_WIDTHRANGE &&
+							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_WIDTHRANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
@@ -687,8 +679,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
+						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_WIDTHRANGE &&
+							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_WIDTHRANGE &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -699,8 +691,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
+						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_WIDTHRANGE &&
+							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_WIDTHRANGE &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -717,7 +709,7 @@ void Iocp_server::process_monster_move(const short& room_number)
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
 							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
 							add_event_to_queue(wallTrapCool);
-							for (int i = 0; i < 2; ++i) {
+							for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
 								int player_id = m_map_game_room[room_number]->players_id[i];
 								if (player_id == -1) { continue; }
 								if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
@@ -733,8 +725,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 					if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MX) {
 						if (mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
 							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
+							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_WIDTHRANGE &&
+							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_WIDTHRANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
@@ -745,8 +737,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PX) {
 						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
 							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + 30 &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - 30) {
+							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_WIDTHRANGE &&
+							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_WIDTHRANGE) {
 							mon_pool[i].set_trap_cooltime(true);
 							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
 							add_event_to_queue(trap_ev);
@@ -755,8 +747,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
+						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_WIDTHRANGE &&
+							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_WIDTHRANGE &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -767,8 +759,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - 30 &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + 30 &&
+						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_WIDTHRANGE &&
+							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_WIDTHRANGE &&
 							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
 							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_RANGE) {
 							mon_pool[i].set_trap_cooltime(true);
@@ -785,7 +777,7 @@ void Iocp_server::process_monster_move(const short& room_number)
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
 							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
 							add_event_to_queue(wallTrapCool);
-							for (int i = 0; i < 2; ++i) {
+							for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
 								int player_id = m_map_game_room[room_number]->players_id[i];
 								if (player_id == -1) { continue; }
 								if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
@@ -927,7 +919,6 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 		if (other_id == -1) { continue; }
 		if (m_map_player_info[other_id]->is_connect == true && 
 			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
-			//m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id);
 			m_Packet_manager->send_pos_packet(other_id, m_map_player_info[other_id]->socket, id,
 				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
 		}
@@ -1441,15 +1432,6 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 		}
 	}
 	if (check_roomNum != -1) { // 방이 비었는지 검사
-		//int copy_players[4];
-		//memcpy_s(copy_players, sizeof(copy_players), m_map_game_room[check_roomNum]->players_id, sizeof(m_map_game_room[check_roomNum]->players_id));
-		//if (copy_players[0] == -1 && copy_players[1] == -1 && copy_players[2] == -1 && copy_players[3] == -1) {
-		//	for (int i = 0; i < 100; ++i) {
-		//		// 방에 플레이어가 없으면 몬스터 다 false로
-		//		if (m_map_monsterPool[check_roomNum] == nullptr) { return; }
-		//		m_map_monsterPool[check_roomNum][i].set_isLive(false);
-		//	}
-		//}
 		bool roomEmpty = true;
 		for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
 			if (m_map_game_room[check_roomNum]->players_id[i] != -1) { // leaver의 아이디와 같으면 -1로 대체
@@ -1595,7 +1577,6 @@ void Iocp_server::process_packet(const int& id, void * buff)
 		break;
 	case CS_POS:
 		process_player_move(id, buff);
-		//cout << "플레이어 이동 패킷 확인" << endl;
 		break;
 	case CS_CLIENT_STATE_CHANGE:
 		process_client_state_change(id, buff);
@@ -1630,11 +1611,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 	//m_map_game_room[room_number]->wave_count = 1;
 	if (m_map_game_room[room_number]->stage_number == 1) { // stage 1
 		XMFLOAT3 line1 = stage1_line1_start;
-		XMFLOAT3 line2 = stage1_line2_start;
-		XMFLOAT3 line3 = stage1_line3_start;
 		XMFLOAT3 line4 = stage1_line4_start;
-		XMFLOAT3 line5 = stage1_line5_start;
-		XMFLOAT3 line6 = stage1_line6_start;
 		switch (wave)
 		{
 		case 1:		// wave1
@@ -1645,18 +1622,12 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 14) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y, 
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 30) { // line 456
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y, 
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1669,21 +1640,15 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 15) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 36) { // line 456
 					if (i >= 33) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1696,21 +1661,15 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 12) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 36) { // line 456
 					if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1727,11 +1686,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 18) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 36 && i < 39) {
@@ -1740,11 +1696,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 39) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1761,11 +1714,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 18) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 36 && i < 39) {
@@ -1774,11 +1724,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 39) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1795,11 +1742,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 21) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 39 && i < 45) {
@@ -1808,11 +1752,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1829,11 +1770,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 21) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 39 && i < 45) {
@@ -1842,11 +1780,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1863,11 +1798,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 42 && i < 51) {
@@ -1876,11 +1808,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 51) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1897,11 +1826,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 21) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 42 && i < 48) {
@@ -1910,11 +1836,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 48) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -1931,11 +1854,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 19) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 1, XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 456
 					if (i >= 38 && i < 46) {
@@ -1944,79 +1864,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 46) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
-				}
-			}
-			break;
-		}
-		case 11:
-		{
-			short waveMax = 54;
-			for (int i = 0; i < waveMax; ++i) {
-				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
-				if (i < 27) { // line 123
-					if (i >= 15 && i < 24) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
-					}
-					else if (i >= 24) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
-					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
-				}
-				else if (i < waveMax) { // line 456
-					if (i >= 42 && i < 51) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
-					}
-					else if (i >= 51) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
-					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
-				}
-			}
-			break;
-		}
-		case 12:
-		{
-			short waveMax = 54;
-			for (int i = 0; i < waveMax; ++i) {
-				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
-				if (i < 27) { // line 123
-					if (i >= 15 && i < 24) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
-					}
-					else if (i >= 24) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
-					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line1.x + (float)stage1_start123_x(dre), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
-				}
-				else if (i < waveMax) { // line 456
-					if (i >= 42 && i < 51) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
-					}
-					else if (i >= 51) {
-						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
-					}
-					m_map_monsterPool[room_number][i].gen_sequence(1, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(1, 4, XMFLOAT3(line4.x + (float)stage1_start123_x(dre), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2036,32 +1885,20 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 7) { // line 123
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 14) { // line 456
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 21) { // line 789
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2071,32 +1908,20 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 7) { // line 123
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 14) { // line 456
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 21) { // line 789
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2109,41 +1934,29 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 7) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 18) { // line 456
 					if (i >= 16) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 27) { // line 789
 					if (i >= 25) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 34) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2156,41 +1969,29 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 6) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 18) { // line 456
 					if (i >= 15) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 27) { // line 789
 					if (i >= 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 33) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2203,41 +2004,29 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 8) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 22) { // line 456
 					if (i >= 19) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 33) { // line 789
 					if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 41) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2253,11 +2042,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 11) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 26) { // line 456
 					if (i >= 21 && i < 24) {
@@ -2266,11 +2052,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 39) { // line 789
 					if (i >= 34 && i < 37) {
@@ -2279,11 +2062,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 37) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 47 && i < 50) {
@@ -2292,11 +2072,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 50) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2312,11 +2089,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 30) { // line 456
 					if (i >= 23 && i < 28) {
@@ -2325,11 +2099,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 28) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 45) { // line 789
 					if (i >= 38 && i < 43) {
@@ -2338,11 +2109,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 43) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 53 && i < 58) {
@@ -2351,11 +2119,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 58) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2371,11 +2136,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 32) { // line 456
 					if (i >= 24 && i < 29) {
@@ -2384,11 +2146,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 29) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 48) { // line 789
 					if (i >= 40 && i < 45) {
@@ -2397,11 +2156,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 56 && i < 61) {
@@ -2410,11 +2166,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 61) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2430,11 +2183,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 34) { // line 456
 					if (i >= 25 && i < 30) {
@@ -2443,11 +2193,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 51) { // line 789
 					if (i >= 42 && i < 47) {
@@ -2456,11 +2203,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 47) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 59 && i < 64) {
@@ -2469,11 +2213,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 64) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2489,11 +2230,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
-						(line1.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 1, XMFLOAT3((line1.x + (float)stage2_start1_x(dre)), line1.y,
+						(line1.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 34) { // line 456
 					if (i >= 24 && i < 30) {
@@ -2502,11 +2240,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
-						(line4.z + (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 4, XMFLOAT3((line4.x + (float)stage2_start1_x(dre)), line4.y,
+						(line4.z + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < 51) { // line 789
 					if (i >= 41 && i < 47) {
@@ -2515,11 +2250,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 47) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
-						(line7.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 7, XMFLOAT3((line7.x + (float)stage2_start1_x(dre)), line7.y,
+						(line7.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 58 && i < 64) {
@@ -2528,11 +2260,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 64) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(2, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
-						(line10.z - (i % 5) * MONSTER_GEN_DISTANCE)));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(2, 10, XMFLOAT3((line10.x + (float)stage2_start1_x(dre)), line10.y,
+						(line10.z - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE)));
 				}
 			}
 			break;
@@ -2553,32 +2282,20 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 7) { // line 123
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3( (line1.x - (i % 5) * MONSTER_GEN_DISTANCE), line1.y,
-						(line1.z + (float)stage3_start1_z(dre) )) );
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
+						(line1.z + (float)stage3_start1_z(dre))));
 				}
 				else if (i < 14) { // line 456
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 5) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 21) { // line 789
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 5) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 5) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2589,32 +2306,20 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			for (int i = 0; i < waveMax; ++i) {
 				m_map_monsterPool[room_number][i].set_monster_type(TYPE_ORC);
 				if (i < 7) { // line 123
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 5) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 14) { // line 456
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 5) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 21) { // line 789
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 5) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 5) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2628,41 +2333,29 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 7) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 7) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 18) { // line 456
 					if (i >= 16) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 7) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 27) { // line 789
 					if (i >= 25) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 7) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 34) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 7) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2676,41 +2369,29 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 6) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 7) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 18) { // line 456
 					if (i >= 15) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 7) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 27) { // line 789
 					if (i >= 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 7) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 33) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 7) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2724,41 +2405,29 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					if (i >= 8) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 8) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 22) { // line 456
 					if (i >= 19) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 8) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 33) { // line 789
 					if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 8) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 41) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_STRONGORC);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 8) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2775,11 +2444,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 11) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 9) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 26) { // line 456
 					if (i >= 19 && i < 24) {
@@ -2788,11 +2454,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 24) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 9) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 39) { // line 789
 					if (i >= 34 && i < 37) {
@@ -2801,11 +2464,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 37) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 9) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 47 && i < 50) {
@@ -2814,11 +2474,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 50) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 9) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2835,11 +2492,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 9) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 30) { // line 456
 					if (i >= 23 && i < 28) {
@@ -2848,11 +2502,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 28) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 9) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 45) { // line 789
 					if (i >= 38 && i < 43) {
@@ -2861,11 +2512,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 43) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 9) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 53 && i < 58) {
@@ -2874,11 +2522,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 58) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 9) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2895,11 +2540,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 10) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 32) { // line 456
 					if (i >= 24 && i < 29) {
@@ -2908,11 +2550,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 29) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 10) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 48) { // line 789
 					if (i >= 40 && i < 45) {
@@ -2921,11 +2560,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 45) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 10) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 56 && i < 61) {
@@ -2934,11 +2570,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 61) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 10) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -2955,11 +2588,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 10) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 34) { // line 456
 					if (i >= 25 && i < 30) {
@@ -2968,11 +2598,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 10) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 51) { // line 789
 					if (i >= 42 && i < 47) {
@@ -2981,11 +2608,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 47) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 10) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 59 && i < 64) {
@@ -2994,11 +2618,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 64) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 10) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;
@@ -3015,11 +2636,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 13) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 1);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line1.x - (i % 10) * MONSTER_GEN_DISTANCE), line1.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 1, XMFLOAT3((line1.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line1.y,
 						(line1.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 34) { // line 456
 					if (i >= 24 && i < 30) {
@@ -3028,11 +2646,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 30) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 4);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line4.x + (i % 10) * MONSTER_GEN_DISTANCE), line4.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 4, XMFLOAT3((line4.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line4.y,
 						(line4.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < 51) { // line 789
 					if (i >= 41 && i < 47) {
@@ -3041,11 +2656,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 47) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 7);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line9.x + (i % 10) * MONSTER_GEN_DISTANCE), line9.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 7, XMFLOAT3((line9.x + (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line9.y,
 						(line9.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 				else if (i < waveMax) { // line 10 11 12
 					if (i >= 58 && i < 64) {
@@ -3054,11 +2666,8 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 					else if (i >= 64) {
 						m_map_monsterPool[room_number][i].set_monster_type(TYPE_RIDER);
 					}
-					m_map_monsterPool[room_number][i].gen_sequence(3, 10);
-					m_map_monsterPool[room_number][i].set_position(XMFLOAT3((line12.x - (i % 10) * MONSTER_GEN_DISTANCE), line12.y,
+					m_map_monsterPool[room_number][i].gen_sequence(3, 10, XMFLOAT3((line12.x - (i % SPAWN_DIS) * MONSTER_GEN_DISTANCE), line12.y,
 						(line12.z + (float)stage3_start1_z(dre))));
-					m_map_monsterPool[room_number][i].set_animation_state(2);
-					m_map_monsterPool[room_number][i].set_isLive(true);
 				}
 			}
 			break;

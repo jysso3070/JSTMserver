@@ -59,7 +59,7 @@ public:
 	bool get_bulletAnim() { return m_bulletAnimation; }
 	mutex& get_monsterLock() { return m_monsterLock; }
 
-	void gen_sequence(const short& stage_number, const short& pathLine);
+	void gen_sequence(const short& stage_number, const short& pathLine, XMFLOAT3 position);
 	void decrease_hp(const short& damage);
 	void move_forward(const float& distance);
 	void move_forward(const float& distance, Monster* monsterPool);

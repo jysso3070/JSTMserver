@@ -150,13 +150,16 @@ DirectX::XMFLOAT4X4 Monster::get_4x4position()
 }
 
 
-void Monster::gen_sequence(const short & stage_number, const short & pathLine)
+void Monster::gen_sequence(const short & stage_number, const short & pathLine, XMFLOAT3 position)
 {
 	m_arrive_portal = false;
 	m_stage_number = stage_number;
 	m_pathLine = pathLine;
 	m_path_checkPoint = 0;
+	m_animation_state = M_ANIM_RUN;
 	this->make_checkPoint();
+	this->set_position(position);
+	this->set_isLive(true);
 }
 
 void Monster::decrease_hp(const short & damage)
@@ -284,7 +287,7 @@ void Monster::make_checkPoint()
 			m_checkPoint_3 = XMFLOAT3(-220.f + stage2_check3(dre), -50.f, 70.f + stage2_check3(dre));
 			m_checkPoint_4 = stage2_4;
 		}
-		else if (m_pathLine == 7 || m_pathLine == 7 || m_pathLine == 9) {
+		else if (m_pathLine == 7 || m_pathLine == 8 || m_pathLine == 9) {
 			m_checkPoint_1 = XMFLOAT3(-630.f + stage2_check1(dre), -50.f, -1870.f + stage2_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(-220.f + stage2_check2(dre), -50.f, -1640.f + stage2_check2(dre));
 			m_checkPoint_3 = XMFLOAT3(-220.f + stage2_check3(dre), -50.f, 70.f - stage2_check3(dre));
@@ -312,7 +315,7 @@ void Monster::make_checkPoint()
 			m_checkPoint_4 = XMFLOAT3(-250.f + stage3_check4(dre), -50.f, 0.f - stage3_check4(dre));
 			m_checkPoint_5 = stage3_5;
 		}
-		else if (m_pathLine == 7 || m_pathLine == 7 || m_pathLine == 9) {
+		else if (m_pathLine == 7 || m_pathLine == 8 || m_pathLine == 9) {
 			m_checkPoint_1 = XMFLOAT3(1050.f + stage3_check1(dre), -50.f, -1800.f + stage3_check1(dre));
 			m_checkPoint_2 = XMFLOAT3(870.f + stage3_check2(dre), -50.f, 740.f + stage3_check2(dre));
 			m_checkPoint_3 = XMFLOAT3(0.f + stage3_check3(dre), -50.f, 740.f + stage3_check3(dre));

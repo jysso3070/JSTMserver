@@ -90,10 +90,12 @@ constexpr int PLAYER_NONE = -1;
 #define TRAP_ARROW_ATT		80
 
 // trap range
-#define TRAP_NEEDLE_RANGE	50.f
-#define TRAP_FIRE_RANGE		300.f
-#define TRAP_SLOW_RANGE		60.f
-#define TRAP_ARROW_RANGE	350.f
+#define TRAP_NEEDLE_RANGE		50.f
+#define TRAP_FIRE_RANGE			300.f
+#define TRAP_FIRE_WIDTHRANGE	30
+#define TRAP_SLOW_RANGE			60.f
+#define TRAP_ARROW_RANGE		350.f
+#define TRAP_ARROW_WIDTHRANGE	30
 
 #define SC_SEND_ID			1
 #define SC_POS				2

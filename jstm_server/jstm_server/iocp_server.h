@@ -5,7 +5,6 @@
 #include "server_manager.h"
 #include "Trap.h"
 #include "Monster.h"
-#include "Monster_gen.h"
 #include "Collision.h"
 #include "timer.h"
 #include "struct.h"
@@ -74,6 +73,7 @@ private:
 	Server_manager *m_Server_manager = NULL;
 	Collision *m_Collision = NULL;
 	Timer *m_Timer = NULL;
+	//monster_spawn* m_Monster_spawn = NULL;
 	
 	// iocp id
 	HANDLE m_iocp_Handle; // iocp วฺต้
