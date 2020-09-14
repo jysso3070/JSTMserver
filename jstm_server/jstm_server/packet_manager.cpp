@@ -18,7 +18,7 @@ void packet_manager::send_packet(int client_id, SOCKET client_socket, char * buf
 	memcpy(&packet_size, buf, sizeof(unsigned short));
 	OVER_EX *send_over = new OVER_EX;
 	memset(send_over, 0x00, sizeof(OVER_EX));
-	send_over->event_type = EV_SEND;
+	send_over->eventType = EV_SEND;
 	memcpy(send_over->net_buf, packet, packet_size);
 	send_over->wsabuf[0].buf = send_over->net_buf;
 	send_over->wsabuf[0].len = packet_size;
@@ -141,7 +141,7 @@ void packet_manager::send_trap_info_packet(int client_id, SOCKET client_socket, 
 	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
 }
 
-void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, MONSTER mon_arr[])
+void packet_manager::sendMonsterPos(int client_id, SOCKET client_socket, MONSTER mon_arr[])
 {
 	sc_packet_monster_pos packet;
 	ZeroMemory(&packet, sizeof(packet));
@@ -232,19 +232,6 @@ void packet_manager::send_wave_end(int client_id, SOCKET client_socket)
 	sc_packet_wave_end packet;
 	packet.type =SC_WAVE_END;
 	packet.id = client_id;
-	packet.size = sizeof(packet);
-
-	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));
-}
-
-void packet_manager::send_monster_pos(int client_id, SOCKET client_socket, unsigned short monster_id, char monster_type, unsigned short animation_state, DirectX::XMFLOAT4X4 world_pos)
-{
-	sc_packet_monster_pos_test packet;
-	packet.type = SC_MONSTER_POS_TEST;
-	packet.monster_id = monster_id;
-	packet.monster_type = monster_type;
-	packet.animation_state = animation_state;
-	packet.world_pos = world_pos;
 	packet.size = sizeof(packet);
 
 	send_packet(client_id, client_socket, reinterpret_cast<char*>(&packet));

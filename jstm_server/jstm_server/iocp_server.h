@@ -21,7 +21,7 @@ public:
 
 public:
 	void serverInitialize();	// 서버 초기화
-	void make_thread();	// 스레드 생성
+	void makeThread();	// 스레드 생성
 
 
 	void init_DB();
@@ -30,9 +30,9 @@ public:
 
 	// thread
 	void run_acceptThread(); // 소켓 accept를 받는 스레드함수
-	void run_mainThread(); // 주 워커 스레드
+	void runMainThread(); // 주 워커 스레드
 	void run_timerThread();
-	void process_monster_move(const short& room_number);
+	void processMonsterMove(const short& room_number);
 	void run_packet_countThread();
 
 	// event queue add
@@ -68,30 +68,30 @@ public:
 
 private:
 	// class
-	packet_manager *m_Packet_manager = NULL;
-	Database_manager *m_Database_manager = NULL;
-	Server_manager *m_Server_manager = NULL;
-	Collision *m_Collision = NULL;
-	Timer *m_Timer = NULL;
+	packet_manager *mPacketManager = NULL;
+	Database_manager *mDatabaseManager = NULL;
+	Server_manager *mServerManager = NULL;
+	Collision *mCollision = NULL;
+	Timer *mTimer = NULL;
 	//monster_spawn* m_Monster_spawn = NULL;
 	
 	// iocp id
-	HANDLE m_iocp_Handle; // iocp 핸들
-	std::vector<std::thread> m_threadsPool;
+	HANDLE mIocpHandle; // iocp 핸들
+	std::vector<std::thread> mThreadsPool;
 	unsigned int maxWorkerThread = 7;
-	int m_new_user_id;
+	int mNewUserId;
 	short m_new_room_num;
 	short m_new_trap_id;
 	Concurrency::concurrent_unordered_map<short, short> m_map_trapIdPool;
 
-	SOCKET m_accept_socket = NULL;
+	SOCKET mAcceptSocket = NULL;
 
 	// STL container
-	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> m_map_player_info; // 플레이어 정보 맵(concurrent_unordered_map)
+	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> mMapPlayerInfo; // 플레이어 정보 맵(concurrent_unordered_map)
 	priority_queue <GAME_EVENT> m_gameLogic_queue; // 우선순위 큐
 	mutex m_eventTimer_lock;
 
-	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> m_map_game_room;	// room정보
+	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> mMapGameRoom;	// room정보
 	Concurrency::concurrent_unordered_map<short, Monster*> m_map_monsterPool;
 	Concurrency::concurrent_unordered_map<short, Trap*> m_map_trap;
 

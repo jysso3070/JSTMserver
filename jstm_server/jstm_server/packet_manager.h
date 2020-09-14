@@ -21,7 +21,7 @@ public:
 	void send_make_room_ok(int client_id, SOCKET client_socket, short room_number);
 	void send_join_room_ok(int client_id, SOCKET client_socket, short room_number, GAME_ROOM* game_room);
 	void send_trap_info_packet(int client_id, SOCKET client_socket, unsigned short trap_index, unsigned short trap_local_id, DirectX::XMFLOAT4X4 trap_pos, char trap_type);
-	void send_monster_pos(int client_id, SOCKET client_socket, MONSTER mon_arr[]);
+	void sendMonsterPos(int client_id, SOCKET client_socket, MONSTER mon_arr[]);
 	void send_game_end(int client_id, SOCKET client_socket, bool clearFlag);
 	void send_stat_change(int client_id, SOCKET client_socket, short hp, short gold);
 	void send_game_info_update(int client_id, SOCKET client_socket, short wave, short portalLife);
@@ -29,8 +29,6 @@ public:
 	void send_nameLogin_result(int client_id, SOCKET client_socket, char result);
 	void send_leaveRoom_ok(int client_id, SOCKET client_socket);
 	void send_wave_end(int client_id, SOCKET client_socket);
-	void send_monster_pos(int client_id, SOCKET client_socket, unsigned short monster_id, char monster_type, unsigned short animation_state,
-		DirectX::XMFLOAT4X4 world_pos);
 	void send_wallTrapOn(int client_id, SOCKET client_socket, unsigned short trap_index);
 
 

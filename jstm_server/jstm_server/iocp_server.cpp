@@ -3,12 +3,12 @@
 Iocp_server::Iocp_server()
 {
 	Database_manager *db_manager = new Database_manager;
-	m_Database_manager = db_manager;
+	mDatabaseManager = db_manager;
 
 	serverInitialize();
 	init_wPos();
 
-	make_thread();
+	makeThread();
 
 }
 
@@ -23,31 +23,31 @@ void Iocp_server::serverInitialize()
 {
 
 	DWORD maxThread = 0;
-	m_iocp_Handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, maxThread);
+	mIocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, maxThread);
 
-	m_new_user_id = 0;
+	mNewUserId = 0;
 	m_new_room_num = 1;
 	m_new_trap_id = 1;
 
-	m_Server_manager->get_server_ipAddress();
-	m_Server_manager->get_cpu_count();
+	mServerManager->get_server_ipAddress();
+	mServerManager->get_cpu_count();
 	//init_DB();
 
 	init_socket();
 
 }
 
-void Iocp_server::make_thread()
+void Iocp_server::makeThread()
 {
-	m_threadsPool.emplace_back([this]() {run_acceptThread(); });
+	mThreadsPool.emplace_back([this]() {run_acceptThread(); });
 
 	for (int i = 0; i < maxWorkerThread; ++i) {
-		m_threadsPool.emplace_back([this]() {run_mainThread(); });
+		mThreadsPool.emplace_back([this]() {runMainThread(); });
 	}
 
-	m_threadsPool.emplace_back([this]() {run_timerThread(); });
+	mThreadsPool.emplace_back([this]() {run_timerThread(); });
 
-	for (auto& th : m_threadsPool) {
+	for (auto& th : mThreadsPool) {
 		if (th.joinable()) {
 			th.join();
 		}
@@ -60,7 +60,7 @@ void Iocp_server::make_thread()
 
 void Iocp_server::init_DB()
 {
-	m_Database_manager->sql_load_database();
+	mDatabaseManager->sql_load_database();
 	//m_database_manager->sql_update_data(1, 3);
 }
 
@@ -82,7 +82,7 @@ void Iocp_server::init_socket()
 		WSACleanup();
 		return;
 	}
-	m_accept_socket = listenSocket;
+	mAcceptSocket = listenSocket;
 }
 
 void Iocp_server::init_wPos()
@@ -98,7 +98,7 @@ void Iocp_server::run_acceptThread()
 {
 
 	// 수신 대기 설정
-	listen(m_accept_socket, 5);
+	listen(mAcceptSocket, 5);
 	SOCKADDR_IN clientAddr;
 	int addrLen = sizeof(SOCKADDR_IN);
 	memset(&clientAddr, 0, addrLen);
@@ -106,7 +106,7 @@ void Iocp_server::run_acceptThread()
 	DWORD flags;
 
 	while (true) {
-		clientSocket = accept(m_accept_socket, (struct sockaddr *)&clientAddr, &addrLen);
+		clientSocket = accept(mAcceptSocket, (struct sockaddr *)&clientAddr, &addrLen);
 		if (clientSocket == INVALID_SOCKET) {	// 소켓연결실패시
 			printf("err - accept fail \n");
 			break;
@@ -115,10 +115,10 @@ void Iocp_server::run_acceptThread()
 			printf("socket accept success \n");
 		}
 
-		int user_id = m_new_user_id++;
+		int userId = mNewUserId++;
 		PLAYER_INFO *new_player = new PLAYER_INFO;
 		ZeroMemory(new_player, sizeof(new_player));
-		new_player->id = user_id;
+		new_player->id = userId;
 		new_player->socket = clientSocket;
 		new_player->room_number = -1;
 		new_player->animation_state = 0;
@@ -127,16 +127,16 @@ void Iocp_server::run_acceptThread()
 		new_player->damageCooltime = false;
 		new_player->recv_over.wsabuf[0].len = MAX_BUFFER;
 		new_player->recv_over.wsabuf[0].buf = new_player->recv_over.net_buf;
-		new_player->recv_over.event_type = EV_RECV;
-		new_player->player_state = PLAYER_STATE_in_lobby;
+		new_player->recv_over.eventType = EV_RECV;
+		new_player->playerState = PLAYER_STATE_in_lobby;
 		new_player->player_world_pos = default_wPos;
 		new_player->is_connect = true;
 
-		m_map_player_info.insert(make_pair(user_id, new_player)); // 플레이어 map에 인서트
+		mMapPlayerInfo.insert(make_pair(userId, new_player)); // 플레이어 map에 인서트
 
-		CreateIoCompletionPort(reinterpret_cast<HANDLE>(clientSocket), m_iocp_Handle, user_id, 0); // iocp 등록
+		CreateIoCompletionPort(reinterpret_cast<HANDLE>(clientSocket), mIocpHandle, userId, 0); // iocp 등록
 
-		m_Packet_manager->send_id_packet(user_id, clientSocket);
+		mPacketManager->send_id_packet(userId, clientSocket);
 
 		cout << "새로운 플레이어 접속" << endl;
 		//m_packet_manager->send_pos_packet(user_id, clientSocket, )
@@ -156,11 +156,11 @@ void Iocp_server::run_acceptThread()
 		//	}
 		//}
 
-		send_all_room_list(user_id); // 모든 방 정보 전송
+		send_all_room_list(userId); // 모든 방 정보 전송
 
 		///////
-		m_map_player_info[user_id]->x = 300;
-		m_map_player_info[user_id]->y = 300;
+		mMapPlayerInfo[userId]->x = 300;
+		mMapPlayerInfo[userId]->y = 300;
 
 		/*EVENT ev{ user_id, chrono::high_resolution_clock::now() + 10s, EV_TEST, 0 };
 		add_event_to_queue(ev);*/
@@ -171,53 +171,51 @@ void Iocp_server::run_acceptThread()
 		//////
 
 
-		memset(&m_map_player_info[user_id]->recv_over.over, 0, sizeof(m_map_player_info[user_id]->recv_over.over));
+		memset(&mMapPlayerInfo[userId]->recv_over.over, 0, sizeof(mMapPlayerInfo[userId]->recv_over.over));
 		flags = 0;
-		int ret = WSARecv(clientSocket, m_map_player_info[user_id]->recv_over.wsabuf, 1, NULL,
-			&flags, &(m_map_player_info[user_id]->recv_over.over), NULL);
+		int ret = WSARecv(clientSocket, mMapPlayerInfo[userId]->recv_over.wsabuf, 1, NULL,
+			&flags, &(mMapPlayerInfo[userId]->recv_over.over), NULL);
 		if (0 != ret) {
 			int err_no = WSAGetLastError();
 			if (WSA_IO_PENDING != err_no)
-				m_Server_manager->socket_error_display("WSARecv Error : ", err_no);
+				mServerManager->socket_error_display("WSARecv Error : ", err_no);
 		}
 	}
 
 }
 
-void Iocp_server::run_mainThread()
+void Iocp_server::runMainThread()
 {
 	while (true) {
 		DWORD ioByte;
 		ULONG key;
-		PULONG p_key = &key;
-		WSAOVERLAPPED* p_over;
-
-		GetQueuedCompletionStatus(m_iocp_Handle, &ioByte, (PULONG_PTR)p_key, &p_over, INFINITE);
+		PULONG pKey = &key;
+		WSAOVERLAPPED* pOver;
+		GetQueuedCompletionStatus(mIocpHandle, &ioByte, (PULONG_PTR)pKey, &pOver, INFINITE);
 
 		// 클라이언트가 종료했을 경우
 		if (0 == ioByte) {
-			SOCKET client_s = m_map_player_info[key]->socket;
+			SOCKET client_s = mMapPlayerInfo[key]->socket;
 			closesocket(client_s);
-			m_map_player_info[key]->is_connect = false;
-			m_map_player_info[key]->player_state = PLAYER_STATE_default;
+			mMapPlayerInfo[key]->is_connect = false;
+			mMapPlayerInfo[key]->playerState = PLAYER_STATE_default;
 			process_disconnect_client(key);
 			continue;
 		}
-		OVER_EX *over_ex = reinterpret_cast<OVER_EX *> (p_over);
-
-		switch (over_ex->event_type)
+		OVER_EX *overEx = reinterpret_cast<OVER_EX *> (pOver);
+		switch (overEx->eventType)
 		{
 		case EV_RECV:
 		{
-			SOCKET client_s = m_map_player_info[key]->socket;
-			over_ex->net_buf[ioByte] = 0;
+			SOCKET client_s = mMapPlayerInfo[key]->socket;
+			overEx->net_buf[ioByte] = 0;
 			//process_packet(key, over_ex->net_buf);
 
 			unsigned int cur_packet_size = 0;
 			unsigned int saved_packet_size = 0;
 			DWORD buf_byte = ioByte;
 
-			char* temp = reinterpret_cast<char*>(over_ex->net_buf);
+			char* temp = reinterpret_cast<char*>(overEx->net_buf);
 			char tempBuf[MAX_BUFFER];
 
 			while (buf_byte != 0)
@@ -243,138 +241,138 @@ void Iocp_server::run_mainThread()
 			}
 
 			DWORD flags = 0;
-			memset(&over_ex->over, 0x00, sizeof(WSAOVERLAPPED));
-			WSARecv(client_s, over_ex->wsabuf, 1, 0, &flags, &over_ex->over, 0);
+			memset(&overEx->over, 0x00, sizeof(WSAOVERLAPPED));
+			WSARecv(client_s, overEx->wsabuf, 1, 0, &flags, &overEx->over, 0);
 			break;
 		}
 		case EV_TEST:
 		{
 			cout << "test event ! \n";
 			char tname[11] = "jys";
-			m_Database_manager->check_nameLogin(tname);
+			mDatabaseManager->check_nameLogin(tname);
 			//std::string new_name = "qqq";
 			//m_database_manager->sql_insert_new_data(m_database_manager->m_list_player_db.size(), new_name);
 			/*get_player_db();
 			for (auto d : m_list_player_db) {
 				cout << "name: " << d.name <<"."<< endl;
 			}*/
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_GEN_1stWAVE_MONSTER:
 		{
-			short stage_number = *(short*)(over_ex->net_buf);
+			short stage_number = *(short*)(overEx->net_buf);
 			process_gen_monster(key, stage_number);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_DEAD:
 		{
-			short monster_id = *(short*)(over_ex->net_buf);
+			short monster_id = *(short*)(overEx->net_buf);
 			short room_number = (short)key;
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_isLive(false);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			//cout << monster_id << "번 false \n";
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_NEEDLE_TRAP_COLLISION:
 		{
 			short monster_id = (short)key;
-			short room_number = *(short*)(over_ex->net_buf);
+			short room_number = *(short*)(overEx->net_buf);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_FIRE_TRAP_COLLISION:
 		{
 			short monster_id = (short)key;
-			short room_number = *(short*)(over_ex->net_buf);
+			short room_number = *(short*)(overEx->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_ARROW_TRAP_COLLISION:
 		{
 			short monster_id = (short)key;
-			short room_number = *(short*)(over_ex->net_buf);
+			short room_number = *(short*)(overEx->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_SLOW_TRAP_COLLISION:
 		{
 			short monster_id = (short)key;
-			short room_number = *(short*)(over_ex->net_buf);
+			short room_number = *(short*)(overEx->net_buf);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().lock();
 			m_map_monsterPool[room_number][monster_id].set_trap_cooltime(false);
 			m_map_monsterPool[room_number][monster_id].set_buffType(TRAP_BUFF_NONE);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_WALLTRAP_COLLTIME:
 		{
 			short trap_index = (short)key;
-			short room_number = *(short*)(over_ex->net_buf);
+			short room_number = *(short*)(overEx->net_buf);
 			m_map_trap[room_number][trap_index].set_wallTrapOn(false);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_BULLET:
 		{
 			short monster_id = (short)key;
-			short room_number = *(short*)(over_ex->net_buf);
+			short room_number = *(short*)(overEx->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_bulletAnim(false);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_CHECK_WAVE_END:
 		{
 			check_wave_end(key);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_GEN_MONSTER:
 		{
-			short stage_number = m_map_game_room[key]->stage_number;
+			short stage_number = mMapGameRoom[key]->stage_number;
 			process_gen_monster(key, stage_number);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_THREAD_RUN:
 		{
-			process_monster_move(key);
-			delete over_ex;
+			processMonsterMove(key);
+			delete overEx;
 			break;
 		}
 		case EV_MONSTER_ATTACK:
 		{
 			short room_number = (short)key;
-			short monster_id = *(short*)(over_ex->net_buf);
+			short monster_id = *(short*)(overEx->net_buf);
 			check_monster_attack(room_number, monster_id);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case EV_PLAYER_DAMAGE_COOLTIME:
 		{
-			m_map_player_info[key]->damageCooltime = false;
-			delete over_ex;
+			mMapPlayerInfo[key]->damageCooltime = false;
+			delete overEx;
 			break;
 		}
 		case EV_PROTALLIFE_UPDATE:
 		{
 			send_protalLife_update(key);
-			delete over_ex;
+			delete overEx;
 			break;
 		}
 		case PLAYER_GAME_START:
 		{
-			m_map_player_info[key]->player_state = PLAYER_STATE_playing_game;
-			delete over_ex;
+			mMapPlayerInfo[key]->playerState = PLAYER_STATE_playing_game;
+			delete overEx;
 			break;
 		}
 		default:
@@ -406,126 +404,126 @@ void Iocp_server::run_timerThread()
 		// 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
 		if (EV_MOVE == p_ev.event_type) { 
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MOVE;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_MOVE;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_TEST == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_TEST;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_TEST;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
 			//m_monsterThread_run = true;
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_THREAD_RUN;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_MONSTER_THREAD_RUN;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_GEN_1stWAVE_MONSTER;
+			over_ex->eventType = EV_GEN_1stWAVE_MONSTER;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj; // stage number;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 			//gen_monster(p_ev.obj_id, 1, 1, 1);
 		}
 		else if (EV_MONSTER_DEAD == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_DEAD;
+			over_ex->eventType = EV_MONSTER_DEAD;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_NEEDLE_TRAP_COLLISION;
+			over_ex->eventType = EV_MONSTER_NEEDLE_TRAP_COLLISION;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_SLOW_TRAP_COLLISION == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_SLOW_TRAP_COLLISION;
+			over_ex->eventType = EV_MONSTER_SLOW_TRAP_COLLISION;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_FIRE_TRAP_COLLISION == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_FIRE_TRAP_COLLISION;
+			over_ex->eventType = EV_MONSTER_FIRE_TRAP_COLLISION;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_ARROW_TRAP_COLLISION == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_ARROW_TRAP_COLLISION;
+			over_ex->eventType = EV_MONSTER_ARROW_TRAP_COLLISION;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_WALLTRAP_COLLTIME == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_WALLTRAP_COLLTIME;
+			over_ex->eventType = EV_WALLTRAP_COLLTIME;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_BULLET == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_BULLET;
+			over_ex->eventType = EV_MONSTER_BULLET;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_CHECK_WAVE_END == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_CHECK_WAVE_END;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_CHECK_WAVE_END;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_GEN_MONSTER == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_GEN_MONSTER;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_GEN_MONSTER;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_MONSTER_ATTACK == p_ev.event_type) { // target_id = monster idx
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_MONSTER_ATTACK;
+			over_ex->eventType = EV_MONSTER_ATTACK;
 			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_PLAYER_DAMAGE_COOLTIME == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_PLAYER_DAMAGE_COOLTIME;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_PLAYER_DAMAGE_COOLTIME;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (EV_PROTALLIFE_UPDATE == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = EV_PROTALLIFE_UPDATE;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = EV_PROTALLIFE_UPDATE;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 		else if (PLAYER_GAME_START == p_ev.event_type) {
 			OVER_EX *over_ex = new OVER_EX;
-			over_ex->event_type = PLAYER_GAME_START;
-			PostQueuedCompletionStatus(m_iocp_Handle, 1, p_ev.obj_id, &over_ex->over);
+			over_ex->eventType = PLAYER_GAME_START;
+			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
 		}
 	}
 }
 
-void Iocp_server::process_monster_move(const short& room_number)
+void Iocp_server::processMonsterMove(const short& roomNumber)
 {
 	//auto start = chrono::high_resolution_clock::now();
-	auto mon_pool = m_map_monsterPool[room_number];
+	auto monPool = m_map_monsterPool[roomNumber];
 	MONSTER monsterPacketArr[MAX_MONSTER];
 	ZeroMemory(monsterPacketArr, sizeof(monsterPacketArr));
 	for (short i = 0; i < MAX_MONSTER; ++i) {
-		m_map_game_room[room_number]->monsterThread_lock.lock();
+		mMapGameRoom[roomNumber]->monsterThread_lock.lock();
 		monsterPacketArr[i].id = i;
 		monsterPacketArr[i].isLive = false;
-		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
+		monsterPacketArr[i].type = monPool[i].get_monster_type();
 		monsterPacketArr[i].hp = 0;
 		monsterPacketArr[i].animation_state = 0;
 		monsterPacketArr[i].world_pos = default_wPos;
-		m_map_game_room[room_number]->monsterThread_lock.unlock();
-		if (mon_pool[i].get_isLive() == false) { // 연산할필요없는 것 제외
+		mMapGameRoom[roomNumber]->monsterThread_lock.unlock();
+		if (monPool[i].get_isLive() == false) { // 연산할필요없는 것 제외
 			//monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
 			continue;
 		}
 
 		
-		if (mon_pool[i].get_arrivePortal() == true) {
-			mon_pool[i].set_isLive(false);
+		if (monPool[i].get_arrivePortal() == true) {
+			monPool[i].set_isLive(false);
 			/*m_map_game_room[room_number]->monsterThread_lock.lock();
 			monsterPacketArr[i].isLive = false;
 			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
@@ -541,38 +539,38 @@ void Iocp_server::process_monster_move(const short& room_number)
 		}
 
 		// 몬스터 체력 0 이하 사망 이벤트 추가
-		if (mon_pool[i].get_HP() <= 0) {
-			mon_pool[i].set_animation_state(M_ANIM_DEATH);
-			add_monster_dead_event(room_number, i);
-			m_map_game_room[room_number]->monsterThread_lock.lock();
-			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
-			monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
-			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
-			monsterPacketArr[i].hp = mon_pool[i].get_HP();
-			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
-			m_map_game_room[room_number]->monsterThread_lock.unlock();
+		if (monPool[i].get_HP() <= 0) {
+			monPool[i].set_animation_state(M_ANIM_DEATH);
+			add_monster_dead_event(roomNumber, i);
+			mMapGameRoom[roomNumber]->monsterThread_lock.lock();
+			monsterPacketArr[i].isLive = monPool[i].get_isLive();
+			monsterPacketArr[i].animation_state = monPool[i].get_animation_state();
+			monsterPacketArr[i].type = monPool[i].get_monster_type();
+			monsterPacketArr[i].hp = monPool[i].get_HP();
+			monsterPacketArr[i].world_pos = monPool[i].get_4x4position();
+			mMapGameRoom[roomNumber]->monsterThread_lock.unlock();
 			continue;
 		}
-		if (mon_pool[i].get_bulletAnim() == true) {
-			monsterPacketArr[i].isLive = mon_pool[i].get_isLive();
+		if (monPool[i].get_bulletAnim() == true) {
+			monsterPacketArr[i].isLive = monPool[i].get_isLive();
 			monsterPacketArr[i].animation_state = M_ANIM_DAMAGE;
-			monsterPacketArr[i].type = mon_pool[i].get_monster_type();
-			monsterPacketArr[i].hp = mon_pool[i].get_HP();
-			monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
+			monsterPacketArr[i].type = monPool[i].get_monster_type();
+			monsterPacketArr[i].hp = monPool[i].get_HP();
+			monsterPacketArr[i].world_pos = monPool[i].get_4x4position();
 			continue;
 		}
 		
-		if (mon_pool[i].get_isLive() == true)
+		if (monPool[i].get_isLive() == true)
 		{
 			// 타겟플레이어가 없을때 범위안에 있는 플레이어 서치
-			if (mon_pool[i].get_target_id() == -1) {
+			if (monPool[i].get_target_id() == -1) {
 				int near_id = -1;
 				float near_dis = 300.f;
 				for (int player_index = 0; player_index < 4; ++player_index) {
-					int player_id = m_map_game_room[room_number]->players_id[player_index];
+					int player_id = mMapGameRoom[roomNumber]->players_id[player_index];
 					if (player_id == -1) { continue; }
-					if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-						float dis = Vector3::Distance(m_map_player_info[player_id]->get_pos(), mon_pool[i].get_position());
+					if (mMapPlayerInfo[player_id]->playerState == PLAYER_STATE_playing_game) {
+						float dis = Vector3::Distance(mMapPlayerInfo[player_id]->get_pos(), monPool[i].get_position());
 						if (dis <= 200.f) { // 어그로 범위 내
 							if (near_dis > dis) {
 								near_id = player_id;
@@ -581,122 +579,122 @@ void Iocp_server::process_monster_move(const short& room_number)
 						}
 					}
 				}
-				mon_pool[i].set_target_id(near_id);
+				monPool[i].set_target_id(near_id);
 			}
 			// 타겟이 있을때 몬스터 행동
-			if (mon_pool[i].get_target_id() != -1) {
-				int target_id = mon_pool[i].get_target_id();
-				if (m_map_player_info[target_id]->player_state != PLAYER_STATE_playing_game) {
-					mon_pool[i].set_target_id(-1);
+			if (monPool[i].get_target_id() != -1) {
+				int target_id = monPool[i].get_target_id();
+				if (mMapPlayerInfo[target_id]->playerState != PLAYER_STATE_playing_game) {
+					monPool[i].set_target_id(-1);
 					continue;
 				}
-				float dis = Vector3::Distance(m_map_player_info[target_id]->get_pos(), mon_pool[i].get_position());
+				float dis = Vector3::Distance(mMapPlayerInfo[target_id]->get_pos(), monPool[i].get_position());
 				if (dis <= 200.f && dis >= ORC_ATT_RANGE) { //어그로 범위
-					mon_pool[i].set_target_id(target_id);
-					mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-					mon_pool[i].move_forward(MONSTER_MOVE_DISTANCE, mon_pool);
-					mon_pool[i].set_animation_state(M_ANIM_RUN);
+					monPool[i].set_target_id(target_id);
+					monPool[i].set_aggro_direction(mMapPlayerInfo[target_id]->get_pos());
+					monPool[i].move_forward(MONSTER_MOVE_DISTANCE, monPool);
+					monPool[i].set_animation_state(M_ANIM_RUN);
 				}
 				else if (dis < ORC_ATT_RANGE) { // 공격범위
-					mon_pool[i].set_target_id(target_id);
-					mon_pool[i].set_aggro_direction(m_map_player_info[target_id]->get_pos());
-					mon_pool[i].set_animation_state(M_ANIM_ATT);
-					if (mon_pool[i].get_attackCooltime() == false &&
-						m_map_player_info[mon_pool[i].get_target_id()]->damageCooltime == false) {
-						GAME_EVENT ev_monAttck{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
+					monPool[i].set_target_id(target_id);
+					monPool[i].set_aggro_direction(mMapPlayerInfo[target_id]->get_pos());
+					monPool[i].set_animation_state(M_ANIM_ATT);
+					if (monPool[i].get_attackCooltime() == false &&
+						mMapPlayerInfo[monPool[i].get_target_id()]->damageCooltime == false) {
+						GAME_EVENT ev_monAttck{ roomNumber, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_ATTACK, i };
 						add_event_to_queue(ev_monAttck);
-						mon_pool[i].set_attackCooltime(true);
+						monPool[i].set_attackCooltime(true);
 					}
 				}
 				else {
-					mon_pool[i].set_target_id(-1);
+					monPool[i].set_target_id(-1);
 					// 여기일거같음
-					mon_pool[i].aggro_release();
+					monPool[i].aggro_release();
 				}
 			}
 			// 타겟이 없을때 행동
 			else {
 				//mon_pool[i].process_move_path();
-				mon_pool[i].process_move_path_t();
-				mon_pool[i].move_forward(MONSTER_MOVE_DISTANCE, mon_pool);
+				monPool[i].process_move_path_t();
+				monPool[i].move_forward(MONSTER_MOVE_DISTANCE, monPool);
 			}
 
 			// trap collision
-			auto coopyTrapPool = m_map_trap[room_number];
+			auto coopyTrapPool = m_map_trap[roomNumber];
 			for (short trap_idx = 0; trap_idx < MAX_TRAP; ++trap_idx) {
-				if (mon_pool[i].get_isTrapCooltime() == true) { break; }
+				if (monPool[i].get_isTrapCooltime() == true) { break; }
 				if (coopyTrapPool[trap_idx].get_enable() == false) { continue; }
 
 				if (coopyTrapPool[trap_idx].get_type() == TRAP_NEEDLE) {
-					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
+					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), monPool[i].get_position());
 					if (trap_dis < TRAP_NEEDLE_RANGE) {
 						//cout << "needle 함정 피격" << endl;
 						//mon_pool[i].get_monsterLock().lock();
-						mon_pool[i].set_trap_cooltime(true);
-						mon_pool[i].decrease_hp(TRAP_NEEDLE_ATT);
+						monPool[i].set_trap_cooltime(true);
+						monPool[i].decrease_hp(TRAP_NEEDLE_ATT);
 						//mon_pool[i].get_monsterLock().unlock();
-						GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_NEEDLE_TRAP_COLLISION, room_number };
+						GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_NEEDLE_TRAP_COLLISION, roomNumber };
 						add_event_to_queue(trap_ev);
 					}
 				}
 				else if (coopyTrapPool[trap_idx].get_type() == TRAP_SLOW) {
-					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), mon_pool[i].get_position());
+					float trap_dis = Vector3::Distance(coopyTrapPool[trap_idx].get_position(), monPool[i].get_position());
 					if (trap_dis < TRAP_SLOW_RANGE) {
 						//cout << "slow 함정 피격" << endl;
 						// 함정피격쿨타임적용, 3초후에 쿨타임 해제하는 이벤트 추가
 						//mon_pool[i].get_monsterLock().lock();
-						mon_pool[i].set_trap_cooltime(true);
-						mon_pool[i].set_buffType(TRAP_BUFF_SLOW);
+						monPool[i].set_trap_cooltime(true);
+						monPool[i].set_buffType(TRAP_BUFF_SLOW);
 						//mon_pool[i].get_monsterLock().unlock();
-						GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, room_number };
+						GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 3s, EV_MONSTER_SLOW_TRAP_COLLISION, roomNumber };
 						add_event_to_queue(trap_ev);
 					}
 				}
 				else if (coopyTrapPool[trap_idx].get_type() == TRAP_FIRE) {
 					volatile bool trapColli = false;
 					if(coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MX) {
-						if (mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_WIDTHRANGE &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_WIDTHRANGE) {
-							mon_pool[i].set_trap_cooltime(true);
+						if (monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
+							monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_RANGE &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_WIDTHRANGE &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_WIDTHRANGE) {
+							monPool[i].set_trap_cooltime(true);
 							trapColli = true;
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							//cout << "MX벽 불함정 피격 \n";
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PX) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_WIDTHRANGE &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_WIDTHRANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
+							monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_RANGE &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_WIDTHRANGE &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_WIDTHRANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PX벽 불함정 피격 \n";
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_WIDTHRANGE &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_WIDTHRANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_RANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_WIDTHRANGE &&
+							monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_WIDTHRANGE &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_FIRE_RANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MZ벽 불함정 피격 \n";
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_WIDTHRANGE &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_WIDTHRANGE &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_RANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_FIRE_WIDTHRANGE &&
+							monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_FIRE_WIDTHRANGE &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_FIRE_RANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_FIRE_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PZ벽 불함정 피격 \n";
@@ -704,16 +702,16 @@ void Iocp_server::process_monster_move(const short& room_number)
 					}
 					if (trapColli == true) {
 						//cout << "벽 불함정 피격 \n";
-						mon_pool[i].decrease_hp(TRAP_FIRE_ATT);
+						monPool[i].decrease_hp(TRAP_FIRE_ATT);
 						if (coopyTrapPool[trap_idx].get_wallTrapOn() == false) {
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
-							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
+							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, roomNumber };
 							add_event_to_queue(wallTrapCool);
 							for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
-								int player_id = m_map_game_room[room_number]->players_id[i];
+								int player_id = mMapGameRoom[roomNumber]->players_id[i];
 								if (player_id == -1) { continue; }
-								if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-									m_Packet_manager->send_wallTrapOn(player_id, m_map_player_info[player_id]->socket, trap_idx);
+								if (mMapPlayerInfo[player_id]->playerState == PLAYER_STATE_playing_game) {
+									mPacketManager->send_wallTrapOn(player_id, mMapPlayerInfo[player_id]->socket, trap_idx);
 								}
 							}
 							//cout << "벽 불함정 패킷전송 \n";
@@ -723,48 +721,48 @@ void Iocp_server::process_monster_move(const short& room_number)
 				else if (coopyTrapPool[trap_idx].get_type() == TRAP_ARROW) {
 					volatile bool trapColli = false;
 					if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MX) {
-						if (mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_WIDTHRANGE &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_WIDTHRANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x &&
+							monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_RANGE &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_WIDTHRANGE &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_WIDTHRANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MX벽 불함정 피격 \n";
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PX) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_RANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_WIDTHRANGE &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_WIDTHRANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x &&
+							monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_RANGE &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_WIDTHRANGE &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_WIDTHRANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PX벽 불함정 피격 \n";
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_MZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_WIDTHRANGE &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_WIDTHRANGE &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_RANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_WIDTHRANGE &&
+							monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_WIDTHRANGE &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z - TRAP_ARROW_RANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "MZ벽 불함정 피격 \n";
 						}
 					}
 					else if (coopyTrapPool[trap_idx].get_wallDir() == WALL_TRAP_PZ) {
-						if (mon_pool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_WIDTHRANGE &&
-							mon_pool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_WIDTHRANGE &&
-							mon_pool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
-							mon_pool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_RANGE) {
-							mon_pool[i].set_trap_cooltime(true);
-							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, room_number };
+						if (monPool[i].get_position().x > coopyTrapPool[trap_idx].get_position().x - TRAP_ARROW_WIDTHRANGE &&
+							monPool[i].get_position().x < coopyTrapPool[trap_idx].get_position().x + TRAP_ARROW_WIDTHRANGE &&
+							monPool[i].get_position().z > coopyTrapPool[trap_idx].get_position().z &&
+							monPool[i].get_position().z < coopyTrapPool[trap_idx].get_position().z + TRAP_ARROW_RANGE) {
+							monPool[i].set_trap_cooltime(true);
+							GAME_EVENT trap_ev{ i, chrono::high_resolution_clock::now() + 2s, EV_MONSTER_ARROW_TRAP_COLLISION, roomNumber };
 							add_event_to_queue(trap_ev);
 							trapColli = true;
 							//cout << "PZ벽 불함정 피격 \n";
@@ -772,16 +770,16 @@ void Iocp_server::process_monster_move(const short& room_number)
 					}
 					if (trapColli == true) {
 						//cout << "벽 화살함정 피격 \n";
-						mon_pool[i].decrease_hp(TRAP_ARROW_ATT);
+						monPool[i].decrease_hp(TRAP_ARROW_ATT);
 						if (coopyTrapPool[trap_idx].get_wallTrapOn() == false) {
 							coopyTrapPool[trap_idx].set_wallTrapOn(true);
-							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, room_number };
+							GAME_EVENT wallTrapCool{ trap_idx, chrono::high_resolution_clock::now() + 2s, EV_WALLTRAP_COLLTIME, roomNumber };
 							add_event_to_queue(wallTrapCool);
 							for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
-								int player_id = m_map_game_room[room_number]->players_id[i];
+								int player_id = mMapGameRoom[roomNumber]->players_id[i];
 								if (player_id == -1) { continue; }
-								if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-									m_Packet_manager->send_wallTrapOn(player_id, m_map_player_info[player_id]->socket, trap_idx);
+								if (mMapPlayerInfo[player_id]->playerState == PLAYER_STATE_playing_game) {
+									mPacketManager->send_wallTrapOn(player_id, mMapPlayerInfo[player_id]->socket, trap_idx);
 								}
 							}
 							//cout << "벽 화살함정 패킷전송 \n";
@@ -792,8 +790,8 @@ void Iocp_server::process_monster_move(const short& room_number)
 		}
 
 		// 포탈에 도착한 몬스터
-		if (mon_pool[i].get_arrivePortal() == true) {
-			mon_pool[i].set_isLive(false);
+		if (monPool[i].get_arrivePortal() == true) {
+			monPool[i].set_isLive(false);
 #ifndef TESTMODE
 			m_map_game_room[room_number]->portalLife -= 1;
 #endif
@@ -801,30 +799,30 @@ void Iocp_server::process_monster_move(const short& room_number)
 
 
 		// 패킷에 들어갈 몬스터배열 값 지정
-		m_map_game_room[room_number]->monsterThread_lock.lock();
-		if (mon_pool[i].get_isLive() == true) {
+		mMapGameRoom[roomNumber]->monsterThread_lock.lock();
+		if (monPool[i].get_isLive() == true) {
 			monsterPacketArr[i].isLive = true;
 		}
 		else {
 			monsterPacketArr[i].isLive = false;
 		}
-		monsterPacketArr[i].animation_state = mon_pool[i].get_animation_state();
-		monsterPacketArr[i].type = mon_pool[i].get_monster_type();
-		monsterPacketArr[i].hp = mon_pool[i].get_HP();
-		monsterPacketArr[i].world_pos = mon_pool[i].get_4x4position();
-		m_map_game_room[room_number]->monsterThread_lock.unlock();
+		monsterPacketArr[i].animation_state = monPool[i].get_animation_state();
+		monsterPacketArr[i].type = monPool[i].get_monster_type();
+		monsterPacketArr[i].hp = monPool[i].get_HP();
+		monsterPacketArr[i].world_pos = monPool[i].get_4x4position();
+		mMapGameRoom[roomNumber]->monsterThread_lock.unlock();
 	}
 
 	for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
-		int player_id = m_map_game_room[room_number]->players_id[i];
-		if (player_id == PLAYER_NONE) { continue; }
-		if (m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
-			m_Packet_manager->send_monster_pos(player_id, m_map_player_info[player_id]->socket, monsterPacketArr);
+		int playerId = mMapGameRoom[roomNumber]->players_id[i];
+		if (playerId == PLAYER_NONE) { continue; }
+		if (mMapPlayerInfo[playerId]->playerState == PLAYER_STATE_playing_game) {
+			mPacketManager->sendMonsterPos(playerId, mMapPlayerInfo[playerId]->socket, monsterPacketArr);
 		}
 	}
 
-	if (m_map_game_room[room_number]->wave_on == true) {
-		GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
+	if (mMapGameRoom[roomNumber]->wave_on == true) {
+		GAME_EVENT ev{ roomNumber, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
 		add_event_to_queue(ev);
 	}
 	//cout << "mon run \n";
@@ -856,8 +854,8 @@ void Iocp_server::t_process_player_move(const int& id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
-	short x = m_map_player_info[id]->x;
-	short y = m_map_player_info[id]->y;
+	short x = mMapPlayerInfo[id]->x;
+	short y = mMapPlayerInfo[id]->y;
 	switch (packet[1]) {
 	case CS_UP:
 		y -= 10;
@@ -875,11 +873,11 @@ void Iocp_server::t_process_player_move(const int& id, void * buff)
 		break;
 	}
 
-	m_map_player_info[id]->x = x;
-	m_map_player_info[id]->y = y;
+	mMapPlayerInfo[id]->x = x;
+	mMapPlayerInfo[id]->y = y;
 
-	m_Packet_manager->t_send_pos_packet(id, m_map_player_info[id]->socket, x, y);
-	cout << "x: " << m_map_player_info[id]->x << ", y: " << m_map_player_info[id]->y << endl;
+	mPacketManager->t_send_pos_packet(id, mMapPlayerInfo[id]->socket, x, y);
+	cout << "x: " << mMapPlayerInfo[id]->x << ", y: " << mMapPlayerInfo[id]->y << endl;
 
 }
 
@@ -905,22 +903,22 @@ void Iocp_server::process_player_move(const int& id, void * buff)
 		++pakcetCount;
 	}
 
-	m_map_player_info[id]->player_world_pos = pos_packet->player_world_pos;
-	m_map_player_info[id]->animation_state = pos_packet->animation_state;
+	mMapPlayerInfo[id]->player_world_pos = pos_packet->player_world_pos;
+	mMapPlayerInfo[id]->animation_state = pos_packet->animation_state;
 	//m_map_player_info[id]->player_state = PLAYER_STATE_playing_game;
 
-	if (m_map_game_room[m_map_player_info[id]->room_number]->players_id == NULL) {
+	if (mMapGameRoom[mMapPlayerInfo[id]->room_number]->players_id == NULL) {
 		return;
 	}
 
-	short room_number = m_map_player_info[id]->room_number;
+	short room_number = mMapPlayerInfo[id]->room_number;
 	for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
-		int other_id = m_map_game_room[room_number]->players_id[i];
+		int other_id = mMapGameRoom[room_number]->players_id[i];
 		if (other_id == -1) { continue; }
-		if (m_map_player_info[other_id]->is_connect == true && 
-			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game && other_id != id) {
-			m_Packet_manager->send_pos_packet(other_id, m_map_player_info[other_id]->socket, id,
-				m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
+		if (mMapPlayerInfo[other_id]->is_connect == true && 
+			mMapPlayerInfo[other_id]->playerState == PLAYER_STATE_playing_game && other_id != id) {
+			mPacketManager->send_pos_packet(other_id, mMapPlayerInfo[other_id]->socket, id,
+				mMapPlayerInfo[id]->player_world_pos, mMapPlayerInfo[id]->animation_state);
 		}
 	}
 
@@ -943,24 +941,24 @@ void Iocp_server::process_make_room(const int& id)
 	new_room->players_id[2] = -1;
 	new_room->players_id[3] = -1;
 
-	m_map_player_info[id]->roomList_lock.lock();
-	m_map_game_room.insert(make_pair(room_num, new_room)); // gameroom map에 삽입
-	m_map_player_info[id]->roomList_lock.unlock();
+	mMapPlayerInfo[id]->roomList_lock.lock();
+	mMapGameRoom.insert(make_pair(room_num, new_room)); // gameroom map에 삽입
+	mMapPlayerInfo[id]->roomList_lock.unlock();
 
-	m_map_player_info[id]->room_number = room_num;
-	m_map_player_info[id]->player_state = PLAYER_STATE_in_room;
+	mMapPlayerInfo[id]->room_number = room_num;
+	mMapPlayerInfo[id]->playerState = PLAYER_STATE_in_room;
 
-	m_Packet_manager->send_make_room_ok(id, m_map_player_info[id]->socket, room_num);
+	mPacketManager->send_make_room_ok(id, mMapPlayerInfo[id]->socket, room_num);
 
-	for (auto client : m_map_player_info) {
+	for (auto client : mMapPlayerInfo) {
 		if (client.second->is_connect == true /*&& client.second->player_state == PLAYER_STATE_in_lobby*/ ){
-			m_Packet_manager->send_room_info_pakcet(client.second->id, client.second->socket,
+			mPacketManager->send_room_info_pakcet(client.second->id, client.second->socket,
 				new_room);
 		}
 	}
 
 	cout << "make room success \n";
-	for (auto room : m_map_game_room) {
+	for (auto room : mMapGameRoom) {
 		if (room.second->enable == false) { continue; }
 		cout << "room info \n";
 		cout << "room number: " << room.second->room_number << "\n";
@@ -978,31 +976,31 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 	short r_number = join_room_packet->room_number;
 
 	bool joinflag = false;
-	m_map_player_info[id]->roomList_lock.lock();
+	mMapPlayerInfo[id]->roomList_lock.lock();
 	for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
-		if (m_map_game_room[r_number]->players_id[i] == -1) {
-			m_map_game_room[r_number]->players_id[i] = id;
+		if (mMapGameRoom[r_number]->players_id[i] == -1) {
+			mMapGameRoom[r_number]->players_id[i] = id;
 			joinflag = true;
 			break;
 		}
 	}
-	m_map_player_info[id]->roomList_lock.unlock();
+	mMapPlayerInfo[id]->roomList_lock.unlock();
 
 	if (joinflag == true) {
-		m_map_player_info[id]->room_number = r_number;
-		m_map_player_info[id]->player_state = PLAYER_STATE_in_room;
-		m_Packet_manager->send_join_room_ok(id, m_map_player_info[id]->socket, r_number, m_map_game_room[r_number]);
+		mMapPlayerInfo[id]->room_number = r_number;
+		mMapPlayerInfo[id]->playerState = PLAYER_STATE_in_room;
+		mPacketManager->send_join_room_ok(id, mMapPlayerInfo[id]->socket, r_number, mMapGameRoom[r_number]);
 
 
 		// 바뀐 방정보 모든 클라이언트들에게 전송
-		for (auto client : m_map_player_info) {
-			if (client.second->is_connect == true && client.second->player_state != PLAYER_STATE_playing_game) {
-				m_Packet_manager->send_room_info_pakcet(id, client.second->socket, m_map_game_room[r_number]);
+		for (auto client : mMapPlayerInfo) {
+			if (client.second->is_connect == true && client.second->playerState != PLAYER_STATE_playing_game) {
+				mPacketManager->send_room_info_pakcet(id, client.second->socket, mMapGameRoom[r_number]);
 			}
 		}
 
 		cout << "make room success \n";
-		auto copyRoom = m_map_game_room;
+		auto copyRoom = mMapGameRoom;
 		for (auto room : copyRoom) {
 			cout << "room info \n";
 			cout << "room number: " << room.second->room_number << "\n";
@@ -1020,24 +1018,24 @@ void Iocp_server::process_join_room(const int& id, void *buff)
 void Iocp_server::process_leaveRoom(const int & id, void * buff)
 {
 	cs_packet_leaveRoom *leaveRoom_packet = reinterpret_cast<cs_packet_leaveRoom*>(buff);
-	short room_number = m_map_player_info[id]->room_number;
+	short room_number = mMapPlayerInfo[id]->room_number;
 	if (room_number != -1) {
 		for (short i = 0; i < MAX_ROOMPLAYER; ++i) { // 방에있는 id 목록에서 id 제거
-			if (m_map_game_room[room_number]->players_id[i] == id) {
-				m_map_game_room[room_number]->players_id[i] = -1;
+			if (mMapGameRoom[room_number]->players_id[i] == id) {
+				mMapGameRoom[room_number]->players_id[i] = -1;
 			}
 		}
-		m_map_player_info[id]->room_number = -1;
-		m_map_player_info[id]->player_state = PLAYER_STATE_in_room;
+		mMapPlayerInfo[id]->room_number = -1;
+		mMapPlayerInfo[id]->playerState = PLAYER_STATE_in_room;
 		// 자신에게 방나가기 성공패킷 전송
-		m_Packet_manager->send_leaveRoom_ok(id, m_map_player_info[id]->socket);
+		mPacketManager->send_leaveRoom_ok(id, mMapPlayerInfo[id]->socket);
 
 		for (short i = 0; i < MAX_ROOMPLAYER; ++i) { // 방에 남은 플레이어에게 방을나간 정보 전송
-			int p_id = m_map_game_room[room_number]->players_id[i];
+			int p_id = mMapGameRoom[room_number]->players_id[i];
 			if (p_id != -1) {
-				if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_in_room
+				if (mMapPlayerInfo[p_id]->is_connect == true && mMapPlayerInfo[p_id]->playerState == PLAYER_STATE_in_room
 					&& p_id != id) {
-					m_Packet_manager->send_room_info_pakcet(p_id, m_map_player_info[p_id]->socket, m_map_game_room[room_number]);
+					mPacketManager->send_room_info_pakcet(p_id, mMapPlayerInfo[p_id]->socket, mMapGameRoom[room_number]);
 				}
 			}
 		}
@@ -1045,17 +1043,17 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 
 		bool roomEmpty = true;
 		for (short i = 0; i < MAX_ROOMPLAYER; ++i) { // 방이 비었는지 체크
-			int p_id = m_map_game_room[room_number]->players_id[i];
+			int p_id = mMapGameRoom[room_number]->players_id[i];
 			if (p_id != -1) {
 				roomEmpty = false;
 				break;
 			}
 		}
 		if (roomEmpty == true) { // 방이 비었을때 삭제?
-			m_map_game_room[room_number]->enable = false;
-			for (auto client : m_map_player_info) {
-				if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
-					m_Packet_manager->send_room_info_pakcet(client.first, client.second->socket, m_map_game_room[room_number]);
+			mMapGameRoom[room_number]->enable = false;
+			for (auto client : mMapPlayerInfo) {
+				if (client.second->is_connect == true && client.second->playerState == PLAYER_STATE_in_lobby) {
+					mPacketManager->send_room_info_pakcet(client.first, client.second->socket, mMapGameRoom[room_number]);
 				}
 			}
 
@@ -1063,11 +1061,11 @@ void Iocp_server::process_leaveRoom(const int & id, void * buff)
 		}
 
 		// 로비로 나간 플레이어에게 전체 방정보 전송
-		for (auto room : m_map_game_room) {
-			m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket, room.second);
+		for (auto room : mMapGameRoom) {
+			mPacketManager->send_room_info_pakcet(id, mMapPlayerInfo[id]->socket, room.second);
 		}
 
-		for (auto room : m_map_game_room) {
+		for (auto room : mMapGameRoom) {
 			if (room.second->enable == false) { continue; }
 			cout << "room info \n";
 			cout << "room number: " << room.second->room_number << "\n";
@@ -1088,18 +1086,18 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 
 
 	if (packet->change_state == PLAYER_STATE_playing_game) {	// 방의 state 변경
-		m_map_player_info[id]->hp = 200;
-		m_map_player_info[id]->gold = 500;
-		short myroom_num = m_map_player_info[id]->room_number;
-		m_Packet_manager->send_game_start(id, m_map_player_info[id]->socket, 1,
-			m_map_game_room[myroom_num]->wave_count, m_map_game_room[myroom_num]->portalLife);
+		mMapPlayerInfo[id]->hp = 200;
+		mMapPlayerInfo[id]->gold = 500;
+		short myroom_num = mMapPlayerInfo[id]->room_number;
+		mPacketManager->send_game_start(id, mMapPlayerInfo[id]->socket, 1,
+			mMapGameRoom[myroom_num]->wave_count, mMapGameRoom[myroom_num]->portalLife);
 
-		if (m_map_game_room[m_map_player_info[id]->room_number]->room_state == R_STATE_in_room) {
-			m_map_player_info[id]->roomList_lock.lock();
-			m_map_game_room[m_map_player_info[id]->room_number]->room_state = R_STATE_gameStart;
-			m_map_game_room[m_map_player_info[id]->room_number]->stage_number = packet->stage_number;
-			m_map_player_info[id]->roomList_lock.unlock();
-			process_game_start(m_map_player_info[id]->room_number, packet->stage_number);
+		if (mMapGameRoom[mMapPlayerInfo[id]->room_number]->room_state == R_STATE_in_room) {
+			mMapPlayerInfo[id]->roomList_lock.lock();
+			mMapGameRoom[mMapPlayerInfo[id]->room_number]->room_state = R_STATE_gameStart;
+			mMapGameRoom[mMapPlayerInfo[id]->room_number]->stage_number = packet->stage_number;
+			mMapPlayerInfo[id]->roomList_lock.unlock();
+			process_game_start(mMapPlayerInfo[id]->room_number, packet->stage_number);
 		}
 
 		GAME_EVENT ev_playerStart{ id, chrono::high_resolution_clock::now() + 3s, PLAYER_GAME_START, 0 };
@@ -1108,15 +1106,15 @@ void Iocp_server::process_client_state_change(const int& id, void * buff)
 		//m_map_player_info[id]->player_state = packet->change_state;
 
 		for (short i = 0; i < MAX_ROOMPLAYER; ++i) {	// 같은 방의 클라이언트에게 put player 상호 전송
-			int other_id = m_map_game_room[myroom_num]->players_id[i];
+			int other_id = mMapGameRoom[myroom_num]->players_id[i];
 			if (other_id == -1) { continue; }
-			if (m_map_player_info[other_id]->is_connect == true &&
+			if (mMapPlayerInfo[other_id]->is_connect == true &&
 				/*m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game &&*/ other_id != id) {
 				//cout << id << " put "<< other_id << endl;
-				m_Packet_manager->send_put_player_packet(other_id, m_map_player_info[other_id]->socket, id, 
-					m_map_player_info[id]->player_world_pos, m_map_player_info[id]->animation_state);
-				m_Packet_manager->send_put_player_packet(id, m_map_player_info[id]->socket, other_id, 
-					m_map_player_info[other_id]->player_world_pos, m_map_player_info[other_id]->animation_state);
+				mPacketManager->send_put_player_packet(other_id, mMapPlayerInfo[other_id]->socket, id, 
+					mMapPlayerInfo[id]->player_world_pos, mMapPlayerInfo[id]->animation_state);
+				mPacketManager->send_put_player_packet(id, mMapPlayerInfo[id]->socket, other_id, 
+					mMapPlayerInfo[other_id]->player_world_pos, mMapPlayerInfo[other_id]->animation_state);
 			}
 		}
 	}
@@ -1126,7 +1124,7 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 {
 	cs_packet_install_trap *packet = reinterpret_cast<cs_packet_install_trap*>(buff);
 
-	short room_num = m_map_player_info[id]->room_number;
+	short room_num = mMapPlayerInfo[id]->room_number;
 
 	/*short new_trapId = m_map_trapIdPool[room_num];
 	auto &trapPool = m_map_trap[room_num];
@@ -1134,10 +1132,10 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	trapPool[new_trapId].set_enable(true);
 	trapPool[new_trapId].set_trap_type(packet->trap_type);
 	m_map_trapIdPool[room_num] += 1;*/
-	m_map_player_info[id]->roomList_lock.lock();
+	mMapPlayerInfo[id]->roomList_lock.lock();
 	short new_trapId = m_map_trapIdPool[room_num];
 	m_map_trapIdPool[room_num] += 1;
-	m_map_player_info[id]->roomList_lock.unlock();
+	mMapPlayerInfo[id]->roomList_lock.unlock();
 	m_map_trap[room_num][new_trapId].set_trap_id(packet->trap_local_id);
 	m_map_trap[room_num][new_trapId].set_4x4position(packet->trap_pos);
 	m_map_trap[room_num][new_trapId].set_trap_type(packet->trap_type);
@@ -1147,21 +1145,21 @@ void Iocp_server::process_install_trap(const int& id, void * buff)
 	m_map_trap[room_num][new_trapId].set_enable(true);
 
 	//cout << "trap install" << endl;
-	m_map_player_info[id]->gold -= TRAP_COST;
+	mMapPlayerInfo[id]->gold -= TRAP_COST;
 #ifdef TESTMODE
-	if (m_map_player_info[id]->gold < 0) {
-		m_map_player_info[id]->gold = 0;
+	if (mMapPlayerInfo[id]->gold < 0) {
+		mMapPlayerInfo[id]->gold = 0;
 	}
 #endif
-	m_Packet_manager->send_stat_change(id, m_map_player_info[id]->socket, -1000, m_map_player_info[id]->gold);
+	mPacketManager->send_stat_change(id, mMapPlayerInfo[id]->socket, -1000, mMapPlayerInfo[id]->gold);
 
 	// 설치한 트랩 정보 전송
 	for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
-		int other_id = m_map_game_room[room_num]->players_id[i];
+		int other_id = mMapGameRoom[room_num]->players_id[i];
 		if (other_id == -1) { continue; }
-		if (m_map_player_info[other_id]->is_connect == true &&
-			m_map_player_info[other_id]->player_state == PLAYER_STATE_playing_game /*&& other_id != id*/) {
-			m_Packet_manager->send_trap_info_packet(other_id, m_map_player_info[other_id]->socket, new_trapId, packet->trap_local_id, packet->trap_pos,
+		if (mMapPlayerInfo[other_id]->is_connect == true &&
+			mMapPlayerInfo[other_id]->playerState == PLAYER_STATE_playing_game /*&& other_id != id*/) {
+			mPacketManager->send_trap_info_packet(other_id, mMapPlayerInfo[other_id]->socket, new_trapId, packet->trap_local_id, packet->trap_pos,
 				packet->trap_type);
 		}
 	}
@@ -1190,7 +1188,7 @@ void Iocp_server::check_trapDir(const short & room_number, const short & trap_in
 void Iocp_server::process_player_shoot(const int & id, void * buff)
 {
 	cs_packet_shoot *packet = reinterpret_cast<cs_packet_shoot*>(buff);
-	short player_room_number = m_map_player_info[id]->room_number;
+	short player_room_number = mMapPlayerInfo[id]->room_number;
 	if (player_room_number == -1) { return; }
 
 	if (m_map_monsterPool[player_room_number][packet->monster_id].get_isLive() == true) {
@@ -1213,8 +1211,8 @@ void Iocp_server::process_player_shoot(const int & id, void * buff)
 
 void Iocp_server::process_game_start(const short& room_number, const short& stage_number)
 {
-	m_map_game_room[room_number]->portalLife = 20;
-	m_map_game_room[room_number]->wave_count = 0;
+	mMapGameRoom[room_number]->portalLife = 20;
+	mMapGameRoom[room_number]->wave_count = 0;
 
 	auto p = m_map_monsterPool.find(room_number);
 	if (p == m_map_monsterPool.end()) {
@@ -1244,11 +1242,11 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 			trapArr[i].set_wallTrapOn(false);
 		}
 
-		m_map_game_room[room_number]->gameRoom_lock.lock();
+		mMapGameRoom[room_number]->gameRoom_lock.lock();
 		m_map_monsterPool.insert(make_pair(room_number, monsterArr));
 		m_map_trap.insert(make_pair(room_number, trapArr));
 		m_map_trapIdPool.insert(make_pair(room_number, 0));
-		m_map_game_room[room_number]->gameRoom_lock.unlock();
+		mMapGameRoom[room_number]->gameRoom_lock.unlock();
 	}
 
 	/*for (auto m : m_map_monsterPool) {
@@ -1278,31 +1276,31 @@ void Iocp_server::process_game_end(const short & room_number, const bool& clearF
 		m_map_trap[room_number][i].set_wallDir(TRAP_DEFAULT);
 		m_map_trap[room_number][i].set_wallTrapOn(false);
 	}
-	for (int p_id : m_map_game_room[room_number]->players_id) {
-		if (p_id != -1 && m_map_player_info[p_id]->is_connect == true &&
-			m_map_player_info[p_id]->player_state == PLAYER_STATE_playing_game ) {
-			m_map_player_info[p_id]->player_state = PLAYER_STATE_in_room;
-			m_Packet_manager->send_game_end(p_id, m_map_player_info[p_id]->socket, clearFlag);
+	for (int p_id : mMapGameRoom[room_number]->players_id) {
+		if (p_id != -1 && mMapPlayerInfo[p_id]->is_connect == true &&
+			mMapPlayerInfo[p_id]->playerState == PLAYER_STATE_playing_game ) {
+			mMapPlayerInfo[p_id]->playerState = PLAYER_STATE_in_room;
+			mPacketManager->send_game_end(p_id, mMapPlayerInfo[p_id]->socket, clearFlag);
 		}
 	}
-	m_map_game_room[room_number]->room_state = R_STATE_in_room;
+	mMapGameRoom[room_number]->room_state = R_STATE_in_room;
 }
 
 
 void Iocp_server::check_wave_end(const short& room_number)
 {
-	if (m_map_game_room[room_number]->enable == false) { // 방 터진상황
+	if (mMapGameRoom[room_number]->enable == false) { // 방 터진상황
 		return;
 	}
 
 
-	m_map_game_room[room_number]->gameRoom_lock.lock();
-	short pLife = m_map_game_room[room_number]->portalLife;
+	mMapGameRoom[room_number]->gameRoom_lock.lock();
+	short pLife = mMapGameRoom[room_number]->portalLife;
 	send_protalLife_update(room_number);
-	m_map_game_room[room_number]->gameRoom_lock.unlock();
+	mMapGameRoom[room_number]->gameRoom_lock.unlock();
 	if (pLife <= 0) { // 포탈라이프 0이하
 		cout << "plife: " << pLife << endl;
-		m_map_game_room[room_number]->wave_on = false;
+		mMapGameRoom[room_number]->wave_on = false;
 		process_game_end(room_number, false);
 		return;
 	}
@@ -1318,9 +1316,9 @@ void Iocp_server::check_wave_end(const short& room_number)
 	}
 	bool playerdead = false;
 	for (short idx = 0; idx < MAX_ROOMPLAYER; ++idx) {
-		int player_id = m_map_game_room[room_number]->players_id[idx];
+		int player_id = mMapGameRoom[room_number]->players_id[idx];
 		if (player_id == -1) { continue; }
-		if (m_map_player_info[player_id]->hp < 0 && m_map_player_info[player_id]->player_state == PLAYER_STATE_playing_game) {
+		if (mMapPlayerInfo[player_id]->hp < 0 && mMapPlayerInfo[player_id]->playerState == PLAYER_STATE_playing_game) {
 			playerdead = true;
 		}
 	}
@@ -1332,26 +1330,26 @@ void Iocp_server::check_wave_end(const short& room_number)
 
 
 	if (end_flag == true) { // wave가 종료되면
-		m_map_game_room[room_number]->wave_on = false;
-		if (m_map_game_room[room_number]->wave_count == lastWAVE) { // 마지막 웨이브 종료시 게임종료 시킴
+		mMapGameRoom[room_number]->wave_on = false;
+		if (mMapGameRoom[room_number]->wave_count == lastWAVE) { // 마지막 웨이브 종료시 게임종료 시킴
 			process_game_end(room_number, true);
 			cout << "room" << room_number << "claer \n";
 			return;
 		}
 		// 웨이브 카운트 올리고
 		// 다음 웨이브 몬스터 젠 시키기
-		m_map_game_room[room_number]->wave_count += 1;
+		mMapGameRoom[room_number]->wave_count += 1;
 		for (short p_idx = 0; p_idx < MAX_ROOMPLAYER; ++p_idx) {
-			int temp_id = m_map_game_room[room_number]->players_id[p_idx];
+			int temp_id = mMapGameRoom[room_number]->players_id[p_idx];
 			if (temp_id != -1) {
-				if (m_map_player_info[temp_id]->is_connect == true &&
-					m_map_player_info[temp_id]->player_state == PLAYER_STATE_playing_game) {
-					m_map_player_info[temp_id]->gold += 200;
-					m_map_player_info[temp_id]->hp = 200;
-					m_Packet_manager->send_stat_change(temp_id, m_map_player_info[temp_id]->socket, m_map_player_info[temp_id]->hp, m_map_player_info[temp_id]->gold);
-					m_Packet_manager->send_game_info_update(temp_id, m_map_player_info[temp_id]->socket,
-						m_map_game_room[room_number]->wave_count, -1000);
-					m_Packet_manager->send_wave_end(temp_id, m_map_player_info[temp_id]->socket);
+				if (mMapPlayerInfo[temp_id]->is_connect == true &&
+					mMapPlayerInfo[temp_id]->playerState == PLAYER_STATE_playing_game) {
+					mMapPlayerInfo[temp_id]->gold += 200;
+					mMapPlayerInfo[temp_id]->hp = 200;
+					mPacketManager->send_stat_change(temp_id, mMapPlayerInfo[temp_id]->socket, mMapPlayerInfo[temp_id]->hp, mMapPlayerInfo[temp_id]->gold);
+					mPacketManager->send_game_info_update(temp_id, mMapPlayerInfo[temp_id]->socket,
+						mMapGameRoom[room_number]->wave_count, -1000);
+					mPacketManager->send_wave_end(temp_id, mMapPlayerInfo[temp_id]->socket);
 				}
 			}
 		}
@@ -1376,9 +1374,9 @@ void Iocp_server::add_monster_dead_event(const short & room_number, const short 
 
 void Iocp_server::send_all_room_list(const int& id)
 {
-	for (auto room : m_map_game_room) {
+	for (auto room : mMapGameRoom) {
 		if (room.second->enable == false) { continue; }
-		m_Packet_manager->send_room_info_pakcet(id, m_map_player_info[id]->socket,
+		mPacketManager->send_room_info_pakcet(id, mMapPlayerInfo[id]->socket,
 			room.second);
 	}
 }
@@ -1386,18 +1384,18 @@ void Iocp_server::send_all_room_list(const int& id)
 void Iocp_server::send_protalLife_update(const short & room_number)
 {
 	for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
-		int p_id = m_map_game_room[room_number]->players_id[i];
+		int p_id = mMapGameRoom[room_number]->players_id[i];
 		if (p_id == -1) { continue; }
-		if (m_map_player_info[p_id]->is_connect == true && m_map_player_info[p_id]->player_state == PLAYER_STATE_playing_game) {
-			m_Packet_manager->send_game_info_update(p_id, m_map_player_info[p_id]->socket,
-				-1000, m_map_game_room[room_number]->portalLife);
+		if (mMapPlayerInfo[p_id]->is_connect == true && mMapPlayerInfo[p_id]->playerState == PLAYER_STATE_playing_game) {
+			mPacketManager->send_game_info_update(p_id, mMapPlayerInfo[p_id]->socket,
+				-1000, mMapGameRoom[room_number]->portalLife);
 		}
 	}
 }
 
 void Iocp_server::get_player_db()
 {
-	for (auto d : m_Database_manager->m_list_player_db) {
+	for (auto d : mDatabaseManager->m_list_player_db) {
 		PLAYER_DB db;
 		db.DB_key_id = d.DB_key_id;
 		strcpy_s(db.name, sizeof(d.name), d.name);
@@ -1409,42 +1407,42 @@ void Iocp_server::get_player_db()
 
 void Iocp_server::process_disconnect_client(const int& leaver_id)
 {
-	m_map_player_info[leaver_id]->roomList_lock.lock();
+	mMapPlayerInfo[leaver_id]->roomList_lock.lock();
 	short check_roomNum = -1; 
-	if (m_map_player_info[leaver_id]->room_number != -1) { // 플레이어가 방에 접속해 있을 때
-		check_roomNum = m_map_player_info[leaver_id]->room_number;
+	if (mMapPlayerInfo[leaver_id]->room_number != -1) { // 플레이어가 방에 접속해 있을 때
+		check_roomNum = mMapPlayerInfo[leaver_id]->room_number;
 		for (int i = 0; i < MAX_ROOMPLAYER; ++i) {
-			if (m_map_game_room[check_roomNum]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
-				m_map_game_room[check_roomNum]->players_id[i] = -1;
+			if (mMapGameRoom[check_roomNum]->players_id[i] == leaver_id) { // leaver의 아이디와 같으면 -1로 대체
+				mMapGameRoom[check_roomNum]->players_id[i] = -1;
 				break;
 			}
 			
 		}
 	}
-	m_map_player_info[leaver_id]->roomList_lock.unlock();
-	m_map_player_info[leaver_id]->room_number = -1; // 방나가기
+	mMapPlayerInfo[leaver_id]->roomList_lock.unlock();
+	mMapPlayerInfo[leaver_id]->room_number = -1; // 방나가기
 
-	for (auto c : m_map_player_info) {
+	for (auto c : mMapPlayerInfo) {
 		if (c.second->id == leaver_id) { continue; }
 		if (c.second->is_connect == true) {
 			// 모든 플레이어에게 접속종료된 클라이언트의 아이디를 보내준다
-			m_Packet_manager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
+			mPacketManager->send_remove_player_packet(c.second->id, c.second->socket, leaver_id);
 		}
 	}
 	if (check_roomNum != -1) { // 방이 비었는지 검사
 		bool roomEmpty = true;
 		for (short i = 0; i < MAX_ROOMPLAYER; ++i) {
-			if (m_map_game_room[check_roomNum]->players_id[i] != -1) { // leaver의 아이디와 같으면 -1로 대체
+			if (mMapGameRoom[check_roomNum]->players_id[i] != -1) { // leaver의 아이디와 같으면 -1로 대체
 				roomEmpty = false;
 				break;
 			}
 		}
 		if (roomEmpty == true) {
-			m_map_game_room[check_roomNum]->enable = false;
-			m_map_game_room[check_roomNum]->wave_on = false;
-			for (auto client : m_map_player_info) {
-				if (client.second->is_connect == true && client.second->player_state == PLAYER_STATE_in_lobby) {
-					m_Packet_manager->send_room_info_pakcet(client.first, client.second->socket, m_map_game_room[check_roomNum]);
+			mMapGameRoom[check_roomNum]->enable = false;
+			mMapGameRoom[check_roomNum]->wave_on = false;
+			for (auto client : mMapPlayerInfo) {
+				if (client.second->is_connect == true && client.second->playerState == PLAYER_STATE_in_lobby) {
+					mPacketManager->send_room_info_pakcet(client.first, client.second->socket, mMapGameRoom[check_roomNum]);
 				}
 			}
 		}
@@ -1454,11 +1452,11 @@ void Iocp_server::process_disconnect_client(const int& leaver_id)
 void Iocp_server::process_nameLogin(const int & id, void * buff)
 {
 	cs_packet_namelogin *login_packet = reinterpret_cast<cs_packet_namelogin*>(buff);
-	int ret = m_Database_manager->check_nameLogin(login_packet->name);
+	int ret = mDatabaseManager->check_nameLogin(login_packet->name);
 	if (ret > 0) {
 		cout << "login success" << endl;
-		m_map_player_info[id]->DB_key = ret;
-		m_Packet_manager->send_nameLogin_result(id, m_map_player_info[id]->socket, NAMELOGIN_SUC);
+		mMapPlayerInfo[id]->DB_key = ret;
+		mPacketManager->send_nameLogin_result(id, mMapPlayerInfo[id]->socket, NAMELOGIN_SUC);
 	}
 	else {
 		cout << "login fail" << endl;
@@ -1470,26 +1468,26 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 {
 	int target_id = m_map_monsterPool[room_number][monster_id].get_target_id();
 	if (target_id == -1) { return; }
-	if (m_map_player_info[target_id]->damageCooltime == true) { return; }
+	if (mMapPlayerInfo[target_id]->damageCooltime == true) { return; }
 
 	if (target_id != -1) { //타겟이 존재할때
 		if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_ORC) {
-			if (Vector3::Distance(m_map_player_info[target_id]->get_pos(),
+			if (Vector3::Distance(mMapPlayerInfo[target_id]->get_pos(),
 				m_map_monsterPool[room_number][monster_id].get_position()) < ORC_ATT_RANGE) {
 				// 공격
 				// hp감소하고 패킷전송
-				if (m_map_player_info[target_id]->damageCooltime == false) {
+				if (mMapPlayerInfo[target_id]->damageCooltime == false) {
 					//cout << "공격성공\n";
-					m_map_player_info[target_id]->hp -= ORC_ATT;
+					mMapPlayerInfo[target_id]->hp -= ORC_ATT;
 #ifdef TESTMODE
-					if (m_map_player_info[target_id]->hp < 10) {
-						m_map_player_info[target_id]->hp = 10;
+					if (mMapPlayerInfo[target_id]->hp < 10) {
+						mMapPlayerInfo[target_id]->hp = 10;
 					}
 #endif
-					m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
+					mPacketManager->send_stat_change(target_id, mMapPlayerInfo[target_id]->socket, mMapPlayerInfo[target_id]->hp, -1000);
 				}
 
-				m_map_player_info[target_id]->damageCooltime = true;
+				mMapPlayerInfo[target_id]->damageCooltime = true;
 				GAME_EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
 				add_event_to_queue(ev);
 			}
@@ -1498,43 +1496,43 @@ void Iocp_server::check_monster_attack(const short & room_number, const short & 
 
 		}
 		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_STRONGORC) {
-			if (Vector3::Distance(m_map_player_info[target_id]->get_pos(),
+			if (Vector3::Distance(mMapPlayerInfo[target_id]->get_pos(),
 				m_map_monsterPool[room_number][monster_id].get_position()) < STRONGORC_ATT_RANGE) {
 				// 공격
 				// hp감소하고 패킷전송
-				if (m_map_player_info[target_id]->damageCooltime == false) {
+				if (mMapPlayerInfo[target_id]->damageCooltime == false) {
 					//cout << "공격성공\n";
-					m_map_player_info[target_id]->hp -= STRONGORC_ATT;
+					mMapPlayerInfo[target_id]->hp -= STRONGORC_ATT;
 #ifdef TESTMODE
-					if (m_map_player_info[target_id]->hp < 10) {
-						m_map_player_info[target_id]->hp = 10;
+					if (mMapPlayerInfo[target_id]->hp < 10) {
+						mMapPlayerInfo[target_id]->hp = 10;
 					}
 #endif
-					m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
+					mPacketManager->send_stat_change(target_id, mMapPlayerInfo[target_id]->socket, mMapPlayerInfo[target_id]->hp, -1000);
 				}
 
-				m_map_player_info[target_id]->damageCooltime = true;
+				mMapPlayerInfo[target_id]->damageCooltime = true;
 				GAME_EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
 				add_event_to_queue(ev);
 			}
 		}
 		else if (m_map_monsterPool[room_number][monster_id].get_monster_type() == TYPE_RIDER) {
-			if (Vector3::Distance(m_map_player_info[target_id]->get_pos(),
+			if (Vector3::Distance(mMapPlayerInfo[target_id]->get_pos(),
 				m_map_monsterPool[room_number][monster_id].get_position()) < RIDER_ATT_RANGE) {
 				// 공격
 				// hp감소하고 패킷전송
-				if (m_map_player_info[target_id]->damageCooltime == false) {
+				if (mMapPlayerInfo[target_id]->damageCooltime == false) {
 					//cout << "공격성공\n";
-					m_map_player_info[target_id]->hp -= RIDER_ATT;
+					mMapPlayerInfo[target_id]->hp -= RIDER_ATT;
 #ifdef TESTMODE
-					if (m_map_player_info[target_id]->hp < 10) {
-						m_map_player_info[target_id]->hp = 10;
+					if (mMapPlayerInfo[target_id]->hp < 10) {
+						mMapPlayerInfo[target_id]->hp = 10;
 					}
 #endif
-					m_Packet_manager->send_stat_change(target_id, m_map_player_info[target_id]->socket, m_map_player_info[target_id]->hp, -1000);
+					mPacketManager->send_stat_change(target_id, mMapPlayerInfo[target_id]->socket, mMapPlayerInfo[target_id]->hp, -1000);
 				}
 
-				m_map_player_info[target_id]->damageCooltime = true;
+				mMapPlayerInfo[target_id]->damageCooltime = true;
 				GAME_EVENT ev{ target_id, chrono::high_resolution_clock::now() + 2s, EV_PLAYER_DAMAGE_COOLTIME, 0 };
 				add_event_to_queue(ev);
 			}
@@ -1548,8 +1546,8 @@ void Iocp_server::process_packet(const int& id, void * buff)
 {
 	char *packet = reinterpret_cast<char *>(buff);
 
-	short x = m_map_player_info[id]->x;
-	short y = m_map_player_info[id]->y;
+	short x = mMapPlayerInfo[id]->x;
+	short y = mMapPlayerInfo[id]->y;
 	switch (packet[1]){
 	case CS_UP:
 		t_process_player_move(id, buff);
@@ -1604,12 +1602,12 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 		return;
 	}
 	short wave = 0;
-	if (m_map_game_room[room_number]->wave_count == 0) {
-		m_map_game_room[room_number]->wave_count = wave + 1;
+	if (mMapGameRoom[room_number]->wave_count == 0) {
+		mMapGameRoom[room_number]->wave_count = wave + 1;
 	}
-	wave = m_map_game_room[room_number]->wave_count;
+	wave = mMapGameRoom[room_number]->wave_count;
 	//m_map_game_room[room_number]->wave_count = 1;
-	if (m_map_game_room[room_number]->stage_number == 1) { // stage 1
+	if (mMapGameRoom[room_number]->stage_number == 1) { // stage 1
 		XMFLOAT3 line1 = stage1_line1_start;
 		XMFLOAT3 line4 = stage1_line4_start;
 		switch (wave)
@@ -1874,7 +1872,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			break;
 		}
 	}
-	else if (m_map_game_room[room_number]->stage_number == 2) { // stage2
+	else if (mMapGameRoom[room_number]->stage_number == 2) { // stage2
 		XMFLOAT3 line1 = stage2_line1_start;
 		XMFLOAT3 line4 = stage2_line4_start;
 		XMFLOAT3 line7 = stage2_line7_start;
@@ -2270,7 +2268,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 			break;
 		}
 	} //-----------------------------------------------------------------------------------------------------------------
-	else if (m_map_game_room[room_number]->stage_number == 3) { // stage3
+	else if (mMapGameRoom[room_number]->stage_number == 3) { // stage3
 		XMFLOAT3 line1 = stage3_line1_start;
 		XMFLOAT3 line4 = stage3_line4_start;
 		XMFLOAT3 line9 = stage3_line9_start;
@@ -2680,7 +2678,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 	cout<<"room:" << room_number<<" stage:"<< stage_number<<" wave:"<< wave <<" gen complete" << endl;;
 	GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
 	add_event_to_queue(ev);
-	m_map_game_room[room_number]->wave_on = true;
+	mMapGameRoom[room_number]->wave_on = true;
 
 	GAME_EVENT ev_waveCheck{ room_number, chrono::high_resolution_clock::now() + 5s, EV_CHECK_WAVE_END, 0 };
 	add_event_to_queue(ev_waveCheck);

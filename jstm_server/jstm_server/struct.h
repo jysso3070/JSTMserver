@@ -14,7 +14,7 @@ struct OVER_EX {
 	WSAOVERLAPPED over;
 	WSABUF wsabuf[1];
 	char net_buf[MAX_BUFFER];
-	EVENT_TYPE event_type;
+	EVENT_TYPE eventType;
 };
 
 struct PLAYER_INFO {
@@ -23,7 +23,7 @@ struct PLAYER_INFO {
 	int id;
 	int DB_key;
 	volatile bool is_connect;
-	char player_state;
+	char playerState;
 	short room_number;
 	short x, y;
 	short hp;
