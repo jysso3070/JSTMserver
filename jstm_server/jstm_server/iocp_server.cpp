@@ -205,6 +205,12 @@ void Iocp_server::runMainThread()
 		OVER_EX *overEx = reinterpret_cast<OVER_EX *> (pOver);
 		switch (overEx->eventType)
 		{
+		case EV_SEND:
+		{
+			delete overEx;
+			overEx = nullptr;
+			break;
+		}
 		case EV_RECV:
 		{
 			SOCKET client_s = mMapPlayerInfo[key]->socket;
