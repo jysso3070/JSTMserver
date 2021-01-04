@@ -10,6 +10,7 @@
 #include "struct.h"
 #include "direct_vector.h"
 #include "monster_path.h"
+#include "MonsterSpawn.h"
 
 #define TESTMODE
 
@@ -73,7 +74,7 @@ private:
 	Server_manager *mServerManager = NULL;
 	Collision *mCollision = NULL;
 	Timer *mTimer = NULL;
-	//monster_spawn* m_Monster_spawn = NULL;
+	MonsterSpawn *mMonsterSpawn = NULL;
 	
 	// iocp id
 	HANDLE mIocpHandle; // iocp วฺต้

@@ -148,6 +148,7 @@
     <ClCompile Include="iocp_server.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="MonsterSpawn.cpp" />
     <ClCompile Include="packet_manager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="server_manager.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="header.h" />
     <ClInclude Include="iocp_server.h" />
     <ClInclude Include="Monster.h" />
+    <ClInclude Include="MonsterSpawn.h" />
     <ClInclude Include="monster_path.h" />
     <ClInclude Include="packet_manager.h" />
     <ClInclude Include="Player.h" />
