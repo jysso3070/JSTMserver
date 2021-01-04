@@ -3,7 +3,7 @@
 #include <random>
 
 enum EVENT_TYPE {
-	EV_RECV, EV_SEND, EV_MOVE, EV_TEST, EV_MONSTER_THREAD_RUN, EV_GEN_1stWAVE_MONSTER, 
+	EV_RECV, EV_SEND, EV_MOVE, EV_TEST, EV_MONSTER_MOVE, EV_FIRSTWAVE_MONSTER, 
 	EV_MONSTER_DEAD, EV_MONSTER_NEEDLE_TRAP_COLLISION, EV_MONSTER_SLOW_TRAP_COLLISION,
 	EV_CHECK_WAVE_END, EV_GEN_MONSTER, EV_MONSTER_ATTACK, EV_PLAYER_DAMAGE_COOLTIME, 
 	EV_PROTALLIFE_UPDATE, PLAYER_GAME_START, EV_MONSTER_FIRE_TRAP_COLLISION, 
@@ -61,12 +61,12 @@ struct PLAYER_DB {
 
 struct GAME_EVENT
 {
-	int obj_id;
-	chrono::high_resolution_clock::time_point wakeup_time;
-	int event_type;
-	int target_obj;
+	int objId;
+	chrono::high_resolution_clock::time_point wakeupTime;
+	int eventType;
+	int targetObj;
 	constexpr bool operator < (const GAME_EVENT& left) const {
-		return wakeup_time > left.wakeup_time;
+		return wakeupTime > left.wakeupTime;
 	}
 };
 

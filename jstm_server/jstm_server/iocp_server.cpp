@@ -42,10 +42,10 @@ void Iocp_server::makeThread()
 	mThreadsPool.emplace_back([this]() {run_acceptThread(); });
 
 	for (int i = 0; i < maxWorkerThread; ++i) {
-		mThreadsPool.emplace_back([this]() {runMainThread(); });
+		mThreadsPool.emplace_back([this]() {mainThread(); });
 	}
 
-	mThreadsPool.emplace_back([this]() {run_timerThread(); });
+	mThreadsPool.emplace_back([this]() {timerThread(); });
 
 	for (auto& th : mThreadsPool) {
 		if (th.joinable()) {
@@ -184,7 +184,7 @@ void Iocp_server::run_acceptThread()
 
 }
 
-void Iocp_server::runMainThread()
+void Iocp_server::mainThread()
 {
 	while (true) {
 		DWORD ioByte;
@@ -265,10 +265,10 @@ void Iocp_server::runMainThread()
 			delete overEx;
 			break;
 		}
-		case EV_GEN_1stWAVE_MONSTER:
+		case EV_FIRSTWAVE_MONSTER:
 		{
 			short stage_number = *(short*)(overEx->net_buf);
-			process_gen_monster(key, stage_number);
+			process_gen_monster((short)key, stage_number);
 			delete overEx;
 			break;
 		}
@@ -338,20 +338,20 @@ void Iocp_server::runMainThread()
 		}
 		case EV_CHECK_WAVE_END:
 		{
-			check_wave_end(key);
+			check_wave_end((short)key);
 			delete overEx;
 			break;
 		}
 		case EV_GEN_MONSTER:
 		{
-			short stage_number = mMapGameRoom[key]->stage_number;
-			process_gen_monster(key, stage_number);
+			short stage_number = mMapGameRoom[(short)key]->stage_number;
+			process_gen_monster((short)key, stage_number);
 			delete overEx;
 			break;
 		}
-		case EV_MONSTER_THREAD_RUN:
+		case EV_MONSTER_MOVE:
 		{
-			processMonsterMove(key);
+			processMonsterMove((short)key);
 			delete overEx;
 			break;
 		}
@@ -371,7 +371,7 @@ void Iocp_server::runMainThread()
 		}
 		case EV_PROTALLIFE_UPDATE:
 		{
-			send_protalLife_update(key);
+			send_protalLife_update((short)key);
 			delete overEx;
 			break;
 		}
@@ -387,123 +387,146 @@ void Iocp_server::runMainThread()
 	}
 }
 
-void Iocp_server::run_timerThread()
+void Iocp_server::timerThread()
 {
 	while (true) {
-		m_eventTimer_lock.lock();
-		while (true == m_gameLogic_queue.empty()) {	// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
-			m_eventTimer_lock.unlock();
+		mEventTimerLock.lock();
+		// 이벤트 큐가 비어있으면 잠시동안 멈췄다가 다시 검사
+		while (true == mGamelogicQueue.empty()) {	
+			mEventTimerLock.unlock();
 			this_thread::sleep_for(10ms);
-			m_eventTimer_lock.lock();
+			mEventTimerLock.lock();
 		}
-		const GAME_EVENT &ev = m_gameLogic_queue.top();
-		if (ev.wakeup_time > chrono::high_resolution_clock::now()) {
-			m_eventTimer_lock.unlock();
+		const GAME_EVENT &ev = mGamelogicQueue.top();
+		if (ev.wakeupTime > chrono::high_resolution_clock::now()) {
+			mEventTimerLock.unlock();
 			this_thread::sleep_for(10ms);
 			continue;
 		}
 
-		GAME_EVENT p_ev = ev;
-		m_gameLogic_queue.pop();
-		m_eventTimer_lock.unlock();
+		GAME_EVENT gameEvent = ev;
+		mGamelogicQueue.pop();
+		mEventTimerLock.unlock();
 
 		// 이벤트 별로 분류해서 iocp에 이벤트를 보내준다
-		if (EV_MOVE == p_ev.event_type) { 
-			OVER_EX *over_ex = new OVER_EX;
-			over_ex->eventType = EV_MOVE;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+		switch (gameEvent.eventType)
+		{
+		case EV_MOVE:
+		{
+			OVER_EX* overEx = new OVER_EX;
+			overEx->eventType = EV_MOVE;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &overEx->over);
+			break;
 		}
-		else if (EV_TEST == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_TEST:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_TEST;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_THREAD_RUN == p_ev.event_type) {
-			//m_monsterThread_run = true;
-			OVER_EX *over_ex = new OVER_EX;
-			over_ex->eventType = EV_MONSTER_THREAD_RUN;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+		case EV_MONSTER_MOVE:
+		{
+			OVER_EX* over_ex = new OVER_EX;
+			over_ex->eventType = EV_MONSTER_MOVE;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_GEN_1stWAVE_MONSTER == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
-			over_ex->eventType = EV_GEN_1stWAVE_MONSTER;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj; // stage number;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
-			//gen_monster(p_ev.obj_id, 1, 1, 1);
+		case EV_FIRSTWAVE_MONSTER:
+		{
+			OVER_EX* over_ex = new OVER_EX;
+			over_ex->eventType = EV_FIRSTWAVE_MONSTER;
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj; // stage number;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_DEAD == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_DEAD:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_DEAD;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_NEEDLE_TRAP_COLLISION == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_NEEDLE_TRAP_COLLISION:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_NEEDLE_TRAP_COLLISION;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_SLOW_TRAP_COLLISION == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_SLOW_TRAP_COLLISION:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_SLOW_TRAP_COLLISION;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_FIRE_TRAP_COLLISION == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_FIRE_TRAP_COLLISION:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_FIRE_TRAP_COLLISION;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_ARROW_TRAP_COLLISION == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_ARROW_TRAP_COLLISION:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_ARROW_TRAP_COLLISION;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_WALLTRAP_COLLTIME == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_WALLTRAP_COLLTIME:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_WALLTRAP_COLLTIME;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_BULLET == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_BULLET:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_BULLET;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_CHECK_WAVE_END == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_CHECK_WAVE_END:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_CHECK_WAVE_END;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_GEN_MONSTER == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_GEN_MONSTER:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_GEN_MONSTER;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_MONSTER_ATTACK == p_ev.event_type) { // target_id = monster idx
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_MONSTER_ATTACK:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_MONSTER_ATTACK;
-			*(short *)(over_ex->net_buf) = p_ev.target_obj;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			*(short*)(over_ex->net_buf) = gameEvent.targetObj;
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_PLAYER_DAMAGE_COOLTIME == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_PLAYER_DAMAGE_COOLTIME:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_PLAYER_DAMAGE_COOLTIME;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (EV_PROTALLIFE_UPDATE == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case EV_PROTALLIFE_UPDATE:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = EV_PROTALLIFE_UPDATE;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
-		else if (PLAYER_GAME_START == p_ev.event_type) {
-			OVER_EX *over_ex = new OVER_EX;
+		case PLAYER_GAME_START:
+		{
+			OVER_EX* over_ex = new OVER_EX;
 			over_ex->eventType = PLAYER_GAME_START;
-			PostQueuedCompletionStatus(mIocpHandle, 1, p_ev.obj_id, &over_ex->over);
+			PostQueuedCompletionStatus(mIocpHandle, 1, gameEvent.objId, &over_ex->over);
 		}
+		default:
+			break;
+		}
+
 	}
 }
 
@@ -828,7 +851,7 @@ void Iocp_server::processMonsterMove(const short& roomNumber)
 	}
 
 	if (mMapGameRoom[roomNumber]->wave_on == true) {
-		GAME_EVENT ev{ roomNumber, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_THREAD_RUN, 0 };
+		GAME_EVENT ev{ roomNumber, chrono::high_resolution_clock::now() + 50ms, EV_MONSTER_MOVE, 0 };
 		add_event_to_queue(ev);
 	}
 	//cout << "mon run \n";
@@ -851,9 +874,9 @@ void Iocp_server::run_packet_countThread()
 
 void Iocp_server::add_event_to_queue(GAME_EVENT & ev)
 {
-	m_eventTimer_lock.lock();
-	m_gameLogic_queue.push(ev);
-	m_eventTimer_lock.unlock();
+	mEventTimerLock.lock();
+	mGamelogicQueue.push(ev);
+	mEventTimerLock.unlock();
 }
 
 void Iocp_server::t_process_player_move(const int& id, void * buff)
@@ -1262,7 +1285,7 @@ void Iocp_server::process_game_start(const short& room_number, const short& stag
 		}
 	}*/
 	//
-	GAME_EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_GEN_1stWAVE_MONSTER, stage_number };
+	GAME_EVENT g_ev{ room_number, chrono::high_resolution_clock::now() + 10s, EV_FIRSTWAVE_MONSTER, stage_number };
 	add_event_to_queue(g_ev);
 	
 }
@@ -1624,7 +1647,7 @@ void Iocp_server::process_gen_monster(const short& room_number, const short& sta
 	}
 
 	cout<<"room:" << room_number<<" stage:"<< stage_number<<" wave:"<< wave <<" gen complete" << endl;;
-	GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_THREAD_RUN, 0 };
+	GAME_EVENT ev{ room_number, chrono::high_resolution_clock::now() + 1s, EV_MONSTER_MOVE, 0 };
 	add_event_to_queue(ev);
 	mMapGameRoom[room_number]->wave_on = true;
 

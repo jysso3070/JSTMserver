@@ -31,8 +31,8 @@ public:
 
 	// thread
 	void run_acceptThread(); // 소켓 accept를 받는 스레드함수
-	void runMainThread(); // 주 워커 스레드
-	void run_timerThread();
+	void mainThread(); // 주 워커 스레드
+	void timerThread();
 	void processMonsterMove(const short& room_number);
 	void run_packet_countThread();
 
@@ -89,8 +89,8 @@ private:
 
 	// STL container
 	Concurrency::concurrent_unordered_map<int, PLAYER_INFO*> mMapPlayerInfo; // 플레이어 정보 맵(concurrent_unordered_map)
-	priority_queue <GAME_EVENT> m_gameLogic_queue; // 우선순위 큐
-	mutex m_eventTimer_lock;
+	priority_queue <GAME_EVENT> mGamelogicQueue; // 우선순위 큐
+	mutex mEventTimerLock;
 
 	Concurrency::concurrent_unordered_map<short, GAME_ROOM*> mMapGameRoom;	// room정보
 	Concurrency::concurrent_unordered_map<short, Monster*> m_map_monsterPool;
