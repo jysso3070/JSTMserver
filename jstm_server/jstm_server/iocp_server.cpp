@@ -272,6 +272,12 @@ void Iocp_server::mainThread()
 			delete overEx;
 			break;
 		}
+		case EV_MONSTER_MOVE:
+		{
+			processMonsterMove((short)key);
+			delete overEx;
+			break;
+		}
 		case EV_MONSTER_DEAD:
 		{
 			short monster_id = *(short*)(overEx->net_buf);
@@ -280,6 +286,45 @@ void Iocp_server::mainThread()
 			m_map_monsterPool[room_number][monster_id].set_isLive(false);
 			m_map_monsterPool[room_number][monster_id].get_monsterLock().unlock();
 			//cout << monster_id << "¹ø false \n";
+			delete overEx;
+			break;
+		}
+		case EV_CHECK_WAVE_END:
+		{
+			check_wave_end((short)key);
+			delete overEx;
+			break;
+		}
+		case EV_PLAYER_DAMAGE_COOLTIME:
+		{
+			mMapPlayerInfo[key]->damageCooltime = false;
+			delete overEx;
+			break;
+		}
+		case EV_PROTALLIFE_UPDATE:
+		{
+			send_protalLife_update((short)key);
+			delete overEx;
+			break;
+		}
+		case PLAYER_GAME_START:
+		{
+			mMapPlayerInfo[key]->playerState = PLAYER_STATE_playing_game;
+			delete overEx;
+			break;
+		}
+		case EV_GEN_MONSTER:
+		{
+			short stage_number = mMapGameRoom[(short)key]->stage_number;
+			process_gen_monster((short)key, stage_number);
+			delete overEx;
+			break;
+		}
+		case EV_MONSTER_ATTACK:
+		{
+			short room_number = (short)key;
+			short monster_id = *(short*)(overEx->net_buf);
+			check_monster_attack(room_number, monster_id);
 			delete overEx;
 			break;
 		}
@@ -333,51 +378,6 @@ void Iocp_server::mainThread()
 			short monster_id = (short)key;
 			short room_number = *(short*)(overEx->net_buf);
 			m_map_monsterPool[room_number][monster_id].set_bulletAnim(false);
-			delete overEx;
-			break;
-		}
-		case EV_CHECK_WAVE_END:
-		{
-			check_wave_end((short)key);
-			delete overEx;
-			break;
-		}
-		case EV_GEN_MONSTER:
-		{
-			short stage_number = mMapGameRoom[(short)key]->stage_number;
-			process_gen_monster((short)key, stage_number);
-			delete overEx;
-			break;
-		}
-		case EV_MONSTER_MOVE:
-		{
-			processMonsterMove((short)key);
-			delete overEx;
-			break;
-		}
-		case EV_MONSTER_ATTACK:
-		{
-			short room_number = (short)key;
-			short monster_id = *(short*)(overEx->net_buf);
-			check_monster_attack(room_number, monster_id);
-			delete overEx;
-			break;
-		}
-		case EV_PLAYER_DAMAGE_COOLTIME:
-		{
-			mMapPlayerInfo[key]->damageCooltime = false;
-			delete overEx;
-			break;
-		}
-		case EV_PROTALLIFE_UPDATE:
-		{
-			send_protalLife_update((short)key);
-			delete overEx;
-			break;
-		}
-		case PLAYER_GAME_START:
-		{
-			mMapPlayerInfo[key]->playerState = PLAYER_STATE_playing_game;
 			delete overEx;
 			break;
 		}
